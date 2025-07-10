@@ -4,35 +4,16 @@
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/GAS/HAttributeSet.h"
 
-// Sets default values
+
 ABaseCharacter::ABaseCharacter()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	// Initialize the Ability System Component and Attribute Set
-	HAbilitySystemComponent = CreateDefaultSubobject<UHAbilitySystemComponent>(TEXT("HAbilitySystemComponent"));
-	HAttributeSet = CreateDefaultSubobject<UHAttributeSet>(TEXT("HAttributeSet"));
 }
 
-// Called when the game starts or when spawned
 void ABaseCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
-
-// Called every frame
-void ABaseCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
 
 // GAS Implementation
 UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const

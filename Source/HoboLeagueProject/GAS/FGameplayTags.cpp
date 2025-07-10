@@ -1,8 +1,11 @@
 #include "FGameplayTags.h"
+#include "GameplayTagsManager.h"
 
-FGameplayTags FGameplayTags::GameplayTags;
+FHGameplayTags FHGameplayTags::GameplayTags;
 
-void FGameplayTags::InitializeNativeGameplayTags()
+void FHGameplayTags::InitializeNativeGameplayTags()
 {
-	
+	GameplayTags.STATUS_BLEEDING = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Bleeding"),
+		FString("Bleeding Status Effect"));
 }

@@ -4,30 +4,30 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
-#include "GameFramework/Character.h"
-#include "BaseCharacter.generated.h"
+#include "GameFramework/PlayerState.h"
+#include "BaseCharacterState.generated.h"
+
 
 class UHAbilitySystemComponent;
 class UHAttributeSet;
-
-UCLASS(Abstract)
-class HOBOLEAGUEPROJECT_API ABaseCharacter : public ACharacter , public IAbilitySystemInterface
+/**
+ * 
+ */
+UCLASS()
+class HOBOLEAGUEPROJECT_API ABaseCharacterState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
-
 public:
-	ABaseCharacter();
+	ABaseCharacterState();
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
 	UHAttributeSet* GetAttributeSet() const { return HAttributeSet; }
-	
 protected:
-	virtual void BeginPlay() override;
 
 	UPROPERTY()
 	TObjectPtr<UHAbilitySystemComponent> HAbilitySystemComponent;
-	
+
 	UPROPERTY()
 	TObjectPtr<UHAttributeSet> HAttributeSet;
 };
