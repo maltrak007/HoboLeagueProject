@@ -3,7 +3,7 @@
 .vsconfig
 
 ## JetBrains Rider 2023 user specific files
-.idea/
+HoboLeagueProject/.idea/
 *.sln.DotSettings.user
 
 # Compiled Object files
