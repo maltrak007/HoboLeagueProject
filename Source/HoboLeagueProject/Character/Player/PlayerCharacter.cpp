@@ -23,18 +23,10 @@ void APlayerCharacter::BeginPlay()
 	
 }
 
-
-
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void APlayerCharacter::PossessedBy(AController* NewController)
@@ -42,6 +34,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	//Server side init
 	InitAbilityActorInfo();
+	HAbilitySystemComponent->ApplyInitialEffects();
 }
 
 void APlayerCharacter::OnRep_PlayerState()

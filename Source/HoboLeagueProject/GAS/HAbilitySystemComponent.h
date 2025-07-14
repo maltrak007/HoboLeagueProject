@@ -19,5 +19,6 @@ protected:
 
 
 private:
+	UPROPERTY(EditAnywhere, Category="Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 };

@@ -25,9 +25,9 @@ public:
 	UHAttributeSet* GetAttributeSet() const { return HAttributeSet; }
 protected:
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<UHAbilitySystemComponent> HAbilitySystemComponent;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<UHAttributeSet> HAttributeSet;
 };

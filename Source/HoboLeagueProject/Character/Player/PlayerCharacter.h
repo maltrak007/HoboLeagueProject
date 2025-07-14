@@ -6,6 +6,8 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class UInputComponent;
+
 UCLASS()
 class HOBOLEAGUEPROJECT_API APlayerCharacter : public ABaseCharacter
 {
@@ -17,10 +19,7 @@ public:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
+	
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void OnRep_PlayerState() override;

@@ -6,6 +6,7 @@
 
 void UHAbilitySystemComponent::ApplyInitialEffects()
 {
+	if(!GetOwner() || !GetOwner()->HasAuthority()) return; 
 	for (const TSubclassOf<UGameplayEffect>& Effect : InitialEffects)
 	{
 		if (Effect)
