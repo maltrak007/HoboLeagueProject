@@ -13,4 +13,11 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API AHoboLeagueGamemode : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+
+	AHoboLeagueGamemode();
+	
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 };
