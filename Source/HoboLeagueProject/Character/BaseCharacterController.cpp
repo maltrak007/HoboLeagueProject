@@ -21,10 +21,10 @@ void ABaseCharacterController::BeginPlay()
 		UEnhancedInputLocalPlayerSubsystem* Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 		check(Subsystem);
 		Subsystem->AddMappingContext(DefaultPlayerInputMappingContext, 0);
-		bShowMouseCursor = false;
+		/*bShowMouseCursor = false;
 		DefaultMouseCursor = EMouseCursor::None;
 		FInputModeGameOnly InputMode;
-		SetInputMode(InputMode);
+		SetInputMode(InputMode);*/
 	}
 }
 
