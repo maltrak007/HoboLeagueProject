@@ -166,6 +166,19 @@ void UMultiplayerSessionsSubsystem::OnJoinSessionComplete(FName SessionName, EOn
 		OnlineSessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
 	}
 
+	if (Result == EOnJoinSessionCompleteResult::Success)
+	{
+		FString ConnectString;
+		if (OnlineSessionInterface->GetResolvedConnectString(SessionName, ConnectString))
+		{
+			APlayerController* PC = GetWorld()->GetFirstPlayerController();
+			if (PC)
+			{
+				PC->ClientTravel(ConnectString, ETravelType::TRAVEL_Absolute);
+			}
+		}
+	}
+
 	MultiplayerOnJoinSessionComplete.Broadcast(Result);
 }
 
