@@ -27,6 +27,8 @@ public:
 	// for linked anim instances, only called when the hosting node(s) are relevant
 	virtual void NativeThreadSafeUpdateAnimation(float DeltaSeconds) override;
 
+
+
 	UFUNCTION(BlueprintCallable,meta=(BlueprintThreadSafe))
 	FORCEINLINE float GetSpeed() const { return Speed; }
 
@@ -37,12 +39,15 @@ public:
 	FORCEINLINE bool IsNotMoving() const { return Speed <= 0; }
 
 	UFUNCTION(BlueprintCallable,meta=(BlueprintThreadSafe))
-	FORCEINLINE bool IsOnGround() const { return IsJumping; }
+	FORCEINLINE bool IsJumping() const { return bIsJumping; }
 
 	UFUNCTION(BlueprintCallable,meta=(BlueprintThreadSafe))
-	FORCEINLINE bool IsNotOnGround() const { return !IsJumping; }
+	FORCEINLINE bool IsOnGround() const { return !bIsJumping; }
 protected:
-
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
+	float MovementDirection;
+	
 private:
 	UPROPERTY()
 	TObjectPtr<ABaseCharacter> OwningCharacter;
@@ -51,5 +56,8 @@ private:
 	TObjectPtr<UCharacterMovementComponent> CharacterMovementComponent;
 
 	float Speed;
-	bool IsJumping;
+
+	bool bIsJumping;
+
+	void UpdateMovementDirection();
 };
