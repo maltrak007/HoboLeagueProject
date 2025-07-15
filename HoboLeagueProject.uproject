@@ -92,6 +92,10 @@
 				"IOS",
 				"TVOS"
 			]
+		},
+		{
+			"Name": "SteamSockets",
+			"Enabled": true
 		}
 	]
 }
