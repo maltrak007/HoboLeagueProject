@@ -20,7 +20,7 @@ public:
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
-	UHAttributeSet* GetAttributeSet() const { return HAttributeSet; }
+	UHAttributeSet* GetAttributeSet() const;
 	
 protected:
 	virtual void BeginPlay() override;

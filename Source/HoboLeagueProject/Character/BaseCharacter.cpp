@@ -21,3 +21,10 @@ UAbilitySystemComponent* ABaseCharacter::GetAbilitySystemComponent() const
 	return HAbilitySystemComponent;
 }
 
+UHAttributeSet* ABaseCharacter::GetAttributeSet() const
+{
+	return HAttributeSet;
+}
+
+
+

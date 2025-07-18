@@ -22,7 +22,7 @@ public:
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	
-	UHAttributeSet* GetAttributeSet() const { return HAttributeSet; }
+	UHAttributeSet* GetAttributeSet() const;
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")

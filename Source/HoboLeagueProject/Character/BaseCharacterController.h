@@ -30,6 +30,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputMappingContext> DefaultPlayerInputMappingContext;
 
+	void InitInputMapping();
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> MoveAction;
 
@@ -38,7 +40,7 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> JumpAction;
-
+	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);

@@ -17,14 +17,28 @@ void ABaseCharacterController::BeginPlay()
 	Super::BeginPlay();
 	if (IsLocalController())
 	{
-		check(DefaultPlayerInputMappingContext);
-		UEnhancedInputLocalPlayerSubsystem* Subsystem = GetLocalPlayer()->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-		check(Subsystem);
-		Subsystem->AddMappingContext(DefaultPlayerInputMappingContext, 0);
-		/*bShowMouseCursor = false;
-		DefaultMouseCursor = EMouseCursor::None;
+		// Delay initialization to wait for LocalPlayer to be fully available 
+		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ABaseCharacterController::InitInputMapping);
+	}
+	UWorld* World = GetWorld();
+	FName CurrentMapName = *World->GetMapName(); // Note: May include prefix like "UEDPIE_0_"
+	CurrentMapName = FPackageName::GetShortFName(CurrentMapName); // Remove PIE or persistent level prefix
+
+	if (CurrentMapName == "MultiplayerLobbyGym") // Replace with your actual map name
+	{
+		// Set to GameOnly input mode
 		FInputModeGameOnly InputMode;
-		SetInputMode(InputMode);*/
+		SetInputMode(InputMode);
+		bShowMouseCursor = false;
+	}
+	else
+	{
+		// Game + UI (e.g. in Lobby)
+		FInputModeGameAndUI InputModeData;
+		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		InputModeData.SetHideCursorDuringCapture(false);
+		SetInputMode(InputModeData);
+		bShowMouseCursor = true;
 	}
 }
 
@@ -37,6 +51,28 @@ void ABaseCharacterController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Look);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABaseCharacterController::Jump);
+}
+
+void ABaseCharacterController::InitInputMapping()
+{
+	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
+		{
+			Subsystem->ClearAllMappings();
+			Subsystem->AddMappingContext(DefaultPlayerInputMappingContext, 0);
+			UE_LOG(LogTemp, Log, TEXT("Enhanced Input initialized successfully."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Subsystem is null in InitInputMapping"));
+		}
+	}
+	else
+	{
+		// Retry on next tick if LocalPlayer is not yet ready
+		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ABaseCharacterController::InitInputMapping);
+	}
 }
 
 void ABaseCharacterController::Move(const FInputActionValue& Value)

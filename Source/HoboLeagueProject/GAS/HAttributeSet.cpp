@@ -31,3 +31,13 @@ void UHAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamin
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxStamina, OldMaxStamina);
 }
+
+void UHAttributeSet::OnRep_Overdose(const FGameplayAttributeData& OldOverdose) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxStamina, OldOverdose);
+}
+
+void UHAttributeSet::OnRep_MaxOverdose(const FGameplayAttributeData& OldMaxOverdose) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxStamina, OldMaxOverdose);
+}

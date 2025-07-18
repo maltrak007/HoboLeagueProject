@@ -52,5 +52,5 @@ void APlayerCharacter::InitAbilityActorInfo()
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
 	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
-	HAbilitySystemComponent->ApplyInitialEffects();
+	//HAbilitySystemComponent->ApplyInitialEffects();
 }

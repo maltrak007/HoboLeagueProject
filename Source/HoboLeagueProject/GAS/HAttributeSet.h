@@ -34,13 +34,19 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxHealth)
 	FGameplayAttributeData MaxHealth;
-
+	
 	UPROPERTY(ReplicatedUsing = OnRep_Stamina)
 	FGameplayAttributeData Stamina;
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxStamina)
 	FGameplayAttributeData MaxStamina;
 
+	UPROPERTY(ReplicatedUsing = OnRep_Overdose)
+	FGameplayAttributeData Overdose;
+
+	UPROPERTY(ReplicatedUsing = OnRep_MaxOverdose)
+	FGameplayAttributeData MaxOverdose;
+	
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
 
@@ -52,4 +58,10 @@ private:
 
 	UFUNCTION()
 	void OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamina) const;
+
+	UFUNCTION()
+	void OnRep_Overdose(const FGameplayAttributeData& OldOverdose) const;
+
+	UFUNCTION()
+	void OnRep_MaxOverdose(const FGameplayAttributeData& OldMaxOverdose) const;
 };

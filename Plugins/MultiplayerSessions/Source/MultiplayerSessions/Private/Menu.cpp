@@ -85,7 +85,7 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 		
 		if (World)
 		{
-			World->ServerTravel(PathToLobby,true);
+			World->ServerTravel(PathToLobby);
 		}
 	}
 	else
@@ -137,7 +137,7 @@ void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 			APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
 			if (PlayerController)
 			{
-				PlayerController->ClientTravel(Address, TRAVEL_Absolute, true);
+				PlayerController->ClientTravel(Address, TRAVEL_Absolute);
 			}
 		}
 	}

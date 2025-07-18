@@ -13,10 +13,16 @@ class HOBOLEAGUEPROJECT_API UHAbilitySystemComponent : public UAbilitySystemComp
 	GENERATED_BODY()
 
 public:
+	UHAbilitySystemComponent();
+	
 	void ApplyInitialEffects();
 
 protected:
-
+	// Called when the game starts
+	virtual void BeginPlay() override;
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+							   FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	UPROPERTY(EditAnywhere, Category="Initial Effects", meta=(AllowPrivateAccess="true"))
