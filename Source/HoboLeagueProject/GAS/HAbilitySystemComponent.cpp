@@ -16,9 +16,25 @@ void UHAbilitySystemComponent::ApplyInitialEffects()
 	{
 		if (Effect)
 		{
-			ApplyGameplayEffectToSelf(Effect.GetDefaultObject(), 1.0f, MakeEffectContext());
+			const UGameplayEffect* GE = Effect->GetDefaultObject<UGameplayEffect>();
+			if (GE)
+			{
+				ApplyGameplayEffectToSelf(GE, 1.0f, MakeEffectContext());
+			}
 		}
 	}
+	if(StartUpAbilitiesGiven)
+	{
+		for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
+		{
+			if (Ability)
+			{
+				GiveAbility(FGameplayAbilitySpec(Ability, 1, INDEX_NONE, this));
+			}
+		}
+		StartUpAbilitiesGiven = true;
+	}
+
 }
 
 void UHAbilitySystemComponent::BeginPlay()

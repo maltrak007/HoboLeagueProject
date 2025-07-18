@@ -14,6 +14,8 @@ APlayerCharacter::APlayerCharacter()
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	bAlwaysRelevant = true;
 }
 
 // Called when the game starts or when spawned
@@ -52,5 +54,5 @@ void APlayerCharacter::InitAbilityActorInfo()
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
 	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
-	//HAbilitySystemComponent->ApplyInitialEffects();
+	HAbilitySystemComponent->ApplyInitialEffects();
 }

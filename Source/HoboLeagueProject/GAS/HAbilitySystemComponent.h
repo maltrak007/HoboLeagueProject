@@ -27,4 +27,10 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, Category="Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
+
+	UPROPERTY(EditAnywhere, Category="Initial Effects", meta=(AllowPrivateAccess="true"))
+	TArray<TSubclassOf<UGameplayAbility>> Abilities;
+
+	UPROPERTY()
+	bool StartUpAbilitiesGiven = false;
 };
