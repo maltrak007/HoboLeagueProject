@@ -38,6 +38,19 @@ void AHoboLeagueGamemode::PostLogin(APlayerController* NewPlayer)
 			);
 			}
 		}
+		UWorld* World = GetWorld();
+		FName CurrentMapName = *World->GetMapName(); // Note: May include prefix like "UEDPIE_0_"
+		CurrentMapName = FPackageName::GetShortFName(CurrentMapName); // Remove PIE or persistent level prefix
+		
+		if (NumberOfPlayers == 3 && CurrentMapName == "MultiplayerLobbyGym")
+		{
+			UWorld* World2 = GameState->GetWorld();
+			if (World2)
+			{
+				bUseSeamlessTravel = true;
+				World2->ServerTravel(FString("/Game/Prototype/Gyms/CoreMechanicsGym?listen"));
+			}
+		}
 	}
 }
 
