@@ -6,6 +6,7 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class ABaseCharacterState;
 class UInputComponent;
 
 UCLASS()
@@ -21,9 +22,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 	virtual void PossessedBy(AController* NewController) override;
-
+	void ServerSideInit();
 	virtual void OnRep_PlayerState() override;
-	
+	void ClientSideInit();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -31,4 +32,8 @@ protected:
 private:
 	
 	void InitAbilityActorInfo();
+
+	UPROPERTY()
+	ABaseCharacterState* HoboPlayerState;
+
 };
