@@ -7,6 +7,7 @@
 #include "PlayerCharacter.generated.h"
 
 class UInputComponent;
+class AHoboLeagueWeapon;
 
 UCLASS()
 class HOBOLEAGUEPROJECT_API APlayerCharacter : public ABaseCharacter
@@ -24,11 +25,29 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 	
+	void EquipWeapon(AHoboLeagueWeapon* Weapon);
+	
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	AHoboLeagueWeapon* GetCurrentEquippedWeapon() const { return CurrentEquippedWeapon; }
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	bool HasWeaponEquipped() const { return CurrentEquippedWeapon != nullptr; }
+
+	UFUNCTION(Server, Reliable)
+	void Server_EquipWeapon(AHoboLeagueWeapon* Weapon);
+	
+	UFUNCTION()
+	void OnRep_CurrentEquippedWeapon();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 private:
-	
 	void InitAbilityActorInfo();
+	
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquippedWeapon)
+	AHoboLeagueWeapon* CurrentEquippedWeapon;
+	
+
 };

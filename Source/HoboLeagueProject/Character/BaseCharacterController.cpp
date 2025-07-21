@@ -24,21 +24,23 @@ void ABaseCharacterController::BeginPlay()
 	FName CurrentMapName = *World->GetMapName(); // Note: May include prefix like "UEDPIE_0_"
 	CurrentMapName = FPackageName::GetShortFName(CurrentMapName); // Remove PIE or persistent level prefix
 
-	if (CurrentMapName == "MultiplayerLobbyGym") // Replace with your actual map name
+	if (CurrentMapName == "MultiplayerNetworkGym") 
+	{
+		// Game + UI (e.g. in Lobby)
+    	FInputModeGameAndUI InputModeData;
+    	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    	InputModeData.SetHideCursorDuringCapture(false);
+    	SetInputMode(InputModeData);
+    	bShowMouseCursor = true;
+
+	}
+	else
 	{
 		// Set to GameOnly input mode
 		FInputModeGameOnly InputMode;
 		SetInputMode(InputMode);
 		bShowMouseCursor = false;
-	}
-	else
-	{
-		// Game + UI (e.g. in Lobby)
-		FInputModeGameAndUI InputModeData;
-		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputModeData.SetHideCursorDuringCapture(false);
-		SetInputMode(InputModeData);
-		bShowMouseCursor = true;
+		bShowMouseCursor = false;
 	}
 }
 

@@ -16,9 +16,11 @@ class HOBOLEAGUEPROJECT_API UGA_ProtoAttack : public UHBaseGameplayAbility
 	
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+
+	
 protected:
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* AttackMontage;
 };

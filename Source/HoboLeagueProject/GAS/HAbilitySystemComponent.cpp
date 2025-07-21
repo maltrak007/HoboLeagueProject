@@ -23,7 +23,7 @@ void UHAbilitySystemComponent::ApplyInitialEffects()
 			}
 		}
 	}
-	if(StartUpAbilitiesGiven)
+	if(!StartUpAbilitiesGiven)
 	{
 		for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
 		{
