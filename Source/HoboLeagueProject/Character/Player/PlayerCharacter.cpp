@@ -38,6 +38,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 	//Server side init
+	//InitAbilityActorInfo();
 	ServerSideInit();
 }
 
@@ -55,12 +56,16 @@ void APlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
 	//Client side init
+	//InitAbilityActorInfo();
 	ClientSideInit();
 }
 
 void APlayerCharacter::ClientSideInit()
 {
+	HoboPlayerState = Cast<ABaseCharacterState>(GetPlayerState());
+	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent());
 	HAbilitySystemComponent->InitAbilityActorInfo(HoboPlayerState,this);
+	
 }
 
 
@@ -69,13 +74,14 @@ void APlayerCharacter::InitAbilityActorInfo()
 {
 	
 	// Server init ability actor
-	ABaseCharacterState* HoboPlayerState = Cast<ABaseCharacterState>(GetPlayerState());
-	check(HoboPlayerState);
-	HoboPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(HoboPlayerState, this);
+	ABaseCharacterState* HoboPlayerState2 = Cast<ABaseCharacterState>(GetPlayerState());
+	check(HoboPlayerState2);
+	HoboPlayerState2->GetAbilitySystemComponent()->InitAbilityActorInfo(HoboPlayerState2, this);
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
-	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
-	HAttributeSet = HoboPlayerState->GetAttributeSet();
+	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState2->GetAbilitySystemComponent()); 
+	HAttributeSet = HoboPlayerState2->GetAttributeSet();
 	HAbilitySystemComponent->ApplyInitialEffects();
+	HAbilitySystemComponent->GiveInitialAbilities();	
 	
 }
 */
