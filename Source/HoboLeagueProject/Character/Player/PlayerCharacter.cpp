@@ -50,6 +50,7 @@ void APlayerCharacter::ServerSideInit()
 	HAbilitySystemComponent->InitAbilityActorInfo(HoboPlayerState,this);
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
+	//Borrar
 }
 
 void APlayerCharacter::OnRep_PlayerState()
