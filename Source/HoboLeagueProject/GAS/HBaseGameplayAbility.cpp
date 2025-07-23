@@ -2,3 +2,13 @@
 
 
 #include "HBaseGameplayAbility.h"
+
+UAnimInstance* UHBaseGameplayAbility::GetOwnerAnimInstance() const
+{
+	USkeletalMeshComponent* OwnerSkeletalMesh = GetOwningComponentFromActorInfo();
+	if (OwnerSkeletalMesh)
+	{
+		return OwnerSkeletalMesh->GetAnimInstance();
+	}
+	return nullptr;
+}

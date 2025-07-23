@@ -13,4 +13,6 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API UHBaseGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
+public:
+	UAnimInstance* GetOwnerAnimInstance() const;
 };
