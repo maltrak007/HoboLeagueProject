@@ -17,9 +17,25 @@ class HOBOLEAGUEPROJECT_API UGA_ProtoAttack : public UHBaseGameplayAbility
 public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
-protected:
+	static FGameplayTag GetComboChangedEventTag();
+	static FGameplayTag GetComboChangedEventEndTag();
 	
 private:
-	UPROPERTY(EditAnywhere, Category = "Animation")
+
+	void SetupWaitComboInputPress();
+
+	UFUNCTION()
+	void HandleInputPress(float TimeWaited);
+
+	void TryCommitCombo();
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* AttackMontage;
+
+	UFUNCTION()
+	void GetComboChangedEventRecived(FGameplayEventData Data);
+
+	FName NextComboName;
 };
+
+

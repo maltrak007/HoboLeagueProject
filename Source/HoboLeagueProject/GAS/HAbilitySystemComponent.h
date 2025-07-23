@@ -16,20 +16,18 @@ public:
 	UHAbilitySystemComponent();
 	
 	void ApplyInitialEffects();
+	void GiveInitialAbilities();
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-							   FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	UPROPERTY(EditAnywhere, Category="Initial Effects", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 
-	UPROPERTY(EditAnywhere, Category="Initial Effects", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay Abilities", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayAbility>> Abilities;
+
+	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay BasicAbilities", meta=(AllowPrivateAccess="true"))
+	TArray<TSubclassOf<UGameplayAbility>> BasicAbilities;
 
 	UPROPERTY()
 	bool StartUpAbilitiesGiven = false;

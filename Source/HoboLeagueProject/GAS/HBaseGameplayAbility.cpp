@@ -3,14 +3,12 @@
 
 #include "HBaseGameplayAbility.h"
 
-#include "AbilitySystemComponent.h"
-
-void UHBaseGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+UAnimInstance* UHBaseGameplayAbility::GetOwnerAnimInstance() const
 {
-	Super::OnAvatarSet(ActorInfo, Spec);
-
-	if(IsPassiveAbility)
+	USkeletalMeshComponent* OwnerSkeletalMesh = GetOwningComponentFromActorInfo();
+	if (OwnerSkeletalMesh)
 	{
-		ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, false);
+		return OwnerSkeletalMesh->GetAnimInstance();
 	}
+	return nullptr;
 }

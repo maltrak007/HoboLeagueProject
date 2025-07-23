@@ -16,15 +16,11 @@ public:
 	//TODO:: INITIALIZE NATIVE GAMEPLAY TAGS IN DEFAULTENGINE.INI
 	FGameplayTag STATUS_BLEEDING;
 
-	//*****************************************************************************
-	//      *****************************************************************
-	//							Activation Fail Tags
-	//      *****************************************************************
-	//*****************************************************************************
-	FGameplayTag Activation_Fail_BlockedByTags;
-	FGameplayTag Activation_Fail_CantAffordCost;
-	FGameplayTag Activation_Fail_IsDead;
-	FGameplayTag Activation_Fail_MissingTags;
-	FGameplayTag Activation_Fail_Networking;
-	FGameplayTag Activation_Fail_OnCooldown;
+	//Animations
+	FGameplayTag Event_Combo_Change_Combo02;
+	FGameplayTag Event_Combo_Change_End;
+
+
+	//Abilities
+	FGameplayTag Abilities_ComboAttack;
 };
