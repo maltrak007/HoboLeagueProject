@@ -9,6 +9,11 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 
 
+UGA_ProtoAttack::UGA_ProtoAttack()
+{
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
+
 void UGA_ProtoAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                       const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                       const FGameplayEventData* TriggerEventData)
@@ -29,7 +34,9 @@ void UGA_ProtoAttack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		PlayMontageTask->OnBlendOut.AddDynamic(this, &UGA_ProtoAttack::K2_EndAbility);
 		PlayMontageTask->ReadyForActivation();
 
-		UAbilityTask_WaitGameplayEvent* WaitComboChangeEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this,GetComboChangedEventTag(),nullptr,false,false);
+		UAbilityTask_WaitGameplayEvent* WaitComboChangeEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this,
+			GetComboChangedEventTag(),nullptr,false,false);
+
 		WaitComboChangeEventTask->EventReceived.AddDynamic(this, &UGA_ProtoAttack::GetComboChangedEventRecived);
 		WaitComboChangeEventTask->ReadyForActivation();
 	}
@@ -89,8 +96,14 @@ void UGA_ProtoAttack::GetComboChangedEventRecived(FGameplayEventData Data)
 
 	TArray<FName> TagNames;
 	UGameplayTagsManager::Get().SplitGameplayTagFName(EventTag, TagNames);
-	NextComboName = TagNames.Last();
-	
-	UE_LOG(LogTemp, Warning, TEXT("next combo is now: %s"), *NextComboName.ToString());
+	if (TagNames.Num() > 0)
+	{
+		NextComboName = TagNames.Last();
 
+		UE_LOG(LogTemp,Warning, TEXT("Next Combo is now :: %s"), *NextComboName.ToString());
+
+		SetupWaitComboInputPress();
+	}
+	
+	
 }

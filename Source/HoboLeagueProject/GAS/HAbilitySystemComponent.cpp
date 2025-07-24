@@ -53,7 +53,7 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	{
 		return;
 	}
-
+/*
 	for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
 	{
 		GiveAbility(FGameplayAbilitySpec(Ability,0,-1,nullptr));
@@ -63,17 +63,17 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	{
 		GiveAbility(FGameplayAbilitySpec(Ability,0,-1,nullptr));
 	}
-
+*/
 	//Vincular las habilidades al input mediante un mapa
-	/*
-	for(const TPair <ECAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : Abilities)
+	
+	for(const TPair <EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : Abilities)
 	{
 		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 0.0f, (int32)AbilityPair.Key,nullptr));
 	}
 
-	for(const TPair <ECAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : BasicAbilities)
+	for(const TPair <EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : BasicAbilities)
 	{
 		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 1.0f, (int32)AbilityPair.Key,nullptr));
 	}
-	*/
+	
 }

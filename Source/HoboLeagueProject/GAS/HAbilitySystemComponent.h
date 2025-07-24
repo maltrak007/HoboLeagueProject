@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemComponent.h"
+#include "HGameplayAbilityTypes.h"
 #include "HAbilitySystemComponent.generated.h"
 
 
@@ -23,12 +24,19 @@ private:
 	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 
+/*
 	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay Abilities", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayAbility>> Abilities;
 
 	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay BasicAbilities", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayAbility>> BasicAbilities;
+*/
 
+	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay Abilities", meta=(AllowPrivateAccess="true"))
+	TMap<EHAbilityInputID,TSubclassOf<UGameplayAbility>> Abilities;
+
+	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay BasicAbilities", meta=(AllowPrivateAccess="true"))
+	TMap<EHAbilityInputID,TSubclassOf<UGameplayAbility>> BasicAbilities;
 	UPROPERTY()
 	bool StartUpAbilitiesGiven = false;
 };
