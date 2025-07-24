@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "HoboLeagueProject/GAS/HGameplayAbilityTypes.h"
 #include "BaseCharacterController.generated.h"
 
 
@@ -25,8 +26,13 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void SetupInputComponent() override;
-	
+
+
+	/*********************************************************************/
+	/*                            INPUT									 */
+	/*********************************************************************/
 private:
+	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputMappingContext> DefaultPlayerInputMappingContext;
 
@@ -40,8 +46,13 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputAction> JumpAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Hobo | Input")
+	TMap<EHAbilityInputID, class UInputAction*> GameplayAbilityInputActions;;
+
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
+	void HandleAbilityInput(const FInputActionValue& Value, EHAbilityInputID AbilityInputID);
 };

@@ -3,9 +3,13 @@
 
 #include "BaseCharacterController.h"
 
+#include "AbilitySystemComponent.h"
+#include "BaseCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/PlayerState.h"
+#include "Player/BaseCharacterState.h"
 
 ABaseCharacterController::ABaseCharacterController()
 {
@@ -53,6 +57,11 @@ void ABaseCharacterController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Look);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Jump);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ABaseCharacterController::Jump);
+
+	for (const TPair<EHAbilityInputID, UInputAction*>& InputActionPair : GameplayAbilityInputActions)
+	{
+		EnhancedInputComponent->BindAction(InputActionPair.Value, ETriggerEvent::Completed, this, &ABaseCharacterController::HandleAbilityInput,InputActionPair.Key);
+	}
 }
 
 void ABaseCharacterController::InitInputMapping()
@@ -120,5 +129,21 @@ void ABaseCharacterController::Jump(const FInputActionValue& Value)
 		{
 			PlayerCharacter->StopJumping();
 		}
+	}
+}
+
+void ABaseCharacterController::HandleAbilityInput(const FInputActionValue& Value, EHAbilityInputID AbilityInputID)
+{
+	bool bPressed = Value.Get<bool>();
+	ABaseCharacterState* PS = Cast<ABaseCharacterState>(GetPlayerState<ABaseCharacterState>());
+	if (bPressed)
+	{
+		
+		PS->GetAbilitySystemComponent()->AbilityLocalInputPressed((int32)AbilityInputID);
+	}
+	
+	else
+	{
+		PS->GetAbilitySystemComponent()->AbilityLocalInputReleased((int32)AbilityInputID);
 	}
 }
