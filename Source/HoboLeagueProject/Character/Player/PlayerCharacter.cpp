@@ -40,6 +40,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	//Server side init
 	InitAbilityActorInfo();
 	HAbilitySystemComponent->ApplyInitialEffects();
+	HAbilitySystemComponent->GiveInitialAbilities();
 }
 
 void APlayerCharacter::OnRep_PlayerState()
