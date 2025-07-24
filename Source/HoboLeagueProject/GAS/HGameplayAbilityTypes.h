@@ -10,7 +10,7 @@ enum class EHAbilityInputID : uint8
 {
 	None							UMETA(DisplayName = "None"),
 	BasicAttack						UMETA(DisplayName = "Basic Attack"),
-	AbilityOne						UMETA(DisplayName = "Ability One"),
+	SecondaryAttack					UMETA(DisplayName = "Ability One"),
 	AbilityTwo						UMETA(DisplayName = "Ability Two"),
 	AbilityThree					UMETA(DisplayName = "Ability Three"),
 	AbilityFour						UMETA(DisplayName = "Ability Four"),

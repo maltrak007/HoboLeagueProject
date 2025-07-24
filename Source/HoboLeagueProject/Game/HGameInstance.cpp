@@ -8,5 +8,5 @@
 void UHGameInstance::Init()
 {
 	Super::Init();
-	FHGameplayTags::InitializeNativeGameplayTags();
+	//FHGameplayTags::InitializeNativeGameplayTags();
 }
