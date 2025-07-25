@@ -13,6 +13,13 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API UHBaseGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
+	
 public:
 	UAnimInstance* GetOwnerAnimInstance() const;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hobo | Ability Info")
+	bool IsPassiveAbility = false;
+
+	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 };
