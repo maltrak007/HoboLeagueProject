@@ -5,8 +5,8 @@
 
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
 
-void UHGameInstance::Init()
-{
-	Super::Init();
-	//FHGameplayTags::InitializeNativeGameplayTags();
-}
+// void UHGameInstance::Init()
+// {
+// 	Super::Init();
+// 	//FHGameplayTags::InitializeNativeGameplayTags();
+// }

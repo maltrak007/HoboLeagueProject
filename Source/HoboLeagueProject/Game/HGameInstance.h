@@ -14,5 +14,5 @@ class HOBOLEAGUEPROJECT_API UHGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
-	virtual void Init() override;
+	//virtual void Init() override;
 };

@@ -44,13 +44,13 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	FName("Activation.Fail.IsDead"),
 	FString("Activation Fail Is Dead"));
 	GameplayTags.Activation_Fail_MissingTags = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation_Fail_MissingTags"),
+	FName("Activation.Fail.MissingTags"),
 	FString("Activation Fail Missing Tags"));
 	GameplayTags.Activation_Fail_Networking = UGameplayTagsManager::Get().AddNativeGameplayTag(
 	FName("Activation.Fail.Networking"),
 	FString("Activation Fail Networking"));
 	GameplayTags.Activation_Fail_OnCooldown = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation_Fail_OnCooldown"),
+	FName("Activation.Fail.OnCooldown"),
 	FString("Activation Fail On Cooldown"));
 	
 }
