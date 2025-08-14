@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "HoboLeagueProject/GAS/HBaseGameplayAbility.h"
-#include "GA_ProtoAttack.generated.h"
+#include "GA_Attack.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HOBOLEAGUEPROJECT_API UGA_ProtoAttack : public UHBaseGameplayAbility
+class HOBOLEAGUEPROJECT_API UGA_Attack : public UHBaseGameplayAbility
 {
 	GENERATED_BODY()
 	
 public:
-	UGA_ProtoAttack();
+	UGA_Attack();
 	
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
@@ -35,7 +35,7 @@ private:
 	UAnimMontage* AttackMontage;
 
 	UFUNCTION()
-	void GetComboChangedEventRecived(FGameplayEventData Data);
+	void GetComboChangedEventReceived(FGameplayEventData Data);
 
 	FName NextComboName;
 };

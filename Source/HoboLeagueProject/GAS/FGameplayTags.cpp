@@ -5,7 +5,10 @@ FHGameplayTags FHGameplayTags::GameplayTags;
 
 void FHGameplayTags::InitializeNativeGameplayTags()
 {
-	GameplayTags.STATUS_BLEEDING = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	/*************************************************************************************/
+	/*	 									STATUS  									 */
+	/*************************************************************************************/
+	GameplayTags.Status_Bleeding = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Status.Bleeding"),
 		FString("Bleeding Status Effect"));
 
@@ -14,9 +17,41 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	/*	 								ANIMATIONS										 */
 	/*************************************************************************************/
 
-	GameplayTags.Event_Combo_Change_Combo02 = UGameplayTagsManager::Get().AddNativeGameplayTag(
-		FName("Event.Combo.Change.Combo02"),
-		FString("Notify to launch second part of combo"));
+	GameplayTags.Event_Combo_Change_PrimaryCombo02 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.PrimaryCombo02"),
+		FString("Notify to launch second primary part of combo"));
+
+	GameplayTags.Event_Combo_Change_PrimaryCombo03 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.PrimaryCombo03"),
+		FString("Notify to launch third primary part of combo"));
+
+	GameplayTags.Event_Combo_Change_PrimaryCombo04 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.PrimaryCombo04"),
+		FString("Notify to launch fourth primary part of combo"));
+
+	GameplayTags.Event_Combo_Change_SecondaryCombo02 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.SecondaryCombo02"),
+		FString("Notify to launch second secondary part of combo"));
+
+	GameplayTags.Event_Combo_Change_SecondaryCombo03 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.SecondaryCombo03"),
+		FString("Notify to launch third secondary part of combo"));
+
+	GameplayTags.Event_Combo_Change_SecondaryCombo04 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.SecondaryCombo04"),
+		FString("Notify to launch fourth secondary part of combo"));
+
+	GameplayTags.Event_Combo_Change_Melee02 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.Melee02"),
+		FString("Notify to launch secondary melee part of combo"));
+
+	GameplayTags.Event_Combo_Change_Melee03 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.Melee03"),
+		FString("Notify to launch third melee part of combo"));
+
+	GameplayTags.Event_Combo_Change_Melee04 = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change.Melee04"),
+		FString("Notify to launch fourth melee part of combo"));
 
 	GameplayTags.Event_Combo_Change_End = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Event.Combo.Change.End"),
@@ -27,9 +62,29 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	/*	 								ABILITIES										 */
 	/*************************************************************************************/
 
-	GameplayTags.Abilities_ComboAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Abilities.ComboAttack"),
-	FString("Ability to ComboAttack"));
+	GameplayTags.Abilities_PrimaryAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Abilities.PrimaryAttack"),
+	FString("Ability to Primary Attack"));
+
+	GameplayTags.Abilities_SecondaryAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.SecondaryAttack"),
+FString("Ability to Secondary Attack"));
+
+	GameplayTags.Abilities_MeleeAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.MeleeAttack"),
+FString("Ability to Melee Attack"));
+
+	GameplayTags.Abilities_UseConsumable = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.UseConsumable"),
+FString("Ability to Use Consumable"));
+
+	GameplayTags.Abilities_PickUp = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.PickUp"),
+FString("Ability to PickUp"));
+
+	GameplayTags.Abilities_DropDown = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.DropDown"),
+FString("Ability to DropDown"));
 
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */

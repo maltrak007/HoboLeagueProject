@@ -28,7 +28,7 @@ void UAN_SendGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 
 FString UAN_SendGameplayEvent::GetNotifyName_Implementation() const
 {
-	Super::GetNotifyName_Implementation();
+	//Super::GetNotifyName_Implementation();
 	
 	if (EventTag.IsValid())
 	{
@@ -43,11 +43,12 @@ FString UAN_SendGameplayEvent::GetNotifyName_Implementation() const
 		}
 		*/
 		
-		
 		TArray<FName> TagNames;
 		UGameplayTagsManager::Get().SplitGameplayTagFName(EventTag,TagNames);
-		return TagNames.Last().ToString();
-		
+		if (TagNames.Num() > 0)
+		{
+			return TagNames.Last().ToString();
+		}
 	}
 	return "None";
 }

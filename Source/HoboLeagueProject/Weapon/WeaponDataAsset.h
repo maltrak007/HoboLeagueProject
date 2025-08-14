@@ -54,11 +54,11 @@ public:
 	// ======================
 	//   Animation
 	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* PrimaryAttackMontage;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
-	UAnimMontage* SecondaryAttackMontage;
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	// UAnimMontage* PrimaryAttackMontage;
+	//
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
+	// UAnimMontage* SecondaryAttackMontage;
 
 	// ======== GETTERS ========
 
@@ -82,10 +82,10 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Weapon|Abilities")
 	TSubclassOf<UGameplayAbility> GetWeaponSecondaryAbility() const { return WeaponSecondaryAbility; }
-
-	UFUNCTION(BlueprintPure, Category = "Weapon|Animation")
-	UAnimMontage* GetPrimaryAttackMontage() const { return PrimaryAttackMontage; }
-
-	UFUNCTION(BlueprintPure, Category = "Weapon|Animation")
-	UAnimMontage* GetSecondaryAttackMontage() const { return SecondaryAttackMontage; }
+	
+	// UFUNCTION(BlueprintPure, Category = "Weapon|Animation")
+	// UAnimMontage* GetPrimaryAttackMontage() const { return PrimaryAttackMontage; }
+	//
+	// UFUNCTION(BlueprintPure, Category = "Weapon|Animation")
+	// UAnimMontage* GetSecondaryAttackMontage() const { return SecondaryAttackMontage; }
 };

@@ -48,7 +48,7 @@ private:
 	TObjectPtr<UInputAction> JumpAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Hobo | Input")
-	TMap<EHAbilityInputID, class UInputAction*> GameplayAbilityInputActions;;
+	TMap<EHAbilityInputID, UInputAction*> GameplayAbilityInputActions;
 
 	
 	void Move(const FInputActionValue& Value);

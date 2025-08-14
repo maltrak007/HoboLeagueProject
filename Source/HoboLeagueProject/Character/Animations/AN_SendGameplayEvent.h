@@ -16,8 +16,7 @@ class HOBOLEAGUEPROJECT_API UAN_SendGameplayEvent : public UAnimNotify
 	GENERATED_BODY()
 
 public:
-	
-	void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
+	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Hobo | Gameplay Ability")

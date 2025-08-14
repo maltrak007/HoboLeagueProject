@@ -12,14 +12,27 @@ public:
 	
 	static void InitializeNativeGameplayTags();
 	
-	FGameplayTag STATUS_BLEEDING;
+	//**************************************************************
+	//     ****************************************************
+	//							STATUS
+	//     ****************************************************
+	//**************************************************************
+	FGameplayTag Status_Bleeding;
 
 	//**************************************************************
 	//     ****************************************************
 	//							ANIMATIONS
 	//     ****************************************************
 	//**************************************************************
-	FGameplayTag Event_Combo_Change_Combo02;
+	FGameplayTag Event_Combo_Change_PrimaryCombo02;
+	FGameplayTag Event_Combo_Change_PrimaryCombo03;
+	FGameplayTag Event_Combo_Change_PrimaryCombo04;
+	FGameplayTag Event_Combo_Change_SecondaryCombo02;
+	FGameplayTag Event_Combo_Change_SecondaryCombo03;
+	FGameplayTag Event_Combo_Change_SecondaryCombo04;
+	FGameplayTag Event_Combo_Change_Melee02;
+	FGameplayTag Event_Combo_Change_Melee03;
+	FGameplayTag Event_Combo_Change_Melee04;
 	FGameplayTag Event_Combo_Change_End;
 
 	//**************************************************************
@@ -27,7 +40,12 @@ public:
 	//							ABILITIES
 	//     ****************************************************
 	//**************************************************************
-	FGameplayTag Abilities_ComboAttack;
+	FGameplayTag Abilities_PrimaryAttack;
+	FGameplayTag Abilities_SecondaryAttack;
+	FGameplayTag Abilities_MeleeAttack;
+	FGameplayTag Abilities_UseConsumable;
+	FGameplayTag Abilities_PickUp;
+	FGameplayTag Abilities_DropDown;
 
 	//**************************************************************
 	//     ****************************************************
