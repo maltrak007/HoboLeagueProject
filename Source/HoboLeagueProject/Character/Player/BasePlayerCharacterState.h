@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "GameFramework/PlayerState.h"
-#include "BaseCharacterState.generated.h"
+#include "BasePlayerCharacterState.generated.h"
 
 
 class UHAbilitySystemComponent;
@@ -14,11 +14,11 @@ class UHAttributeSet;
  * 
  */
 UCLASS()
-class HOBOLEAGUEPROJECT_API ABaseCharacterState : public APlayerState, public IAbilitySystemInterface
+class HOBOLEAGUEPROJECT_API ABasePlayerCharacterState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 public:
-	ABaseCharacterState();
+	ABasePlayerCharacterState();
 	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	

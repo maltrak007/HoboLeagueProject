@@ -75,5 +75,13 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	{
 		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 1.0f, (int32)AbilityPair.Key,nullptr));
 	}
-	
+}
+
+void UHAbilitySystemComponent::GrantWeaponAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+{
+	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
+
+	// Give the ability bound to the requested input ID
+	FGameplayAbilitySpec Spec(AbilityClass, 1, static_cast<int32>(InputID), this);
+	GiveAbility(Spec);
 }

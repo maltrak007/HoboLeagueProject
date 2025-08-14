@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 
-#include "BaseCharacterState.h"
+#include "BasePlayerCharacterState.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Weapon/HoboLeagueWeapon.h"
 #include "HoboLeagueProject/Weapon/WeaponDataAsset.h"
@@ -53,7 +53,7 @@ void APlayerCharacter::OnRep_PlayerState()
 void APlayerCharacter::InitAbilityActorInfo()
 {
 	// Server init ability actor
-	ABaseCharacterState* HoboPlayerState = Cast<ABaseCharacterState>(GetPlayerState());
+	ABasePlayerCharacterState* HoboPlayerState = Cast<ABasePlayerCharacterState>(GetPlayerState());
 	check(HoboPlayerState);
 	HoboPlayerState->GetAbilitySystemComponent()->InitAbilityActorInfo(HoboPlayerState, this);
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
@@ -64,50 +64,26 @@ void APlayerCharacter::InitAbilityActorInfo()
 void APlayerCharacter::EquipWeapon(AHoboLeagueWeapon* Weapon)
 {
 	if (!Weapon || !HAbilitySystemComponent || !Weapon->WeaponData) return;
-
-	CurrentEquippedWeapon = Weapon;
-
+	
 	const UWeaponDataAsset* Data = Weapon->WeaponData;
 
-	if (Data->WeaponPrimaryAbility)
+	if (Data->GetWeaponPrimaryAbility())
 	{
-		HAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Data->WeaponPrimaryAbility, 1));
+		HAbilitySystemComponent->GrantWeaponAbility(EHAbilityInputID::BasicAttack, Data->GetWeaponPrimaryAbility());
 	}
 
-	if (Data->WeaponSecondaryAbility)
+	if (Data->GetWeaponSecondaryAbility())
 	{
-		HAbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(Data->WeaponSecondaryAbility, 1));
-	}
-	
-	Weapon->SetActorEnableCollision(false);
-	Weapon->SetActorHiddenInGame(true);
-
-	// 🔁 También hacer attach en el servidor (igual que en OnRep)
-	if (GetMesh())
-	{
-		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("weapon_holder_r"));
+		HAbilitySystemComponent->GrantWeaponAbility(EHAbilityInputID::SecondaryAttack, Data->GetWeaponSecondaryAbility());
 	}
 }
 
-void APlayerCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
-	DOREPLIFETIME(APlayerCharacter, CurrentEquippedWeapon);
-}
 
-void APlayerCharacter::Server_EquipWeapon_Implementation(AHoboLeagueWeapon* Weapon)
+void APlayerCharacter::Server_EquipWeapon_Implementation(AHoboLeagueWeapon* Weapon)	
 {
 	if (!Weapon || !HasAuthority()) return;
 
 	EquipWeapon(Weapon);
 }
 
-void APlayerCharacter::OnRep_CurrentEquippedWeapon()
-{
-	// Esto corre en los clientes cuando cambia la referencia replicada
-	if (CurrentEquippedWeapon)
-	{
-		CurrentEquippedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("weapon_holder_r"));
-	}
-}
+

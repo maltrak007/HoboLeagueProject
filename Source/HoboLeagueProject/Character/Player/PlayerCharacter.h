@@ -26,18 +26,9 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	void EquipWeapon(AHoboLeagueWeapon* Weapon);
-	
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	AHoboLeagueWeapon* GetCurrentEquippedWeapon() const { return CurrentEquippedWeapon; }
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	bool HasWeaponEquipped() const { return CurrentEquippedWeapon != nullptr; }
 
 	UFUNCTION(Server, Reliable)
 	void Server_EquipWeapon(AHoboLeagueWeapon* Weapon);
-	
-	UFUNCTION()
-	void OnRep_CurrentEquippedWeapon();
 
 protected:
 	// Called when the game starts or when spawned
@@ -46,8 +37,4 @@ protected:
 private:
 	void InitAbilityActorInfo();
 	
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentEquippedWeapon)
-	AHoboLeagueWeapon* CurrentEquippedWeapon;
-	
-
 };

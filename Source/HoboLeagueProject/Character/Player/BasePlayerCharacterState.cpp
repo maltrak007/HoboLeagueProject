@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "BaseCharacterState.h"
+#include "BasePlayerCharacterState.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/GAS/HAttributeSet.h"
 
-ABaseCharacterState::ABaseCharacterState()
+ABasePlayerCharacterState::ABasePlayerCharacterState()
 {
 	HAbilitySystemComponent = CreateDefaultSubobject<UHAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 	HAbilitySystemComponent->SetIsReplicated(true);
@@ -17,12 +17,12 @@ ABaseCharacterState::ABaseCharacterState()
 	SetNetUpdateFrequency(100.0f);
 }
 
-UAbilitySystemComponent* ABaseCharacterState::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ABasePlayerCharacterState::GetAbilitySystemComponent() const
 {
 	return HAbilitySystemComponent;
 }
 
-UHAttributeSet* ABaseCharacterState::GetAttributeSet() const
+UHAttributeSet* ABasePlayerCharacterState::GetAttributeSet() const
 {
 	return HAttributeSet;
 }

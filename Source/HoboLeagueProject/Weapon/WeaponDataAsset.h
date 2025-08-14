@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,65 +5,87 @@
 #include "Engine/DataAsset.h"
 #include "WeaponDataAsset.generated.h"
 
-
 class UTexture2D;
 class USkeletalMesh;
 class UGameplayAbility;
 class UGameplayEffect;
 class UAnimMontage;
 class UStaticMesh;
-/**
- * 
- */
-UCLASS()
+
+UCLASS(BlueprintType)
 class HOBOLEAGUEPROJECT_API UWeaponDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
+
 public:
-	// Daño base del arma
+	// ======================
+	//   Weapon Stats
+	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	float Damage;
 
-	// Durabilidad del arma
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	float Durability;
 
-	// Efectos de estado que aplica el arma
+	// ======================
+	//   Weapon Effects
+	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Effects")
 	FGameplayTagContainer StatusEffect;
 
-	// Ícono del arma para UI
+	// ======================
+	//   Visuals
+	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
 	UTexture2D* WeaponIcon;
 
-	// Malla visual del arma
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
-	// USkeletalMesh* WeaponMesh;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
 	UStaticMesh* WeaponMesh;
-	
-	// Habilidad primaria (ataque principal)
+
+	// ======================
+	//   Abilities
+	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<UGameplayAbility> WeaponPrimaryAbility;
 
-	// Habilidad secundaria (ataque alterno, cargado, etc.)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<UGameplayAbility> WeaponSecondaryAbility;
 
-	// GameplayEffect que se aplica al jugador al equipar el arma
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
-	// TSubclassOf<UGameplayEffect> WeaponGE;
-
-	// Animación del ataque primario
+	// ======================
+	//   Animation
+	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* PrimaryAttackMontage;
 
-	// Animación del ataque secundario
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* SecondaryAttackMontage;
-protected:
 
-private:
-	
+	// ======== GETTERS ========
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
+	float GetDamage() const { return Damage; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
+	float GetDurability() const { return Durability; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Effects")
+	const FGameplayTagContainer& GetStatusEffect() const { return StatusEffect; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Visual")
+	UTexture2D* GetWeaponIcon() const { return WeaponIcon; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Visual")
+	UStaticMesh* GetWeaponMesh() const { return WeaponMesh; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Abilities")
+	TSubclassOf<UGameplayAbility> GetWeaponPrimaryAbility() const { return WeaponPrimaryAbility; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Abilities")
+	TSubclassOf<UGameplayAbility> GetWeaponSecondaryAbility() const { return WeaponSecondaryAbility; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Animation")
+	UAnimMontage* GetPrimaryAttackMontage() const { return PrimaryAttackMontage; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Animation")
+	UAnimMontage* GetSecondaryAttackMontage() const { return SecondaryAttackMontage; }
 };

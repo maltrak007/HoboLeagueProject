@@ -9,7 +9,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/PlayerState.h"
-#include "Player/BaseCharacterState.h"
+#include "Player/BasePlayerCharacterState.h"
 
 ABaseCharacterController::ABaseCharacterController()
 {
@@ -135,7 +135,7 @@ void ABaseCharacterController::Jump(const FInputActionValue& Value)
 void ABaseCharacterController::HandleAbilityInput(const FInputActionValue& Value, EHAbilityInputID AbilityInputID)
 {
 	bool bPressed = Value.Get<bool>();
-	ABaseCharacterState* PS = Cast<ABaseCharacterState>(GetPlayerState<ABaseCharacterState>());
+	ABasePlayerCharacterState* PS = Cast<ABasePlayerCharacterState>(GetPlayerState<ABasePlayerCharacterState>());
 	if (bPressed)
 	{
 		
