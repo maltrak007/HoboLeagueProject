@@ -138,10 +138,8 @@ void ABaseCharacterController::HandleAbilityInput(const FInputActionValue& Value
 	ABasePlayerCharacterState* PS = Cast<ABasePlayerCharacterState>(GetPlayerState<ABasePlayerCharacterState>());
 	if (bPressed)
 	{
-		
 		PS->GetAbilitySystemComponent()->AbilityLocalInputPressed((int32)AbilityInputID);
 	}
-	
 	else
 	{
 		PS->GetAbilitySystemComponent()->AbilityLocalInputReleased((int32)AbilityInputID);

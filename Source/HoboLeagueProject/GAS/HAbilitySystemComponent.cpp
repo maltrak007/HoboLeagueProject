@@ -20,31 +20,8 @@ void UHAbilitySystemComponent::ApplyInitialEffects()
 			//Permite la creación de un FGameplayeffectSpectHandle por lo que podemos pasarle parametros.
 			FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(Effect,1,MakeEffectContext());
 			ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-
-			//Crea internamente el FGameplayEffectSpecHandle por lo que no nos permite pasar parametros adicionales, más simple y limpio pero más limitado.
-			/*
-			const UGameplayEffect* GE = Effect->GetDefaultObject<UGameplayEffect>();
-			if (GE)
-			{
-				
-				ApplyGameplayEffectToSelf(GE, 1.0f, MakeEffectContext());
-			}
-			*/
 		}
 	}
-	/*
-	if(StartUpAbilitiesGiven)
-	{
-		for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
-		{
-			if (Ability)
-			{
-				GiveAbility(FGameplayAbilitySpec(Ability, 1, INDEX_NONE, this));
-			}
-		}
-		StartUpAbilitiesGiven = true;
-	}
-	*/
 }
 
 void UHAbilitySystemComponent::GiveInitialAbilities()
@@ -53,19 +30,8 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	{
 		return;
 	}
-/*
-	for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
-	{
-		GiveAbility(FGameplayAbilitySpec(Ability,0,-1,nullptr));
-	}
 
-	for (const TSubclassOf<UGameplayAbility>& Ability : BasicAbilities)
-	{
-		GiveAbility(FGameplayAbilitySpec(Ability,0,-1,nullptr));
-	}
-*/
 	//Vincular las habilidades al input mediante un mapa
-	
 	for(const TPair <EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : Abilities)
 	{
 		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 0.0f, (int32)AbilityPair.Key,nullptr));
@@ -77,11 +43,36 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	}
 }
 
-void UHAbilitySystemComponent::GrantWeaponAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+void UHAbilitySystemComponent::GrantItemAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+{
+	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
+	
+	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+	{
+		if (Spec.InputID == static_cast<int32>(InputID))
+		{
+			Spec.InputID = INDEX_NONE; // Prevent it from triggering
+			MarkAbilitySpecDirty(Spec); // Replicate change to clients
+		}
+	}
+	
+	GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, static_cast<int32>(InputID), this));
+}
+
+void UHAbilitySystemComponent::UnBindAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
 {
 	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
 
-	// Give the ability bound to the requested input ID
-	FGameplayAbilitySpec Spec(AbilityClass, 1, static_cast<int32>(InputID), this);
-	GiveAbility(Spec);
+	// Find the ability spec for this ability
+	FGameplayAbilitySpec* Spec = FindAbilitySpecFromClass(AbilityClass);
+	if (Spec)
+	{
+		// If the input matches, unbind it
+		if (Spec->InputID == static_cast<int32>(InputID))
+		{
+			Spec->InputID = INDEX_NONE; // No input will trigger this ability now
+			MarkAbilitySpecDirty(*Spec); // Replicate change to clients
+		}
+	}
 }
+

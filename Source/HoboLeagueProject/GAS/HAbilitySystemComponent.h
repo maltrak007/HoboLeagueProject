@@ -18,8 +18,8 @@ public:
 	
 	void ApplyInitialEffects();
 	void GiveInitialAbilities();
-	void GrantWeaponAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
-
+	void GrantItemAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
+	void UnBindAbility(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
 private:
 	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
