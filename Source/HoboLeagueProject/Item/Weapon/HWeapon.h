@@ -4,19 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HoboLeagueWeapon.generated.h"
+#include "HWeapon.generated.h"
 
 class USphereComponent;
 class UWeaponDataAsset;
 class APlayerCharacter;
 
 UCLASS()
-class HOBOLEAGUEPROJECT_API AHoboLeagueWeapon : public AActor
+class HOBOLEAGUEPROJECT_API AHWeapon : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	AHoboLeagueWeapon();
+	AHWeapon();
 	
 	virtual void Tick(float DeltaTime) override;
 

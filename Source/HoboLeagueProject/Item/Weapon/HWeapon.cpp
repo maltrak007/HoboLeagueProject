@@ -1,9 +1,9 @@
-#include "HoboLeagueWeapon.h"
+#include "HWeapon.h"
 #include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "Net/UnrealNetwork.h"
 
-AHoboLeagueWeapon::AHoboLeagueWeapon()
+AHWeapon::AHWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
@@ -17,20 +17,20 @@ AHoboLeagueWeapon::AHoboLeagueWeapon()
 	CollisionSphere->SetSphereRadius(50.f);
 	CollisionSphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	CollisionSphere->SetGenerateOverlapEvents(true);
-	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHoboLeagueWeapon::OnWeaponOverlap);
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHWeapon::OnWeaponOverlap);
 }
 
-void AHoboLeagueWeapon::BeginPlay()
+void AHWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-void AHoboLeagueWeapon::Tick(float DeltaTime)
+void AHWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void AHoboLeagueWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+void AHWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
@@ -46,7 +46,7 @@ void AHoboLeagueWeapon::OnWeaponOverlap(UPrimitiveComponent* OverlappedComponent
 	}
 }
 
-void AHoboLeagueWeapon::ServerPickupWeapon_Implementation(APlayerCharacter* Player)
+void AHWeapon::ServerPickupWeapon_Implementation(APlayerCharacter* Player)
 {
 	if (!Player || bIsPickedUp) return;
 
@@ -59,7 +59,7 @@ void AHoboLeagueWeapon::ServerPickupWeapon_Implementation(APlayerCharacter* Play
 }
 
 //Improve this method to be more modular and handle more weapon types
-void AHoboLeagueWeapon::AttachToPlayer(APlayerCharacter* Player)
+void AHWeapon::AttachToPlayer(APlayerCharacter* Player)
 {
 	if (!Player) return;
 
@@ -70,7 +70,7 @@ void AHoboLeagueWeapon::AttachToPlayer(APlayerCharacter* Player)
 	AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
 }
 
-void AHoboLeagueWeapon::OnRep_IsPickedUp()
+void AHWeapon::OnRep_IsPickedUp()
 {
 	if (bIsPickedUp && OwningPlayer)
 	{
@@ -78,10 +78,10 @@ void AHoboLeagueWeapon::OnRep_IsPickedUp()
 	}
 }
 
-void AHoboLeagueWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AHWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AHoboLeagueWeapon, bIsPickedUp);
-	DOREPLIFETIME(AHoboLeagueWeapon, OwningPlayer);
+	DOREPLIFETIME(AHWeapon, bIsPickedUp);
+	DOREPLIFETIME(AHWeapon, OwningPlayer);
 }

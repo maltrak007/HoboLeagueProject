@@ -7,8 +7,8 @@
 
 #include "BasePlayerCharacterState.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
-#include "HoboLeagueProject/Weapon/HoboLeagueWeapon.h"
-#include "HoboLeagueProject/Weapon/WeaponDataAsset.h"
+#include "HoboLeagueProject/Item/Weapon/HWeapon.h"
+#include "HoboLeagueProject/Item/Weapon/WeaponDataAsset.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -61,7 +61,7 @@ void APlayerCharacter::InitAbilityActorInfo()
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
 }
 
-void APlayerCharacter::EquipWeapon(AHoboLeagueWeapon* Weapon)
+void APlayerCharacter::EquipWeapon(AHWeapon* Weapon)
 {
 	if (!Weapon || !HAbilitySystemComponent || !Weapon->WeaponData) return;
 	
@@ -79,7 +79,7 @@ void APlayerCharacter::EquipWeapon(AHoboLeagueWeapon* Weapon)
 }
 
 
-void APlayerCharacter::Server_EquipWeapon_Implementation(AHoboLeagueWeapon* Weapon)	
+void APlayerCharacter::Server_EquipWeapon_Implementation(AHWeapon* Weapon)	
 {
 	if (!Weapon || !HasAuthority()) return;
 

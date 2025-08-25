@@ -7,7 +7,7 @@
 #include "PlayerCharacter.generated.h"
 
 class UInputComponent;
-class AHoboLeagueWeapon;
+class AHWeapon;
 
 UCLASS()
 class HOBOLEAGUEPROJECT_API APlayerCharacter : public ABaseCharacter
@@ -25,10 +25,10 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 	
-	void EquipWeapon(AHoboLeagueWeapon* Weapon);
+	void EquipWeapon(AHWeapon* Weapon);
 
 	UFUNCTION(Server, Reliable)
-	void Server_EquipWeapon(AHoboLeagueWeapon* Weapon);
+	void Server_EquipWeapon(AHWeapon* Weapon);
 
 protected:
 	// Called when the game starts or when spawned
