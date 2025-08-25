@@ -4,11 +4,9 @@
 #include "BaseCharacterController.h"
 
 #include "AbilitySystemComponent.h"
-#include "BaseCharacter.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Character.h"
-#include "GameFramework/PlayerState.h"
 #include "Player/BasePlayerCharacterState.h"
 
 ABaseCharacterController::ABaseCharacterController()

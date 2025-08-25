@@ -69,12 +69,12 @@ void APlayerCharacter::EquipWeapon(AHoboLeagueWeapon* Weapon)
 
 	if (Data->GetWeaponPrimaryAbility())
 	{
-		HAbilitySystemComponent->GrantItemAbility(EHAbilityInputID::BasicAttack, Data->GetWeaponPrimaryAbility());
+		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::BasicAttack, Data->GetWeaponPrimaryAbility());
 	}
 
 	if (Data->GetWeaponSecondaryAbility())
 	{
-		HAbilitySystemComponent->GrantItemAbility(EHAbilityInputID::SecondaryAttack, Data->GetWeaponSecondaryAbility());
+		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::SecondaryAttack, Data->GetWeaponSecondaryAbility());
 	}
 }
 

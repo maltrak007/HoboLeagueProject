@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "HoboLeagueProject/GAS/HBaseGameplayAbility.h"
+#include "HoboLeagueProject/GAS/GameplayAbilities/HBaseGameplayAbility.h"
 #include "GA_Attack.generated.h"
 
 /**

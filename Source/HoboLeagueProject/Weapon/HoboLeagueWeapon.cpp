@@ -58,6 +58,7 @@ void AHoboLeagueWeapon::ServerPickupWeapon_Implementation(APlayerCharacter* Play
 	AttachToPlayer(Player);
 }
 
+//Improve this method to be more modular and handle more weapon types
 void AHoboLeagueWeapon::AttachToPlayer(APlayerCharacter* Player)
 {
 	if (!Player) return;
