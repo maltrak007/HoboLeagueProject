@@ -6,8 +6,8 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class AHBaseItem;
 class UInputComponent;
-class AHWeapon;
 
 UCLASS()
 class HOBOLEAGUEPROJECT_API APlayerCharacter : public ABaseCharacter
@@ -25,10 +25,10 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 	
-	void EquipWeapon(AHWeapon* Weapon);
+	void EquipItem(AHBaseItem* Item);
 
 	UFUNCTION(Server, Reliable)
-	void Server_EquipWeapon(AHWeapon* Weapon);
+	void Server_EquipItem(AHBaseItem* Item);
 
 protected:
 	// Called when the game starts or when spawned

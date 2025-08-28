@@ -7,8 +7,8 @@
 
 #include "BasePlayerCharacterState.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
-#include "HoboLeagueProject/Item/Weapon/HWeapon.h"
-#include "HoboLeagueProject/Item/Weapon/WeaponDataAsset.h"
+#include "HoboLeagueProject/Item/HBaseItem.h"
+#include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -61,29 +61,29 @@ void APlayerCharacter::InitAbilityActorInfo()
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
 }
 
-void APlayerCharacter::EquipWeapon(AHWeapon* Weapon)
+void APlayerCharacter::EquipItem(AHBaseItem* Item)
 {
-	if (!Weapon || !HAbilitySystemComponent || !Weapon->WeaponData) return;
+	if (!Item || !HAbilitySystemComponent || !Item->ItemData) return;
 	
-	const UWeaponDataAsset* Data = Weapon->WeaponData;
+	const UHBaseItemDataAsset* Data = Item->ItemData;
 
-	if (Data->GetWeaponPrimaryAbility())
+	if (Data->GetItemPrimaryAbility())
 	{
-		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::BasicAttack, Data->GetWeaponPrimaryAbility());
+		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::BasicAttack, Data->GetItemPrimaryAbility());
 	}
 
-	if (Data->GetWeaponSecondaryAbility())
+	if (Data->GetItemSecondaryAbility())
 	{
-		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::SecondaryAttack, Data->GetWeaponSecondaryAbility());
+		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::SecondaryAttack, Data->GetItemSecondaryAbility());
 	}
 }
 
 
-void APlayerCharacter::Server_EquipWeapon_Implementation(AHWeapon* Weapon)	
+void APlayerCharacter::Server_EquipItem_Implementation(AHBaseItem* Item)	
 {
-	if (!Weapon || !HasAuthority()) return;
+	if (!Item || !HasAuthority()) return;
 
-	EquipWeapon(Weapon);
+	EquipItem(Item);
 }
 
 
