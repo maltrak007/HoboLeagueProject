@@ -2,3 +2,10 @@
 
 
 #include "ConsumableDataAsset.h"
+
+#include "HoboLeagueProject/Item/HItemType.h"
+
+UConsumableDataAsset::UConsumableDataAsset()
+{
+	ItemType = EItemType::Consumable;
+}

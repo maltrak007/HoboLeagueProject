@@ -13,8 +13,10 @@ class HOBOLEAGUEPROJECT_API UWeaponDataAsset : public UHBaseItemDataAsset
 	GENERATED_BODY()
 
 public:
+	UWeaponDataAsset();
+	
 	// ======================
-	//   Item Stats
+	//   Weapon Stats
 	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
 	float Damage;

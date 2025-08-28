@@ -7,6 +7,9 @@
 #include "HInventoryComponent.generated.h"
 
 
+enum class EItemType : uint8;
+class AHBaseItem;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HOBOLEAGUEPROJECT_API UHInventoryComponent : public UActorComponent
 {
@@ -19,9 +22,8 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+private:
+	
 
-public:
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
 };

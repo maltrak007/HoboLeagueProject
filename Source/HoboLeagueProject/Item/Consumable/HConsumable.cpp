@@ -18,9 +18,4 @@ void AHConsumable::BeginPlay()
 	
 }
 
-// Called every frame
-void AHConsumable::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
 

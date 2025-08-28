@@ -7,6 +7,7 @@
 #include "Engine/DataAsset.h"
 #include "HBaseItemDataAsset.generated.h"
 
+enum class EItemType : uint8;
 class UTexture2D;
 class USkeletalMesh;
 class UGameplayAbility;
@@ -22,6 +23,12 @@ class HOBOLEAGUEPROJECT_API UHBaseItemDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
+	// ======================
+	//   Item Effects
+	// ======================
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	EItemType ItemType;
+	
 	// ======================
 	//   Item Effects
 	// ======================
