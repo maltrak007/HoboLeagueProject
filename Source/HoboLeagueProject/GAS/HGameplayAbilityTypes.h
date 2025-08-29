@@ -9,11 +9,11 @@ UENUM(BlueprintType)
 enum class EHAbilityInputID : uint8
 {
 	None							UMETA(DisplayName = "None"),
-	BasicAttack						UMETA(DisplayName = "Basic Attack"),
-	SecondaryAttack					UMETA(DisplayName = "Secondary Attack"),
-	AbilityTwo						UMETA(DisplayName = "Ability Two"),
-	AbilityThree					UMETA(DisplayName = "Ability Three"),
-	AbilityFour						UMETA(DisplayName = "Ability Four"),
+	PrimaryAbility					UMETA(DisplayName = "Primary Ability"),
+	SecondaryAbility				UMETA(DisplayName = "Secondary Ability"),
+	MeleeSlot						UMETA(DisplayName = "Melee Slot"),
+	WeaponSlot						UMETA(DisplayName = "Weapon Slot"),
+	ConsumableSlot					UMETA(DisplayName = "Consumable Slot"),
 	AbilityFive						UMETA(DisplayName = "Ability Five"),
 	AbilitySix						UMETA(DisplayName = "Ability Six"),
 	Confirm							UMETA(DisplayName = "Confirm"),

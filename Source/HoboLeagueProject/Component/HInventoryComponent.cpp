@@ -80,9 +80,9 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 
 	//Unbinds them from input
 	if (Item->ItemData->GetItemPrimaryAbility())
-		ASC->UnbindAbilityByInputID(EHAbilityInputID::BasicAttack, Item->ItemData->GetItemPrimaryAbility());
+		ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility, Item->ItemData->GetItemPrimaryAbility());
 	if (Item->ItemData->GetItemSecondaryAbility())
-		ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAttack, Item->ItemData->GetItemSecondaryAbility());
+		ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, Item->ItemData->GetItemSecondaryAbility());
 
 	
 	ItemSlots.Remove(Type);
@@ -123,14 +123,14 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 	EquippedItem = ItemToEquip;
 
 	//Remove old bindings if there were any
-	ASC->UnbindAbilityByInputID(EHAbilityInputID::BasicAttack, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::BasicAttack));
-	ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAttack, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::SecondaryAttack));
+	ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::PrimaryAbility));
+	ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::SecondaryAbility));
 	
 	//Add the new bindings
 	if (ItemToEquip->ItemData->GetItemPrimaryAbility())
-		ASC->BindAbilityToInputID(EHAbilityInputID::BasicAttack, ItemToEquip->ItemData->GetItemPrimaryAbility());
+		ASC->BindAbilityToInputID(EHAbilityInputID::PrimaryAbility, ItemToEquip->ItemData->GetItemPrimaryAbility());
 	if (ItemToEquip->ItemData->GetItemSecondaryAbility())
-		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAttack, ItemToEquip->ItemData->GetItemSecondaryAbility());
+		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
 }
 
 AHBaseItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
