@@ -6,6 +6,7 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class UHInventoryComponent;
 class AHBaseItem;
 class UInputComponent;
 
@@ -25,11 +26,14 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 	
-	void EquipItem(AHBaseItem* Item);
-
 	UFUNCTION(Server, Reliable)
 	void Server_EquipItem(AHBaseItem* Item);
+	
+	void EquipItem(AHBaseItem* Item);
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UHInventoryComponent* InventoryComponent;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

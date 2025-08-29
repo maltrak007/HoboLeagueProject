@@ -43,34 +43,60 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	}
 }
 
-void UHAbilitySystemComponent::GrantAndBindItemAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+// void UHAbilitySystemComponent::GrantAndBindItemAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+// {
+// 	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
+// 	
+// 	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+// 	{
+// 		if (Spec.InputID == static_cast<int32>(InputID))
+// 		{
+// 			Spec.InputID = INDEX_NONE; // Prevent it from triggering
+// 			MarkAbilitySpecDirty(Spec); // Replicate change to clients
+// 		}
+// 	}
+// 	
+// 	GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, static_cast<int32>(InputID), this));
+// }
+//
+// void UHAbilitySystemComponent::RemoveAbilityByInputID(EHAbilityInputID InputID)
+// {
+// 	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+//
+// 	// Loop through all granted abilities and clear the one with the matching InputID
+// 	for (auto It = ActivatableAbilities.Items.CreateIterator(); It; ++It)
+// 	{
+// 		if (It->InputID == static_cast<int32>(InputID))
+// 		{
+// 			ClearAbility(It->Handle); // Removes the ability
+// 			return; // Exit after clearing first match
+// 		}
+// 	}
+// }
+FGameplayAbilitySpecHandle UHAbilitySystemComponent::GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level)
 {
-	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
-	
-	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
-	{
-		if (Spec.InputID == static_cast<int32>(InputID))
-		{
-			Spec.InputID = INDEX_NONE; // Prevent it from triggering
-			MarkAbilitySpecDirty(Spec); // Replicate change to clients
-		}
-	}
-	
-	GiveAbility(FGameplayAbilitySpec(AbilityClass, 1, static_cast<int32>(InputID), this));
+	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return FGameplayAbilitySpecHandle();
+
+	return GiveAbility(FGameplayAbilitySpec(AbilityClass, Level, INDEX_NONE, this));
 }
 
-void UHAbilitySystemComponent::RemoveAbilityByInputID(EHAbilityInputID InputID)
+void UHAbilitySystemComponent::RemoveAbilityByClass(TSubclassOf<UGameplayAbility> AbilityClass)
+{
+	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
+
+	if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromClass(AbilityClass))
+	{
+		ClearAbility(Spec->Handle);
+	}
+}
+
+void UHAbilitySystemComponent::RemoveAllGrantedAbilities()
 {
 	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
-
-	// Loop through all granted abilities and clear the one with the matching InputID
+	
 	for (auto It = ActivatableAbilities.Items.CreateIterator(); It; ++It)
 	{
-		if (It->InputID == static_cast<int32>(InputID))
-		{
-			ClearAbility(It->Handle); // Removes the ability
-			return; // Exit after clearing first match
-		}
+		ClearAbility(It->Handle);
 	}
 }
 

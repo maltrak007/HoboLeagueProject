@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 
 #include "BasePlayerCharacterState.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
@@ -19,6 +20,8 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	bAlwaysRelevant = true;
+
+	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -63,19 +66,10 @@ void APlayerCharacter::InitAbilityActorInfo()
 
 void APlayerCharacter::EquipItem(AHBaseItem* Item)
 {
-	if (!Item || !HAbilitySystemComponent || !Item->ItemData) return;
-	
-	const UHBaseItemDataAsset* Data = Item->ItemData;
+	if (!InventoryComponent || !Item || !Item->ItemData) return;
 
-	if (Data->GetItemPrimaryAbility())
-	{
-		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::BasicAttack, Data->GetItemPrimaryAbility());
-	}
-
-	if (Data->GetItemSecondaryAbility())
-	{
-		HAbilitySystemComponent->GrantAndBindItemAbilityToInputID(EHAbilityInputID::SecondaryAttack, Data->GetItemSecondaryAbility());
-	}
+	EItemType ItemType = Item->ItemData->GetItemType();
+	InventoryComponent->EquipItem(ItemType);
 }
 
 

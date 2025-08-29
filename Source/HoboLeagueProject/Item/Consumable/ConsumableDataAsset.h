@@ -20,9 +20,11 @@ public:
 	// ======================
 	//   Consumable Stats
 	// ======================
-
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
+	int Charges;
+	
 	// ======== GETTERS ========
-
+	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
+	int GetCharges() const { return Charges; }
 
 };

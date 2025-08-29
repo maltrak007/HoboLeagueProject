@@ -8,4 +8,5 @@
 UConsumableDataAsset::UConsumableDataAsset()
 {
 	ItemType = EItemType::Consumable;
+	Charges = 1;
 }

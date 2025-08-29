@@ -18,15 +18,23 @@ public:
 	
 	void ApplyInitialEffects();
 	void GiveInitialAbilities();
-	
+
 	//** Gameplay Abilities Givers and Removers **/
-	void GrantAndBindItemAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
-	void RemoveAbilityByInputID(EHAbilityInputID InputID);
+	UFUNCTION(BlueprintCallable, Category="Abilities")
+	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1);
+	UFUNCTION(BlueprintCallable, Category="Abilities")
+	void RemoveAbilityByClass(TSubclassOf<UGameplayAbility> AbilityClass);
+	UFUNCTION(BlueprintCallable, Category="Abilities")
+	void RemoveAllGrantedAbilities();
 	
 	//** Gameplay Abilities Bindings **/
 	void BindAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
 	void UnbindAbilityByInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
 
+	const TMap<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& GetBasicAbilities() const
+	{
+		return BasicAbilities;
+	}
 private:
 	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;

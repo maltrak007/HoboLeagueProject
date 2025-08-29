@@ -7,6 +7,8 @@
 #include "HInventoryComponent.generated.h"
 
 
+class UHAbilitySystemComponent;
+class APlayerCharacter;
 enum class EItemType : uint8;
 class AHBaseItem;
 
@@ -18,12 +20,34 @@ class HOBOLEAGUEPROJECT_API UHInventoryComponent : public UActorComponent
 public:
 	// Sets default values for this component's properties
 	UHInventoryComponent();
+	
+	/** (replaces old one if same type exists) */
+	void AddItem(AHBaseItem* Item);
 
+	/** Removes item from inventory but does not destroy it, also it will remove the abilities from the player **/
+	void RemoveItem(AHBaseItem* Item);
+
+	/** I will use this method to set the current equipped item and grant abilities to the player **/
+	void EquipItem(EItemType ItemType);
+	
+	/** I will use this method to check if it's nullptr to switch to bare hands in the animation system **/
+	AHBaseItem* GetEquippedItem() const { return EquippedItem; }
+
+	/** I can use this method to compare the object type when im tracing to put in the HUD 'Pick up' or 'Swap ItemType' if there is an existing one **/
+	AHBaseItem* GetItemByType(EItemType ItemType) const;
+	
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
-	
-private:
-	
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+private:
+	UPROPERTY()
+	UHAbilitySystemComponent* ASC = nullptr;
+	
+	/** Stored items */
+	UPROPERTY()
+	TMap<EItemType, AHBaseItem*> ItemSlots;
+	
+	UPROPERTY()
+	AHBaseItem* EquippedItem = nullptr;
 };

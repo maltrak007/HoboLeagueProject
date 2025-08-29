@@ -6,6 +6,7 @@
 #include "HBaseItemDataAsset.h"
 #include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -55,6 +56,7 @@ void AHBaseItem::ServerPickupItem_Implementation(APlayerCharacter* Player)
 	OwningPlayer = Player;
 	bIsItemPickedUp = true;
 
+	Player->InventoryComponent->AddItem(this);
 	Player->Server_EquipItem(this);
 	
 	AttachToPlayer(Player);

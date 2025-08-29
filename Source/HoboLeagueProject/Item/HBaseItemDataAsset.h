@@ -24,10 +24,13 @@ class HOBOLEAGUEPROJECT_API UHBaseItemDataAsset : public UDataAsset
 	GENERATED_BODY()
 public:
 	// ======================
-	//   Item Effects
+	//   Item Data
 	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	EItemType ItemType;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	FText ItemName;
 	
 	// ======================
 	//   Item Effects
@@ -54,6 +57,11 @@ public:
 	TSubclassOf<UGameplayAbility> ItemSecondaryAbility;
 	
 	// ======== GETTERS ========
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const EItemType& GetItemType() const { return ItemType; }
+
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const FText& GetItemName() const { return ItemName; }
 	
 	UFUNCTION(BlueprintPure, Category = "Item|Effects")
 	const FGameplayTagContainer& GetStatusEffect() const { return StatusEffect; }
