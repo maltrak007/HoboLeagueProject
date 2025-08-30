@@ -8,6 +8,7 @@
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
+#include "Net/UnrealNetwork.h"
 
 UHInventoryComponent::UHInventoryComponent()
 {
@@ -18,14 +19,6 @@ UHInventoryComponent::UHInventoryComponent()
 void UHInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
-	{
-		if (PawnOwner->GetPlayerState())
-		{
-			ASC = PawnOwner->GetPlayerState()->FindComponentByClass<UHAbilitySystemComponent>();
-		}
-	}
 }
 
 void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -45,6 +38,8 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 {
 	if (!Item || !Item->ItemData || !ASC) return;
 
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return; 
+	
 	const EItemType Type = Item->ItemData->GetItemType();
 
 	if (AHBaseItem** ExistingItemPtr = ItemSlots.Find(Type))
@@ -55,9 +50,16 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 		}
 	}
 
+	//Update local map
 	ItemSlots.Add(Type, Item);
 
-	// Grant abilities to player
+	// Update replication array
+	FItemSlotRep NewSlot;
+	NewSlot.ItemType = Type;
+	NewSlot.Item = Item;
+	ReplicatedSlots.Add(NewSlot);
+	
+	//Grant abilities to player
 	if (Item->ItemData->GetItemPrimaryAbility())
 		ASC->GrantAbility(Item->ItemData->GetItemPrimaryAbility());
 	if (Item->ItemData->GetItemSecondaryAbility())
@@ -70,6 +72,8 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 {
 	if (!Item || !Item->ItemData || !ASC) return;
 
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+	
 	const EItemType Type = Item->ItemData->GetItemType();
 
 	//Removes the player abilities that were granted from the player character 
@@ -84,9 +88,15 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 	if (Item->ItemData->GetItemSecondaryAbility())
 		ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, Item->ItemData->GetItemSecondaryAbility());
 
-	
+	//Remove from local map
 	ItemSlots.Remove(Type);
 
+	//Remove from replicated array
+	ReplicatedSlots.RemoveAll([Type](const FItemSlotRep& Slot)
+	{
+		return Slot.ItemType == Type;
+	});
+	
 	// Detach actor from player
 	Item->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	Item->SetOwner(nullptr);
@@ -122,6 +132,27 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 
 	EquippedItem = ItemToEquip;
 
+	HandleEquipBindings(EquippedItem);
+}
+
+AHBaseItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
+{
+	return ItemSlots.FindRef(ItemType);
+}
+
+void UHInventoryComponent::InitASC()
+{
+	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
+	{
+		if (APlayerState* PS = PawnOwner->GetPlayerState())
+		{
+			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
+		}
+	}
+}
+
+void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
+{
 	//Remove old bindings if there were any
 	ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::PrimaryAbility));
 	ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::SecondaryAbility));
@@ -133,7 +164,26 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
 }
 
-AHBaseItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
+void UHInventoryComponent::OnRep_ItemSlots()
 {
-	return ItemSlots.FindRef(ItemType);
+	// Aquí el cliente puede refrescar UI (inventario visual).
+	ItemSlots.Empty();
+	for (const FItemSlotRep& Slot : ReplicatedSlots)
+	{
+		ItemSlots.Add(Slot.ItemType, Slot.Item);
+	}
+}
+
+void UHInventoryComponent::OnRep_EquippedItem()
+{
+	// Cliente actualiza bindings/input visualmente
+	HandleEquipBindings(EquippedItem);
+}
+
+void  UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UHInventoryComponent, ReplicatedSlots);
+	DOREPLIFETIME(UHInventoryComponent, EquippedItem);
 }

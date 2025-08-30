@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 
 #include "BasePlayerCharacterState.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
@@ -20,7 +21,7 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 	bAlwaysRelevant = true;
-
+	
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 }
 
@@ -42,6 +43,12 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	Super::PossessedBy(NewController);
 	//Server side init
 	InitAbilityActorInfo();
+	
+	if (InventoryComponent)
+	{
+		InventoryComponent->InitASC(); 
+	}
+	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
 }
@@ -51,6 +58,14 @@ void APlayerCharacter::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 	//Client side init
 	InitAbilityActorInfo();
+
+	if (InventoryComponent)
+	{
+		InventoryComponent->InitASC(); 
+	}
+
+	HAbilitySystemComponent->ApplyInitialEffects();
+	HAbilitySystemComponent->GiveInitialAbilities();
 }
 
 void APlayerCharacter::InitAbilityActorInfo()

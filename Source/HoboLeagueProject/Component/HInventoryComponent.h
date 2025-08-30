@@ -12,6 +12,18 @@ class APlayerCharacter;
 enum class EItemType : uint8;
 class AHBaseItem;
 
+USTRUCT(BlueprintType)
+struct FItemSlotRep
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EItemType ItemType;
+
+	UPROPERTY()
+	AHBaseItem* Item;
+};
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HOBOLEAGUEPROJECT_API UHInventoryComponent : public UActorComponent
 {
@@ -20,6 +32,10 @@ class HOBOLEAGUEPROJECT_API UHInventoryComponent : public UActorComponent
 public:
 	// Sets default values for this component's properties
 	UHInventoryComponent();
+
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	/** (replaces old one if same type exists) */
 	void AddItem(AHBaseItem* Item);
@@ -36,18 +52,36 @@ public:
 	/** I can use this method to compare the object type when im tracing to put in the HUD 'Pick up' or 'Swap ItemType' if there is an existing one **/
 	AHBaseItem* GetItemByType(EItemType ItemType) const;
 	
-protected:
-	virtual void BeginPlay() override;
+	void InitASC();
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-private:
+protected:
+	void HandleEquipBindings(AHBaseItem* ItemToEquip);
+	
+	UFUNCTION()
+	void OnRep_ItemSlots();
+	
+	UFUNCTION()
+	void OnRep_EquippedItem();
+	
 	UPROPERTY()
 	UHAbilitySystemComponent* ASC = nullptr;
 	
 	/** Stored items */
+	
+	//Local representation of the inventory, not replicated
 	UPROPERTY()
 	TMap<EItemType, AHBaseItem*> ItemSlots;
 	
-	UPROPERTY()
+	//Replicated representation of the inventory
+	//Necessary because TMap is not natively supported for replication
+	//Study the FFastArraySerializer for better performance with large arrays
+	UPROPERTY(ReplicatedUsing=OnRep_ItemSlots)
+	TArray<FItemSlotRep> ReplicatedSlots;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_EquippedItem)
 	AHBaseItem* EquippedItem = nullptr;
+	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+private:
+	
 };
