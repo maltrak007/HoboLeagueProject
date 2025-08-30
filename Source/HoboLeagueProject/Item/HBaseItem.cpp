@@ -71,7 +71,9 @@ void AHBaseItem::AttachToPlayer(APlayerCharacter* Player)
 	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// Attach to the player's mesh socket
-	AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponSocket"));
+	FString SocketNameStr = ItemData->GetItemName().ToString() + TEXT("Socket");
+	FName SocketName(*SocketNameStr);
+	AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 }
 
 void AHBaseItem::OnRep_IsItemPickedUp()

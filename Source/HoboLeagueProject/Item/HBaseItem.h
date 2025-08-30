@@ -19,16 +19,21 @@ public:
 	// Sets default values for this actor's properties
 	AHBaseItem();
 	
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
 	UHBaseItemDataAsset* ItemData;
-	
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
+	UPROPERTY(ReplicatedUsing = OnRep_IsItemPickedUp)
+	bool bIsItemPickedUp = false;
+	
+	/** Player that owns this weapon (replicated) */
+	UPROPERTY(Replicated)
+	APlayerCharacter* OwningPlayer;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+	UStaticMeshComponent* ItemMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	USphereComponent* CollisionSphere;
 
 	UFUNCTION()
 	void OnItemOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -44,19 +49,11 @@ protected:
 	/** Called when bIsPickedUp changes on clients */
 	UFUNCTION()
 	void OnRep_IsItemPickedUp();
-	
-private:
-	
-	UPROPERTY(ReplicatedUsing = OnRep_IsItemPickedUp)
-	bool bIsItemPickedUp = false;
-	
-	/** Player that owns this weapon (replicated) */
-	UPROPERTY(Replicated)
-	APlayerCharacter* OwningPlayer;
-	
-	UPROPERTY(VisibleAnywhere, Category = "Item")
-	UStaticMeshComponent* ItemMesh;
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	USphereComponent* CollisionSphere;
+	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

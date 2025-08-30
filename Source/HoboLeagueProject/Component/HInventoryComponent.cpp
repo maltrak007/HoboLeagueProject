@@ -3,7 +3,9 @@
 
 #include "HInventoryComponent.h"
 
+#include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
+#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemType.h"
@@ -101,7 +103,24 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 	Item->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	Item->SetOwner(nullptr);
 	Item->SetActorEnableCollision(true);
+	
+	Item->bIsItemPickedUp = false;
+	Item->OwningPlayer = nullptr;
 
+	// Temporarily disable overlap to prevent instant pickup
+	Item->CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Restore collision after short delay
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [Item]()
+	{
+		if (IsValid(Item))
+		{
+			Item->CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+	}, 0.5f, false); // 0.5 seconds can be adjusted
+
+	
 	// Si estaba equipado, limpia la referencia
 	if (EquippedItem == Item) EquippedItem = nullptr;
 	
