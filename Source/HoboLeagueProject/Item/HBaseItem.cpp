@@ -9,11 +9,9 @@
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "Net/UnrealNetwork.h"
 
-
 // Sets default values
 AHBaseItem::AHBaseItem()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
@@ -57,12 +55,10 @@ void AHBaseItem::ServerPickupItem_Implementation(APlayerCharacter* Player)
 	bIsItemPickedUp = true;
 
 	Player->InventoryComponent->AddItem(this);
-	Player->Server_EquipItem(this);
 	
 	AttachToPlayer(Player);
 }
 
-//Improve this method to be more modular and handle more weapon types
 void AHBaseItem::AttachToPlayer(APlayerCharacter* Player)
 {
 	if (!Player) return;
@@ -74,6 +70,35 @@ void AHBaseItem::AttachToPlayer(APlayerCharacter* Player)
 	FString SocketNameStr = ItemData->GetItemName().ToString() + TEXT("Socket");
 	FName SocketName(*SocketNameStr);
 	AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+}
+
+void AHBaseItem::DetachFromPlayer()
+{
+	// Detach actor from player
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	SetOwner(nullptr);
+	SetActorEnableCollision(true);
+
+	bIsItemPickedUp = false;
+	OwningPlayer = nullptr;
+
+	// Temporarily disable overlap to prevent instant pickup
+	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// Restore collision after short delay
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		if (IsValid(this))
+		{
+			CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+	}, 0.5f, false);
+}
+
+void AHBaseItem::PutInHolster()
+{
+	
 }
 
 void AHBaseItem::OnRep_IsItemPickedUp()

@@ -26,11 +26,6 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 	
-	UFUNCTION(Server, Reliable)
-	void Server_EquipItem(AHBaseItem* Item);
-	
-	void EquipItem(AHBaseItem* Item);
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UHInventoryComponent* InventoryComponent;
 	

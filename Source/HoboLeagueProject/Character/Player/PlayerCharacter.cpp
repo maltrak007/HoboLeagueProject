@@ -6,13 +6,8 @@
 #include "AbilitySystemComponent.h"
 
 #include "BasePlayerCharacterState.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
-#include "HoboLeagueProject/Item/HBaseItem.h"
-#include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
-#include "Net/UnrealNetwork.h"
-
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -29,7 +24,6 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
@@ -38,30 +32,32 @@ void APlayerCharacter::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+//Server side init
 void APlayerCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	//Server side init
+
 	InitAbilityActorInfo();
 	
 	if (InventoryComponent)
 	{
-		InventoryComponent->InitASC(); 
+		InventoryComponent->LinkAbilitySystemComponent(); 
 	}
 	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
 }
 
+//Client side init
 void APlayerCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	//Client side init
+
 	InitAbilityActorInfo();
 
 	if (InventoryComponent)
 	{
-		InventoryComponent->InitASC(); 
+		InventoryComponent->LinkAbilitySystemComponent(); 
 	}
 
 	HAbilitySystemComponent->ApplyInitialEffects();
@@ -77,22 +73,6 @@ void APlayerCharacter::InitAbilityActorInfo()
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
 	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
-}
-
-void APlayerCharacter::EquipItem(AHBaseItem* Item)
-{
-	if (!InventoryComponent || !Item || !Item->ItemData) return;
-
-	EItemType ItemType = Item->ItemData->GetItemType();
-	InventoryComponent->EquipItem(ItemType);
-}
-
-
-void APlayerCharacter::Server_EquipItem_Implementation(AHBaseItem* Item)	
-{
-	if (!Item || !HasAuthority()) return;
-
-	EquipItem(Item);
 }
 
 

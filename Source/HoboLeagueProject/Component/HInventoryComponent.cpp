@@ -7,6 +7,7 @@
 #include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
+#include "HoboLeagueProject/GAS/GameplayAbilities/Abilities/GA_Attack.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
@@ -40,8 +41,8 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 {
 	if (!Item || !Item->ItemData || !ASC) return;
 
-	if (!GetOwner() || !GetOwner()->HasAuthority()) return; 
-	
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+
 	const EItemType Type = Item->ItemData->GetItemType();
 
 	if (AHBaseItem** ExistingItemPtr = ItemSlots.Find(Type))
@@ -52,7 +53,7 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 		}
 	}
 
-	//Update local map
+	// Update local map
 	ItemSlots.Add(Type, Item);
 
 	// Update replication array
@@ -60,14 +61,17 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 	NewSlot.ItemType = Type;
 	NewSlot.Item = Item;
 	ReplicatedSlots.Add(NewSlot);
-	
-	//Grant abilities to player
+
+	// Grant abilities to player
 	if (Item->ItemData->GetItemPrimaryAbility())
 		ASC->GrantAbility(Item->ItemData->GetItemPrimaryAbility());
 	if (Item->ItemData->GetItemSecondaryAbility())
 		ASC->GrantAbility(Item->ItemData->GetItemSecondaryAbility());
 
-	EquipItem(Type);
+	if (bAutoEquipItem)
+	{
+		EquipItem(Type);
+	}
 }
 
 void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
@@ -75,55 +79,35 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 	if (!Item || !Item->ItemData || !ASC) return;
 
 	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
-	
+
 	const EItemType Type = Item->ItemData->GetItemType();
 
-	//Removes the player abilities that were granted from the player character 
+	// Removes the player abilities that were granted from the player character 
 	if (Item->ItemData->GetItemPrimaryAbility())
 		ASC->RemoveAbilityByClass(Item->ItemData->GetItemPrimaryAbility());
 	if (Item->ItemData->GetItemSecondaryAbility())
 		ASC->RemoveAbilityByClass(Item->ItemData->GetItemSecondaryAbility());
 
-	//Unbinds them from input
+	// Unbinds them from input
 	if (Item->ItemData->GetItemPrimaryAbility())
 		ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility, Item->ItemData->GetItemPrimaryAbility());
 	if (Item->ItemData->GetItemSecondaryAbility())
 		ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, Item->ItemData->GetItemSecondaryAbility());
 
-	//Remove from local map
+	// Remove from local map
 	ItemSlots.Remove(Type);
 
-	//Remove from replicated array
+	// Remove from replicated array
 	ReplicatedSlots.RemoveAll([Type](const FItemSlotRep& Slot)
 	{
 		return Slot.ItemType == Type;
 	});
-	
-	// Detach actor from player
-	Item->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	Item->SetOwner(nullptr);
-	Item->SetActorEnableCollision(true);
-	
-	Item->bIsItemPickedUp = false;
-	Item->OwningPlayer = nullptr;
 
-	// Temporarily disable overlap to prevent instant pickup
-	Item->CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Item->DetachFromPlayer();
 
-	// Restore collision after short delay
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [Item]()
-	{
-		if (IsValid(Item))
-		{
-			Item->CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-		}
-	}, 0.5f, false); // 0.5 seconds can be adjusted
-
-	
-	// Si estaba equipado, limpia la referencia
+	// Refresh the reference
 	if (EquippedItem == Item) EquippedItem = nullptr;
-	
+
 	// Auto-equip another item if available
 	for (auto& Pair : ItemSlots)
 	{
@@ -133,18 +117,40 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 			return;
 		}
 	}
-	
-	// Si no quedan items, bind de habilidades básicas
-	for (auto& Pair : ASC->GetBasicAbilities())
-	{
-		if (Pair.Value)
-			ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
-	}
+
+	// Si no quedan items, bind de habilidades básicas 
+	// for (auto& Pair : ASC->GetBasicAbilities())
+	// {
+	// 	if (Pair.Value)
+	// 		ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
+	// }
 }
 
 void UHInventoryComponent::EquipItem(EItemType ItemType)
 {
 	if (!ASC) return;
+
+	if (ItemType == EItemType::Melee)
+	{
+		if (EquippedItem)
+		{
+			if (EquippedItem->ItemData->GetItemPrimaryAbility())
+				ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility,
+				                            EquippedItem->ItemData->GetItemPrimaryAbility());
+			if (EquippedItem->ItemData->GetItemSecondaryAbility())
+				ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility,
+				                            EquippedItem->ItemData->GetItemSecondaryAbility());
+		}
+		EquippedItem = nullptr; // no actual item
+
+		for (auto& Pair : ASC->GetBasicAbilities())
+		{
+			if (Pair.Value == UGA_Attack::StaticClass()) continue; // Avoid binding the attack ability twice
+			ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
+		}
+
+		return;
+	}
 
 	AHBaseItem* ItemToEquip = GetItemByType(ItemType);
 	if (!ItemToEquip) return;
@@ -159,7 +165,7 @@ AHBaseItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
 	return ItemSlots.FindRef(ItemType);
 }
 
-void UHInventoryComponent::InitASC()
+void UHInventoryComponent::LinkAbilitySystemComponent()
 {
 	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
 	{
@@ -172,11 +178,13 @@ void UHInventoryComponent::InitASC()
 
 void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
 {
-	//Remove old bindings if there were any
-	ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::PrimaryAbility));
-	ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, ASC->GetBasicAbilities().FindRef(EHAbilityInputID::SecondaryAbility));
-	
-	//Add the new bindings
+	// Remove old bindings if there were any
+	ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility,
+	                            ASC->GetBasicAbilities().FindRef(EHAbilityInputID::PrimaryAbility));
+	ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility,
+	                            ASC->GetBasicAbilities().FindRef(EHAbilityInputID::SecondaryAbility));
+
+	// Add the new bindings
 	if (ItemToEquip->ItemData->GetItemPrimaryAbility())
 		ASC->BindAbilityToInputID(EHAbilityInputID::PrimaryAbility, ItemToEquip->ItemData->GetItemPrimaryAbility());
 	if (ItemToEquip->ItemData->GetItemSecondaryAbility())
@@ -195,11 +203,11 @@ void UHInventoryComponent::OnRep_ItemSlots()
 
 void UHInventoryComponent::OnRep_EquippedItem()
 {
-	// Cliente actualiza bindings/input visualmente
+	// Client actualize and bind the abilities
 	HandleEquipBindings(EquippedItem);
 }
 
-void  UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

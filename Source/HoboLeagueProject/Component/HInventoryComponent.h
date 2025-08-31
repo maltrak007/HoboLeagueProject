@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "HInventoryComponent.generated.h"
 
-
 class UHAbilitySystemComponent;
 class APlayerCharacter;
 enum class EItemType : uint8;
@@ -36,7 +35,7 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
+
 	/** (replaces old one if same type exists) */
 	void AddItem(AHBaseItem* Item);
 
@@ -45,43 +44,49 @@ public:
 
 	/** I will use this method to set the current equipped item and grant abilities to the player **/
 	void EquipItem(EItemType ItemType);
+
+	/** Iterates inside the TMap looking for the next position available and if its possible put the actual equippedItem as selected **/
+	//void QuickSwapItem(EItemType Item);
 	
 	/** I will use this method to check if it's nullptr to switch to bare hands in the animation system **/
 	AHBaseItem* GetEquippedItem() const { return EquippedItem; }
 
 	/** I can use this method to compare the object type when im tracing to put in the HUD 'Pick up' or 'Swap ItemType' if there is an existing one **/
 	AHBaseItem* GetItemByType(EItemType ItemType) const;
-	
-	void InitASC();
+
+	void LinkAbilitySystemComponent();
 
 protected:
-	void HandleEquipBindings(AHBaseItem* ItemToEquip);
-	
-	UFUNCTION()
-	void OnRep_ItemSlots();
-	
-	UFUNCTION()
-	void OnRep_EquippedItem();
-	
 	UPROPERTY()
 	UHAbilitySystemComponent* ASC = nullptr;
-	
+
 	/** Stored items */
-	
+
 	//Local representation of the inventory, not replicated
 	UPROPERTY()
 	TMap<EItemType, AHBaseItem*> ItemSlots;
-	
+
 	//Replicated representation of the inventory
 	//Necessary because TMap is not natively supported for replication
 	//Study the FFastArraySerializer for better performance with large arrays
 	UPROPERTY(ReplicatedUsing=OnRep_ItemSlots)
 	TArray<FItemSlotRep> ReplicatedSlots;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedItem)
 	AHBaseItem* EquippedItem = nullptr;
+
+	/** Setting if the item is auto-equipped when picked up **/
+	UPROPERTY(EditDefaultsOnly)
+	bool bAutoEquipItem = false;
 	
+	void HandleEquipBindings(AHBaseItem* ItemToEquip);
+	
+	UFUNCTION()
+	void OnRep_ItemSlots();
+
+	
+	UFUNCTION()
+	void OnRep_EquippedItem();
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-private:
-	
 };
