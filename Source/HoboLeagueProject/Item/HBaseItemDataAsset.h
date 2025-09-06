@@ -7,6 +7,8 @@
 #include "Engine/DataAsset.h"
 #include "HBaseItemDataAsset.generated.h"
 
+enum class EItemSize : uint8;
+enum class ERarityType : uint8;
 enum class EItemType : uint8;
 class UTexture2D;
 class USkeletalMesh;
@@ -30,6 +32,12 @@ public:
 	EItemType ItemType;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	ERarityType ItemRarity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	EItemSize ItemSize;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	FText ItemName;
 	
 	// ======================
@@ -47,6 +55,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
 	UStaticMesh* ItemMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
+	USkeletalMesh* ItemSkeletalMesh;
+	
 	// ======================
 	//   Abilities
 	// ======================
@@ -62,6 +73,12 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const FText& GetItemName() const { return ItemName; }
+
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const ERarityType& GetItemRarity() const { return ItemRarity; }
+
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const EItemSize& GetItemSize() const { return ItemSize; }
 	
 	UFUNCTION(BlueprintPure, Category = "Item|Effects")
 	const FGameplayTagContainer& GetStatusEffect() const { return StatusEffect; }
@@ -71,6 +88,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Item|Visual")
 	UStaticMesh* GetItemMesh() const { return ItemMesh; }
+
+	UFUNCTION(BlueprintPure, Category = "Item|Visual")
+	USkeletalMesh* GetItemSkeletalMesh() const { return ItemSkeletalMesh; }
 
 	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
 	TSubclassOf<UGameplayAbility> GetItemPrimaryAbility() const { return ItemPrimaryAbility; }

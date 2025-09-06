@@ -31,6 +31,7 @@ AHBaseItem::AHBaseItem()
 void AHBaseItem::BeginPlay()
 {
 	Super::BeginPlay();
+	//TODO::REPLACE THIS FOR THE SKELETAL OR THE STATIC MESH FROM THE DATA ASSET
 	ItemMesh->SetStaticMesh(ItemData ? ItemData->GetItemMesh(): nullptr);
 }
 
@@ -56,18 +57,20 @@ void AHBaseItem::ServerPickupItem_Implementation(APlayerCharacter* Player)
 
 	Player->InventoryComponent->AddItem(this);
 	
-	AttachToPlayer(Player);
+	AttachToHolsterSocket(Player);
 }
 
-void AHBaseItem::AttachToPlayer(APlayerCharacter* Player)
+void AHBaseItem::AttachToHolsterSocket(APlayerCharacter* Player)
 {
 	if (!Player) return;
-
+	
+	//TODO::SUBSTITUE FOR THE INTERACTION COMPONENT
 	// Disable collision so it can't be picked twice
 	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	FString EnumAsNumber = FString::FromInt((uint8)ItemData->GetItemSize());
 	// Attach to the player's mesh socket
-	FString SocketNameStr = ItemData->GetItemName().ToString() + TEXT("Socket");
+	FString SocketNameStr = ItemData->GetItemName().ToString()+ TEXT("_") + EnumAsNumber + TEXT("_HolsterSocket");
 	FName SocketName(*SocketNameStr);
 	AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 }
@@ -85,6 +88,7 @@ void AHBaseItem::DetachFromPlayer()
 	// Temporarily disable overlap to prevent instant pickup
 	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
+	//TODO::SUBSTITUE FOR THE INTERACTION COMPONENT
 	// Restore collision after short delay
 	FTimerHandle TimerHandle;
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
@@ -96,16 +100,25 @@ void AHBaseItem::DetachFromPlayer()
 	}, 0.5f, false);
 }
 
-void AHBaseItem::PutInHolster()
+void AHBaseItem::AttachToActiveSocket(APlayerCharacter* Player)
 {
-	
+	if (!Player) return;
+	//TODO::SUBSTITUE FOR THE INTERACTION COMPONENT
+	// Disable collision so it can't be picked twice
+	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	FString EnumAsNumber = FString::FromInt((uint8)ItemData->GetItemSize());
+	// Attach to the player's mesh socket
+	FString SocketNameStr = ItemData->GetItemName().ToString()+ TEXT("_") + EnumAsNumber + TEXT("_ActiveSocket");
+	FName SocketName(*SocketNameStr);
+	AttachToComponent(Player->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 }
 
 void AHBaseItem::OnRep_IsItemPickedUp()
 {
 	if (bIsItemPickedUp && OwningPlayer)
 	{
-		AttachToPlayer(OwningPlayer);
+		AttachToHolsterSocket(OwningPlayer);
 	}
 }
 

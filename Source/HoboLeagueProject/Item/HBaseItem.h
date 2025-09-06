@@ -38,12 +38,15 @@ public:
 	UFUNCTION()
 	void OnItemOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
-	void AttachToPlayer(APlayerCharacter* Player);
 
+	/** Attach the item to the player's mesh HOLSTER socket */
+	void AttachToHolsterSocket(APlayerCharacter* Player);
+
+	/** Detach the item from the player and enable collision */
 	void DetachFromPlayer();
-	
-	void PutInHolster();
+
+	/** Put the item in the player current ACTIVE socket */
+	void AttachToActiveSocket(APlayerCharacter* Player);
 
 	/** Server RPC to handle pickup */
 	UFUNCTION(Server, Reliable)

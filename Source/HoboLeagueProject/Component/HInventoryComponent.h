@@ -36,10 +36,10 @@ public:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	/** (replaces old one if same type exists) */
+	/** Add the abilities that the item holds and adds it to the TMap */
 	void AddItem(AHBaseItem* Item);
 
-	/** Removes item from inventory but does not destroy it, also it will remove the abilities from the player **/
+	/** Removes item from inventory but does not destroy it, also it will remove the abilities and binds from the player **/
 	void RemoveItem(AHBaseItem* Item);
 
 	/** I will use this method to set the current equipped item and grant abilities to the player **/
@@ -54,6 +54,7 @@ public:
 	/** I can use this method to compare the object type when im tracing to put in the HUD 'Pick up' or 'Swap ItemType' if there is an existing one **/
 	AHBaseItem* GetItemByType(EItemType ItemType) const;
 
+	/** Link the Ability System Component from the player state **/
 	void LinkAbilitySystemComponent();
 
 protected:

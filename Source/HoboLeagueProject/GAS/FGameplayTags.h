@@ -46,6 +46,9 @@ public:
 	FGameplayTag Abilities_UseConsumable;
 	FGameplayTag Abilities_PickUp;
 	FGameplayTag Abilities_DropDown;
+	FGameplayTag Abilities_MSwapItem;
+	FGameplayTag Abilities_WSwapItem;
+	FGameplayTag Abilities_CSwapItem;
 
 	//**************************************************************
 	//     ****************************************************

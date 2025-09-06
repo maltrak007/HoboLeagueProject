@@ -11,14 +11,14 @@ UHAbilitySystemComponent::UHAbilitySystemComponent()
 
 void UHAbilitySystemComponent::ApplyInitialEffects()
 {
-	if(!GetOwner() || !GetOwner()->HasAuthority()) return;
-	
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+
 	for (const TSubclassOf<UGameplayEffect>& Effect : InitialEffects)
 	{
 		if (Effect)
 		{
 			//Permite la creación de un FGameplayeffectSpectHandle por lo que podemos pasarle parametros.
-			FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(Effect,1,MakeEffectContext());
+			FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(Effect, 1, MakeEffectContext());
 			ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 		}
 	}
@@ -26,24 +26,25 @@ void UHAbilitySystemComponent::ApplyInitialEffects()
 
 void UHAbilitySystemComponent::GiveInitialAbilities()
 {
-	if(!GetOwner() || !GetOwner()->HasAuthority())
+	if (!GetOwner() || !GetOwner()->HasAuthority())
 	{
 		return;
 	}
 
 	//Vincular las habilidades al input mediante un mapa
-	for(const TPair <EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : Abilities)
+	for (const TPair<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : Abilities)
 	{
-		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 0.0f, (int32)AbilityPair.Key,nullptr));
+		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 0.0f, (int32)AbilityPair.Key, nullptr));
 	}
 
-	for(const TPair <EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : BasicAbilities)
+	for (const TPair<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : BasicAbilities)
 	{
-		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 1.0f, (int32)AbilityPair.Key,nullptr));
+		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 1.0f, (int32)AbilityPair.Key, nullptr));
 	}
 }
 
-FGameplayAbilitySpecHandle UHAbilitySystemComponent::GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level)
+FGameplayAbilitySpecHandle UHAbilitySystemComponent::GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass,
+                                                                  int32 Level)
 {
 	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return FGameplayAbilitySpecHandle();
 
@@ -63,17 +64,18 @@ void UHAbilitySystemComponent::RemoveAbilityByClass(TSubclassOf<UGameplayAbility
 void UHAbilitySystemComponent::RemoveAllGrantedAbilities()
 {
 	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
-	
+
 	for (auto It = ActivatableAbilities.Items.CreateIterator(); It; ++It)
 	{
 		ClearAbility(It->Handle);
 	}
 }
 
-void UHAbilitySystemComponent::BindAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+void UHAbilitySystemComponent::BindAbilityToInputID(EHAbilityInputID InputID,
+                                                    TSubclassOf<UGameplayAbility> AbilityClass)
 {
 	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
-	
+
 	if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromClass(AbilityClass))
 	{
 		Spec->InputID = static_cast<int32>(InputID);
@@ -81,7 +83,8 @@ void UHAbilitySystemComponent::BindAbilityToInputID(EHAbilityInputID InputID, TS
 	}
 }
 
-void UHAbilitySystemComponent::UnbindAbilityByInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass)
+void UHAbilitySystemComponent::UnbindAbilityByInputID_Class(EHAbilityInputID InputID,
+                                                            TSubclassOf<UGameplayAbility> AbilityClass)
 {
 	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
 
@@ -98,6 +101,19 @@ void UHAbilitySystemComponent::UnbindAbilityByInputID(EHAbilityInputID InputID, 
 	}
 }
 
+void UHAbilitySystemComponent::UnbindAllAbilitiesFromInputID(EHAbilityInputID InputID)
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
 
+	const int32 TargetID = static_cast<int32>(InputID);
 
-
+	// Iterate over all granted abilities
+	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+	{
+		if (Spec.InputID == TargetID)
+		{
+			Spec.InputID = INDEX_NONE; // Clear the binding
+			MarkAbilitySpecDirty(Spec); // Ensure replication to clients
+		}
+	}
+}

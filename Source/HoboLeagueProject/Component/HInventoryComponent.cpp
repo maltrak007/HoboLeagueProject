@@ -45,6 +45,7 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 
 	const EItemType Type = Item->ItemData->GetItemType();
 
+	//If exists remove it from the inventory
 	if (AHBaseItem** ExistingItemPtr = ItemSlots.Find(Type))
 	{
 		if (*ExistingItemPtr)
@@ -68,6 +69,7 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 	if (Item->ItemData->GetItemSecondaryAbility())
 		ASC->GrantAbility(Item->ItemData->GetItemSecondaryAbility());
 
+	//** ACTIVATE IT IN PLAYER_SETTINGS **//
 	if (bAutoEquipItem)
 	{
 		EquipItem(Type);
@@ -80,7 +82,30 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 
 	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
 
-	const EItemType Type = Item->ItemData->GetItemType();
+	//* If the item being removed is the currently equipped one, we need to unbind its abilities *//
+	if (Item == EquippedItem)
+	{
+		// Unbinds them from input
+		if (Item->ItemData->GetItemPrimaryAbility())
+			ASC->UnbindAbilityByInputID_Class(EHAbilityInputID::PrimaryAbility,
+			                                  Item->ItemData->GetItemPrimaryAbility());
+		if (Item->ItemData->GetItemSecondaryAbility())
+			ASC->UnbindAbilityByInputID_Class(EHAbilityInputID::SecondaryAbility,
+			                                  Item->ItemData->GetItemSecondaryAbility());
+
+		//Update the reference
+		EquippedItem = nullptr;
+
+		// Auto-equip another item if available
+		for (auto& Pair : ItemSlots)
+		{
+			if (Pair.Value)
+			{
+				EquipItem(Pair.Key);
+				break;
+			}
+		}
+	}
 
 	// Removes the player abilities that were granted from the player character 
 	if (Item->ItemData->GetItemPrimaryAbility())
@@ -88,11 +113,7 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 	if (Item->ItemData->GetItemSecondaryAbility())
 		ASC->RemoveAbilityByClass(Item->ItemData->GetItemSecondaryAbility());
 
-	// Unbinds them from input
-	if (Item->ItemData->GetItemPrimaryAbility())
-		ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility, Item->ItemData->GetItemPrimaryAbility());
-	if (Item->ItemData->GetItemSecondaryAbility())
-		ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility, Item->ItemData->GetItemSecondaryAbility());
+	const EItemType Type = Item->ItemData->GetItemType();
 
 	// Remove from local map
 	ItemSlots.Remove(Type);
@@ -103,61 +124,80 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 		return Slot.ItemType == Type;
 	});
 
-	Item->DetachFromPlayer();
-
-	// Refresh the reference
-	if (EquippedItem == Item) EquippedItem = nullptr;
-
-	// Auto-equip another item if available
-	for (auto& Pair : ItemSlots)
+	// If no items are left, bind the basic abilities (Melee)
+	if (ItemSlots.IsEmpty())
 	{
-		if (Pair.Value)
+		for (auto& Pair : ASC->GetBasicAbilities())
 		{
-			EquipItem(Pair.Key);
-			return;
+			if (Pair.Value)
+				ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
 		}
 	}
 
-	// Si no quedan items, bind de habilidades básicas 
-	// for (auto& Pair : ASC->GetBasicAbilities())
-	// {
-	// 	if (Pair.Value)
-	// 		ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
-	// }
+	Item->DetachFromPlayer();
 }
 
 void UHInventoryComponent::EquipItem(EItemType ItemType)
 {
 	if (!ASC) return;
 
-	if (ItemType == EItemType::Melee)
-	{
-		if (EquippedItem)
-		{
-			if (EquippedItem->ItemData->GetItemPrimaryAbility())
-				ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility,
-				                            EquippedItem->ItemData->GetItemPrimaryAbility());
-			if (EquippedItem->ItemData->GetItemSecondaryAbility())
-				ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility,
-				                            EquippedItem->ItemData->GetItemSecondaryAbility());
-		}
-		EquippedItem = nullptr; // no actual item
+	AHBaseItem* ItemToEquip = GetItemByType(ItemType);
 
+	if (!ItemToEquip)
+	{
+		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
+		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
 		for (auto& Pair : ASC->GetBasicAbilities())
 		{
-			if (Pair.Value == UGA_Attack::StaticClass()) continue; // Avoid binding the attack ability twice
-			ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
+			if (Pair.Value)
+				ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
 		}
-
+		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
+		EquippedItem = nullptr;
 		return;
 	}
 
-	AHBaseItem* ItemToEquip = GetItemByType(ItemType);
-	if (!ItemToEquip) return;
+	if (EquippedItem != nullptr)
+	{
+		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
+	}
 
+	HandleEquipBindings(ItemToEquip);
+}
+
+void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
+{
+	if (!ASC || !ItemToEquip) return;
+
+	// Already equipped? Do nothing
+	if (EquippedItem == ItemToEquip)
+	{
+		return;
+	}
+
+	// Unbind previous equipped item’s abilities if any
+	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
+	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
+	
 	EquippedItem = ItemToEquip;
 
-	HandleEquipBindings(EquippedItem);
+	// Bind the new abilities
+	if (ItemToEquip->ItemData->GetItemPrimaryAbility())
+		ASC->BindAbilityToInputID(EHAbilityInputID::PrimaryAbility, ItemToEquip->ItemData->GetItemPrimaryAbility());
+	if (ItemToEquip->ItemData->GetItemSecondaryAbility())
+		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
+
+	EquippedItem->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
+}
+
+void UHInventoryComponent::OnRep_ItemSlots()
+{
+	// Aquí el cliente puede refrescar UI (inventario visual).
+	ItemSlots.Empty();
+	for (const FItemSlotRep& Slot : ReplicatedSlots)
+	{
+		ItemSlots.Add(Slot.ItemType, Slot.Item);
+	}
 }
 
 AHBaseItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
@@ -173,31 +213,6 @@ void UHInventoryComponent::LinkAbilitySystemComponent()
 		{
 			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
 		}
-	}
-}
-
-void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
-{
-	// Remove old bindings if there were any
-	ASC->UnbindAbilityByInputID(EHAbilityInputID::PrimaryAbility,
-	                            ASC->GetBasicAbilities().FindRef(EHAbilityInputID::PrimaryAbility));
-	ASC->UnbindAbilityByInputID(EHAbilityInputID::SecondaryAbility,
-	                            ASC->GetBasicAbilities().FindRef(EHAbilityInputID::SecondaryAbility));
-
-	// Add the new bindings
-	if (ItemToEquip->ItemData->GetItemPrimaryAbility())
-		ASC->BindAbilityToInputID(EHAbilityInputID::PrimaryAbility, ItemToEquip->ItemData->GetItemPrimaryAbility());
-	if (ItemToEquip->ItemData->GetItemSecondaryAbility())
-		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
-}
-
-void UHInventoryComponent::OnRep_ItemSlots()
-{
-	// Aquí el cliente puede refrescar UI (inventario visual).
-	ItemSlots.Empty();
-	for (const FItemSlotRep& Slot : ReplicatedSlots)
-	{
-		ItemSlots.Add(Slot.ItemType, Slot.Item);
 	}
 }
 

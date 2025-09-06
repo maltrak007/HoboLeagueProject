@@ -86,6 +86,18 @@ FString("Ability to PickUp"));
 FName("Abilities.DropDown"),
 FString("Ability to DropDown"));
 
+	GameplayTags.Abilities_MSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.MSwapItem"),
+FString("Ability to swap to Melee"));
+
+	GameplayTags.Abilities_WSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.WSwapItem"),
+FString("Ability to swap to Weapon"));
+
+	GameplayTags.Abilities_CSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.CSwapItem"),
+FString("Ability to swap to Consumable"));
+
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */
 	/*************************************************************************************/

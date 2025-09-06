@@ -29,7 +29,8 @@ public:
 	
 	//** Gameplay Abilities Bindings **/
 	void BindAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
-	void UnbindAbilityByInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
+	void UnbindAbilityByInputID_Class(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
+	void UnbindAllAbilitiesFromInputID(EHAbilityInputID InputID);
 
 	const TMap<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& GetBasicAbilities() const
 	{
