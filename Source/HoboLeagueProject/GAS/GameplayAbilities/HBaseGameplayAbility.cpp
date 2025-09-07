@@ -21,14 +21,19 @@ TArray<FHitResult> UHBaseGameplayAbility::GetHitResultFromSweepLocationTargetDat
 	bool bIgnoreSelf) const
 {
 	TArray<FHitResult> OutResults;
+	TSet<AActor*> HitActors;
+	
 	for (const TSharedPtr<FGameplayAbilityTargetData> TargetData : TargetDataHandle.Data)
 	{
+		//** Get the start and end location of the trace from the target data */
 		FVector StartLocation = TargetData->GetOrigin().GetTranslation();
 		FVector EndLocation = TargetData->GetEndPoint();
 
+		//** Define object types to trace */
 		TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
 		ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
 
+		//** Ignore self by default but active in case of doing abilities that can inflict self damage like a grenade */
 		TArray<AActor*> IgnoreActors;
 		if (bIgnoreSelf)
 		{
@@ -37,10 +42,22 @@ TArray<FHitResult> UHBaseGameplayAbility::GetHitResultFromSweepLocationTargetDat
 
 		EDrawDebugTrace::Type DrawDebugType = bDrawDebug ? EDrawDebugTrace::ForDuration : EDrawDebugTrace::None;
 
-		TArray<FHitResult> HitResults;
+		TArray<FHitResult> Results;
 
 		UKismetSystemLibrary::SphereTraceMultiForObjects(this, StartLocation, EndLocation, SphereSweepRadius,
-		                                                 ObjectTypes, false, IgnoreActors, DrawDebugType, HitResults, false);
+		                                                 ObjectTypes, false, IgnoreActors, DrawDebugType, Results, false);
+
+		//Loop through results and add to out results if not already present
+		//This is to avoid multiple hits on same actor from different traces
+		for (const FHitResult& Result : Results)
+		{
+			if (HitActors.Contains(Result.GetActor()))
+			{
+				continue;
+			}
+			HitActors.Add(Result.GetActor());
+			OutResults.Add(Result);
+		}
 	}
 	return OutResults;
 }

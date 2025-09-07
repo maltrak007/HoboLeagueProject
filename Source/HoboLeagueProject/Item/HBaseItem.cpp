@@ -30,6 +30,7 @@ AHBaseItem::AHBaseItem()
 void AHBaseItem::BeginPlay()
 {
 	Super::BeginPlay();
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHBaseItem::OnItemOverlap);
 	//TODO::REPLACE THIS FOR THE SKELETAL OR THE STATIC MESH FROM THE DATA ASSET
 	ItemMesh->SetStaticMesh(ItemData ? ItemData->GetItemMesh(): nullptr);
 }
@@ -37,7 +38,6 @@ void AHBaseItem::BeginPlay()
 void AHBaseItem::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHBaseItem::OnItemOverlap);
 }
 
 void AHBaseItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
