@@ -24,7 +24,6 @@ AHBaseItem::AHBaseItem()
 	CollisionSphere->SetSphereRadius(50.f);
 	CollisionSphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	CollisionSphere->SetGenerateOverlapEvents(true);
-	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHBaseItem::OnItemOverlap);
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +32,12 @@ void AHBaseItem::BeginPlay()
 	Super::BeginPlay();
 	//TODO::REPLACE THIS FOR THE SKELETAL OR THE STATIC MESH FROM THE DATA ASSET
 	ItemMesh->SetStaticMesh(ItemData ? ItemData->GetItemMesh(): nullptr);
+}
+
+void AHBaseItem::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHBaseItem::OnItemOverlap);
 }
 
 void AHBaseItem::EndPlay(const EEndPlayReason::Type EndPlayReason)

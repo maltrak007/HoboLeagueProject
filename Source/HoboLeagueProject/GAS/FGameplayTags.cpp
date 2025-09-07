@@ -57,6 +57,10 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 		FName("Event.Combo.Change.End"),
 		FString("Notify end time for next part of the combo"));
 
+	GameplayTags.Event_Combo_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Damage"),
+		FString("Notify to apply damage to target"));
+
 
 	/*************************************************************************************/
 	/*	 								ABILITIES										 */

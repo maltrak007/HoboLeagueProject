@@ -28,21 +28,8 @@ void UAN_SendGameplayEvent::Notify(USkeletalMeshComponent* MeshComp, UAnimSequen
 
 FString UAN_SendGameplayEvent::GetNotifyName_Implementation() const
 {
-	//Super::GetNotifyName_Implementation();
-	
 	if (EventTag.IsValid())
 	{
-	/*
-		FString TagString = EventTag.ToString(); // Ej: "Gameplay.Ability.Fire"
-		TArray<FString> Parts;
-		TagString.ParseIntoArray(Parts, TEXT("."), true);
-
-		if (Parts.Num() > 0)
-		{
-			return Parts.Last();
-		}
-		*/
-		
 		TArray<FName> TagNames;
 		UGameplayTagsManager::Get().SplitGameplayTagFName(EventTag,TagNames);
 		if (TagNames.Num() > 0)

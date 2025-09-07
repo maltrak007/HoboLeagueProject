@@ -16,11 +16,12 @@ class HOBOLEAGUEPROJECT_API UGA_Attack : public UHBaseGameplayAbility
 	
 public:
 	UGA_Attack();
-	
+
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	static FGameplayTag GetComboChangedEventTag();
 	static FGameplayTag GetComboChangedEventEndTag();
+	static FGameplayTag GetComboTargetEventTag();
 	
 private:
 
@@ -36,6 +37,9 @@ private:
 
 	UFUNCTION()
 	void GetComboChangedEventReceived(FGameplayEventData Data);
+
+	UFUNCTION()
+	void DealDamage(FGameplayEventData Data);
 
 	FName NextComboName;
 };

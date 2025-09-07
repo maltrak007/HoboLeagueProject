@@ -34,6 +34,7 @@ public:
 	FGameplayTag Event_Combo_Change_Melee03;
 	FGameplayTag Event_Combo_Change_Melee04;
 	FGameplayTag Event_Combo_Change_End;
+	FGameplayTag Event_Combo_Damage;
 
 	//**************************************************************
 	//     ****************************************************

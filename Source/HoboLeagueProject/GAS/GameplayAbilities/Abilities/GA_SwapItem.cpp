@@ -28,8 +28,7 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
-
-	// Ask the Inventory to equip this type
+	
 	Inventory->EquipItem(ItemTypeToSwap);
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

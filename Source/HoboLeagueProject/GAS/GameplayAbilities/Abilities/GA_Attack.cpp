@@ -8,25 +8,25 @@
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
 
 
-UGA_Attack::UGA_Attack()
+UGA_Attack::UGA_Attack(): AttackMontage(nullptr)
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
 void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-                                      const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-                                      const FGameplayEventData* TriggerEventData)
+                                 const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                 const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	//Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	
+	if(!K2_CommitAbility())
+	{
+		K2_EndAbility();
+		return;
+	}
 	
 	if(HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
-		//TODO Explore, K2, WTF mens, come on dudes
-		if(!K2_CommitAbility())
-		{
-			K2_EndAbility();
-		}
-		
 		UAbilityTask_PlayMontageAndWait* PlayMontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 			this, NAME_None, AttackMontage);
 		PlayMontageTask->OnCompleted.AddDynamic(this, &UGA_Attack::K2_EndAbility);
@@ -41,6 +41,15 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		WaitComboChangeEventTask->EventReceived.AddDynamic(this, &UGA_Attack::GetComboChangedEventReceived);
 		WaitComboChangeEventTask->ReadyForActivation();
 	}
+
+	if (K2_HasAuthority())
+	{
+		UAbilityTask_WaitGameplayEvent* WaitTargetingEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this,
+			GetComboTargetEventTag());
+		WaitTargetingEventTask->EventReceived.AddDynamic(this, &UGA_Attack::DealDamage);
+		WaitTargetingEventTask->ReadyForActivation();
+	}
+	
 	SetupWaitComboInputPress();
 }
 
@@ -52,6 +61,11 @@ FGameplayTag UGA_Attack::GetComboChangedEventTag()
 FGameplayTag UGA_Attack::GetComboChangedEventEndTag()
 {
 	return FGameplayTag::RequestGameplayTag("Event.Combo.Change.End");
+}
+
+FGameplayTag UGA_Attack::GetComboTargetEventTag()
+{
+	return FGameplayTag::RequestGameplayTag("Event.Combo.Damage");
 }
 
 void UGA_Attack::SetupWaitComboInputPress()
@@ -81,7 +95,6 @@ void UGA_Attack::TryCommitCombo()
 		return;
 	}
 	OwnerAnimInstance->Montage_SetNextSection(OwnerAnimInstance->Montage_GetCurrentSection(AttackMontage), NextComboName,AttackMontage);
-	
 }
 
 void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
@@ -104,4 +117,9 @@ void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
 
 		SetupWaitComboInputPress();
 	}
+}
+
+void UGA_Attack::DealDamage(FGameplayEventData Data)
+{
+	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(Data.TargetData, 30.f, true, true);
 }
