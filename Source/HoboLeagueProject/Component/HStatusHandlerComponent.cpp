@@ -2,16 +2,15 @@
 
 
 #include "HStatusHandlerComponent.h"
+#include "GameFramework/PlayerState.h"
+#include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 
 
 // Sets default values for this component's properties
 UHStatusHandlerComponent::UHStatusHandlerComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
+	SetIsReplicatedByDefault(true);
 }
 
 
@@ -19,9 +18,7 @@ UHStatusHandlerComponent::UHStatusHandlerComponent()
 void UHStatusHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
-	
+	//Subscribe to the delegate that will be called when the player is dead
 }
 
 void UHStatusHandlerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -30,6 +27,25 @@ void UHStatusHandlerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	
 }
 
+void UHStatusHandlerComponent::BindDeathDelegate()
+{
+	
+}
 
+void UHStatusHandlerComponent::HandlePlayerDeath()
+{
+	
+}
+
+void UHStatusHandlerComponent::LinkAbilitySystemComponent()
+{
+	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
+	{
+		if (APlayerState* PS = PawnOwner->GetPlayerState())
+		{
+			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
+		}
+	}
+}
 
 

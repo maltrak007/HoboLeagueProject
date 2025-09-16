@@ -7,9 +7,8 @@
 #include "HInventoryComponent.generated.h"
 
 class UHAbilitySystemComponent;
-class APlayerCharacter;
-enum class EItemType : uint8;
 class AHBaseItem;
+enum class EItemType : uint8;
 
 USTRUCT(BlueprintType)
 struct FItemSlotRep
@@ -60,9 +59,7 @@ public:
 protected:
 	UPROPERTY()
 	UHAbilitySystemComponent* ASC = nullptr;
-
-	/** Stored items */
-
+	
 	//Local representation of the inventory, not replicated
 	UPROPERTY()
 	TMap<EItemType, AHBaseItem*> ItemSlots;
@@ -84,7 +81,6 @@ protected:
 	
 	UFUNCTION()
 	void OnRep_ItemSlots();
-
 	
 	UFUNCTION()
 	void OnRep_EquippedItem();

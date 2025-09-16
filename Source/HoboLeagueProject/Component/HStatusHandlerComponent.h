@@ -7,6 +7,8 @@
 #include "HStatusHandlerComponent.generated.h"
 
 
+class UHAbilitySystemComponent;
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HOBOLEAGUEPROJECT_API UHStatusHandlerComponent : public UActorComponent
 {
@@ -16,10 +18,20 @@ public:
 	// Sets default values for this component's properties
 	UHStatusHandlerComponent();
 
+	/** Link the Ability System Component from the player state **/
+	void LinkAbilitySystemComponent();
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
+	
+	UPROPERTY()
+	UHAbilitySystemComponent* ASC = nullptr;
+	
+	void BindDeathDelegate();
+	
+	UFUNCTION()
+	void HandlePlayerDeath();
 };

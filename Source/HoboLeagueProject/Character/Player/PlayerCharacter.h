@@ -6,6 +6,7 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class UHStatusHandlerComponent;
 class UHInventoryComponent;
 class AHBaseItem;
 class UInputComponent;
@@ -27,7 +28,10 @@ public:
 	virtual void OnRep_PlayerState() override;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UHInventoryComponent* InventoryComponent;
+	TObjectPtr<UHInventoryComponent> InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UHStatusHandlerComponent> StatusHandlerComponent;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -35,5 +39,4 @@ protected:
 	
 private:
 	void InitAbilityActorInfo();
-	
 };

@@ -22,6 +22,7 @@ UHInventoryComponent::UHInventoryComponent()
 void UHInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	//Subscribe to the delegate that will be called when the player is dead
 }
 
 void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)

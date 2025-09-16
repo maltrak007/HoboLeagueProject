@@ -3,10 +3,13 @@
 
 #include "HAbilitySystemComponent.h"
 
+#include "HAttributeSet.h"
+
 
 UHAbilitySystemComponent::UHAbilitySystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	GetGameplayAttributeValueChangeDelegate(UHAttributeSet::GetHealthAttribute()).AddUObject(this, &UHAbilitySystemComponent::HealthUpdated);
 }
 
 void UHAbilitySystemComponent::ApplyInitialEffects()
@@ -115,5 +118,16 @@ void UHAbilitySystemComponent::UnbindAllAbilitiesFromInputID(EHAbilityInputID In
 			Spec.InputID = INDEX_NONE; // Clear the binding
 			MarkAbilitySpecDirty(Spec); // Ensure replication to clients
 		}
+	}
+}
+
+void UHAbilitySystemComponent::HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData)
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+	if (OnAttributeChangeData.NewValue <= 0 && GetOwner()->HasAuthority() && DeathEffect)
+	{
+		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(DeathEffect, 1, MakeEffectContext());
+		ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+		OnPlayerDeath.Broadcast();
 	}
 }

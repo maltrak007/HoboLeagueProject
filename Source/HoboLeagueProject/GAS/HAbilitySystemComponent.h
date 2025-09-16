@@ -7,7 +7,10 @@
 #include "HGameplayAbilityTypes.h"
 #include "HAbilitySystemComponent.generated.h"
 
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDeath);
+/**
+ * 
+ */
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HOBOLEAGUEPROJECT_API UHAbilitySystemComponent : public UAbilitySystemComponent
 {
@@ -18,7 +21,7 @@ public:
 	
 	void ApplyInitialEffects();
 	void GiveInitialAbilities();
-
+	
 	//** Gameplay Abilities Givers and Removers **/
 	UFUNCTION(BlueprintCallable, Category="Abilities")
 	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1);
@@ -31,12 +34,21 @@ public:
 	void BindAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
 	void UnbindAbilityByInputID_Class(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
 	void UnbindAllAbilitiesFromInputID(EHAbilityInputID InputID);
-
+	
 	const TMap<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& GetBasicAbilities() const
 	{
 		return BasicAbilities;
 	}
+	
+	//Delegate to communicate death and revive events
+	FOnPlayerDeath OnPlayerDeath;
+	
 private:
+	void HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData);
+
+	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
+	TSubclassOf<UGameplayEffect> DeathEffect;
+	
 	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 	

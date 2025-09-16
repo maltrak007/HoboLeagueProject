@@ -2,11 +2,10 @@
 
 
 #include "PlayerCharacter.h"
-
 #include "AbilitySystemComponent.h"
-
 #include "BasePlayerCharacterState.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HoboLeagueProject/Component/HStatusHandlerComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 
 // Sets default values
@@ -18,6 +17,7 @@ APlayerCharacter::APlayerCharacter()
 	bAlwaysRelevant = true;
 	
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
+	StatusHandlerComponent = CreateDefaultSubobject<UHStatusHandlerComponent>(TEXT("StatusHandlerComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -43,6 +43,11 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	{
 		InventoryComponent->LinkAbilitySystemComponent(); 
 	}
+
+	if (StatusHandlerComponent)
+	{
+		StatusHandlerComponent->LinkAbilitySystemComponent(); 
+	}
 	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
@@ -59,7 +64,12 @@ void APlayerCharacter::OnRep_PlayerState()
 	{
 		InventoryComponent->LinkAbilitySystemComponent(); 
 	}
-
+	
+	if (StatusHandlerComponent)
+	{
+		StatusHandlerComponent->LinkAbilitySystemComponent(); 
+	}
+	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
 }
@@ -74,5 +84,6 @@ void APlayerCharacter::InitAbilityActorInfo()
 	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
 }
+
 
 

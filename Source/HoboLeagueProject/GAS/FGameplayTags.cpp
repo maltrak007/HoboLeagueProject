@@ -8,6 +8,10 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	/*************************************************************************************/
 	/*	 									STATUS  									 */
 	/*************************************************************************************/
+	GameplayTags.Status_Dead = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Dead"),
+		FString("Dead Status Effect"));
+
 	GameplayTags.Status_Bleeding = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Status.Bleeding"),
 		FString("Bleeding Status Effect"));
