@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "HStatusHandlerComponent.generated.h"
 
-
+struct FGameplayTag;
 class UHAbilitySystemComponent;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -26,12 +26,19 @@ protected:
 	virtual void BeginPlay() override;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
+
+	UFUNCTION()
+	void OnDeathTagChanged(FGameplayTag Tag, int32 NewCount);
+
 	UPROPERTY()
 	UHAbilitySystemComponent* ASC = nullptr;
 	
-	void BindDeathDelegate();
-	
 	UFUNCTION()
-	void HandlePlayerDeath();
+	void HandlePlayerDeath() const;
+
+	UFUNCTION()
+	void HandlePlayerRespawn() const;
+	
+private:
+	FDelegateHandle DeathTagDelegateHandle;
 };

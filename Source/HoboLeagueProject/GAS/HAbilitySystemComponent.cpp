@@ -2,7 +2,6 @@
 
 
 #include "HAbilitySystemComponent.h"
-
 #include "HAttributeSet.h"
 
 
@@ -123,11 +122,12 @@ void UHAbilitySystemComponent::UnbindAllAbilitiesFromInputID(EHAbilityInputID In
 
 void UHAbilitySystemComponent::HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData)
 {
-	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
+	if (!GetOwner()) return;
 	if (OnAttributeChangeData.NewValue <= 0 && GetOwner()->HasAuthority() && DeathEffect)
 	{
 		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(DeathEffect, 1, MakeEffectContext());
 		ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-		OnPlayerDeath.Broadcast();
+		// If you dont use the built-in Gameplay Tags Event delegates use a custom one with the extra-difficulty of manual replication if needed
+		//OnPlayerDeath.Broadcast();
 	}
 }

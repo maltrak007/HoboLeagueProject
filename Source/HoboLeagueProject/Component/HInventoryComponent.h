@@ -76,6 +76,9 @@ protected:
 	/** Setting if the item is auto-equipped when picked up **/
 	UPROPERTY(EditDefaultsOnly)
 	bool bAutoEquipItem = false;
+
+	UFUNCTION()
+	void HandlePlayerDeath();
 	
 	void HandleEquipBindings(AHBaseItem* ItemToEquip);
 	

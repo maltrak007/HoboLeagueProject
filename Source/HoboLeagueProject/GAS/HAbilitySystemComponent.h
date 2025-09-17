@@ -7,7 +7,7 @@
 #include "HGameplayAbilityTypes.h"
 #include "HAbilitySystemComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDeath);
+//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerDeath);
 /**
  * 
  */
@@ -41,7 +41,7 @@ public:
 	}
 	
 	//Delegate to communicate death and revive events
-	FOnPlayerDeath OnPlayerDeath;
+	//FOnPlayerDeath OnPlayerDeath;
 	
 private:
 	void HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData);

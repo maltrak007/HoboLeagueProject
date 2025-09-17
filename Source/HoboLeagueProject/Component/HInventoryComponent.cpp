@@ -3,7 +3,6 @@
 
 #include "HInventoryComponent.h"
 
-#include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
@@ -22,7 +21,6 @@ UHInventoryComponent::UHInventoryComponent()
 void UHInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//Subscribe to the delegate that will be called when the player is dead
 }
 
 void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -144,7 +142,8 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 
 	AHBaseItem* ItemToEquip = GetItemByType(ItemType);
 
-	if (!ItemToEquip)
+	// If the item type does not exist in the inventory, equip melee
+	if (!ItemToEquip && EquippedItem != nullptr)
 	{
 		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
 		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
@@ -155,6 +154,7 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 		}
 		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 		EquippedItem = nullptr;
+		//Include here the future FOnWeaponEquipped
 		return;
 	}
 
@@ -164,6 +164,13 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 	}
 
 	HandleEquipBindings(ItemToEquip);
+}
+
+void UHInventoryComponent::HandlePlayerDeath()
+{
+	ASC->RemoveAllGrantedAbilities();
+	ItemSlots.Empty();
+	EquippedItem = nullptr;
 }
 
 void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
@@ -179,7 +186,7 @@ void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
 	// Unbind previous equipped item’s abilities if any
 	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
 	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
-	
+
 	EquippedItem = ItemToEquip;
 
 	// Bind the new abilities
@@ -189,6 +196,7 @@ void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
 		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
 
 	EquippedItem->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
+	//Include here the future FOnWeaponEquipped
 }
 
 void UHInventoryComponent::OnRep_ItemSlots()
@@ -213,10 +221,14 @@ void UHInventoryComponent::LinkAbilitySystemComponent()
 		if (APlayerState* PS = PawnOwner->GetPlayerState())
 		{
 			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
+			
+			// ASC->OnPlayerDeath.RemoveAll(this);
+			// ASC->OnPlayerDeath.AddDynamic(this, &UHInventoryComponent::HandlePlayerDeath);
 		}
 	}
 }
 
+//TODO:: REPLICATION MIGHT CAUSE THE BIND TO HAPPEN TWICE, CHECK IT
 void UHInventoryComponent::OnRep_EquippedItem()
 {
 	// Client actualize and bind the abilities
