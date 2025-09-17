@@ -6,7 +6,7 @@
 #include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
-#include "HoboLeagueProject/GAS/GameplayAbilities/Abilities/GA_Attack.h"
+#include "HoboLeagueProject/GAS/GameplayAbilities/Abilities/PlayerAbilities/GA_Attack.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
@@ -42,7 +42,7 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 
 	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
 
-	const EItemType Type = Item->ItemData->GetItemType();
+	EItemType Type = Item->ItemData->GetItemType();
 
 	//If exists remove it from the inventory
 	if (AHBaseItem** ExistingItemPtr = ItemSlots.Find(Type))
@@ -123,6 +123,8 @@ void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
 		return Slot.ItemType == Type;
 	});
 
+	EquippedItem = nullptr;
+	
 	// If no items are left, bind the basic abilities (Melee)
 	if (ItemSlots.IsEmpty())
 	{
@@ -147,13 +149,16 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 	{
 		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
 		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
+		
 		for (auto& Pair : ASC->GetBasicAbilities())
 		{
 			if (Pair.Value)
 				ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
 		}
+		
 		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 		EquippedItem = nullptr;
+		
 		//Include here the future FOnWeaponEquipped
 		return;
 	}
@@ -196,6 +201,7 @@ void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
 		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
 
 	EquippedItem->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
+
 	//Include here the future FOnWeaponEquipped
 }
 
@@ -221,9 +227,6 @@ void UHInventoryComponent::LinkAbilitySystemComponent()
 		if (APlayerState* PS = PawnOwner->GetPlayerState())
 		{
 			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
-			
-			// ASC->OnPlayerDeath.RemoveAll(this);
-			// ASC->OnPlayerDeath.AddDynamic(this, &UHInventoryComponent::HandlePlayerDeath);
 		}
 	}
 }

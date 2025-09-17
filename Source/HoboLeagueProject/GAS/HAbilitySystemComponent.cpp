@@ -127,7 +127,5 @@ void UHAbilitySystemComponent::HealthUpdated(const FOnAttributeChangeData& OnAtt
 	{
 		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(DeathEffect, 1, MakeEffectContext());
 		ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
-		// If you dont use the built-in Gameplay Tags Event delegates use a custom one with the extra-difficulty of manual replication if needed
-		//OnPlayerDeath.Broadcast();
 	}
 }

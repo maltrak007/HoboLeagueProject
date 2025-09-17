@@ -19,7 +19,6 @@ void UHStatusHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	//Subscribe to the delegate that will be called when the player is dead
-
 }
 
 void UHStatusHandlerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -74,17 +73,15 @@ void UHStatusHandlerComponent::LinkAbilitySystemComponent()
 		if (APlayerState* PS = PawnOwner->GetPlayerState())
 		{
 			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
-			
+
+			//I Choose this approach because this method automatically replicates the changes to all clients
+			// and it is more efficient than using a multicast RPC
 			if (ASC)
 			{
 				ASC->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag(FName("Status.Dead")),
 											  EGameplayTagEventType::NewOrRemoved).AddUObject(
 					this, &UHStatusHandlerComponent::OnDeathTagChanged);
 			}
-			
-			// If needed, bind to player death event here
-			// ASC->OnPlayerDeath.RemoveAll(this);
-			// ASC->OnPlayerDeath.AddDynamic(this, &UHStatusHandlerComponent::HandlePlayerDeath);
 		}
 	}
 }

@@ -48,6 +48,7 @@ public:
 	//void QuickSwapItem(EItemType Item);
 	
 	/** I will use this method to check if it's nullptr to switch to bare hands in the animation system **/
+	UFUNCTION(BlueprintCallable)
 	AHBaseItem* GetEquippedItem() const { return EquippedItem; }
 
 	/** I can use this method to compare the object type when im tracing to put in the HUD 'Pick up' or 'Swap ItemType' if there is an existing one **/

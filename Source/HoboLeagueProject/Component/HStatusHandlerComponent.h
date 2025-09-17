@@ -38,7 +38,4 @@ protected:
 
 	UFUNCTION()
 	void HandlePlayerRespawn() const;
-	
-private:
-	FDelegateHandle DeathTagDelegateHandle;
 };
