@@ -10,7 +10,7 @@
 AHConsumable::AHConsumable()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 // Called when the game starts or when spawned
@@ -20,12 +20,6 @@ void AHConsumable::BeginPlay()
 	
 }
 
-void AHConsumable::Interact(AActor* InteractingActor)
-{
-	if (APlayerCharacter* Player = Cast<APlayerCharacter>(InteractingActor))
-	{
-		Player->InventoryComponent->AddItem(this);
-	}
-}
+
 
 

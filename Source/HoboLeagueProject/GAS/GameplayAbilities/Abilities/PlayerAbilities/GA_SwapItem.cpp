@@ -21,7 +21,7 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
-
+	
 	UHInventoryComponent* Inventory = PC->FindComponentByClass<UHInventoryComponent>();
 	if (!Inventory)
 	{

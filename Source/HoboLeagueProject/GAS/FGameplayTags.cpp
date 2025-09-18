@@ -105,7 +105,14 @@ FString("Ability to swap to Weapon"));
 	GameplayTags.Abilities_CSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Abilities.CSwapItem"),
 FString("Ability to swap to Consumable"));
-
+	
+	/*************************************************************************************/
+	/*	 						     PASIVE ABILITIES									 */
+	/*************************************************************************************/
+	GameplayTags.Abilities_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.Interact"),
+FString("Ability to Interact"));
+	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */
 	/*************************************************************************************/

@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "HoboLeagueProject/Item/HBaseItem.h"
-#include "HoboLeagueProject/Item/ItemInteractableInterface.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "HWeapon.generated.h"
 
 class USphereComponent;
@@ -13,7 +12,7 @@ class UWeaponDataAsset;
 class APlayerCharacter;
 
 UCLASS()
-class HOBOLEAGUEPROJECT_API AHWeapon : public AHBaseItem, public IItemInteractableInterface
+class HOBOLEAGUEPROJECT_API AHWeapon : public AHPlayerItem
 {
 	GENERATED_BODY()
 
@@ -23,7 +22,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Interact(AActor* InteractingActor) override;
+	
 private:
 
 };

@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "BasePlayerCharacterState.h"
+#include "HoboLeagueProject/Component/HInteractionComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/Component/HStatusHandlerComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
@@ -11,25 +12,19 @@
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 	StatusHandlerComponent = CreateDefaultSubobject<UHStatusHandlerComponent>(TEXT("StatusHandlerComponent"));
+	InteractionComponent = CreateDefaultSubobject<UHInteractionComponent>(TEXT("InteractionComponent"));
 }
 
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-// Called every frame
-void APlayerCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 //Server side init

@@ -14,7 +14,7 @@ enum class EHAbilityInputID : uint8
 	MeleeSlot						UMETA(DisplayName = "Melee Slot"),
 	WeaponSlot						UMETA(DisplayName = "Weapon Slot"),
 	ConsumableSlot					UMETA(DisplayName = "Consumable Slot"),
-	AbilityFive						UMETA(DisplayName = "Ability Five"),
+	Interact						UMETA(DisplayName = "Interact"),
 	AbilitySix						UMETA(DisplayName = "Ability Six"),
 	Confirm							UMETA(DisplayName = "Confirm"),
 	Cancel							UMETA(DisplayName = "Cancel")

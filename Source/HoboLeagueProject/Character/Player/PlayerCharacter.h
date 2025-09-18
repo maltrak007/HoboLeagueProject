@@ -6,6 +6,7 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class UHInteractionComponent;
 class UHStatusHandlerComponent;
 class UHInventoryComponent;
 class AHBaseItem;
@@ -20,9 +21,6 @@ public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
 	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	
 	virtual void PossessedBy(AController* NewController) override;
 
 	virtual void OnRep_PlayerState() override;
@@ -32,6 +30,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UHStatusHandlerComponent> StatusHandlerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TObjectPtr<UHInteractionComponent> InteractionComponent;
 	
 protected:
 	// Called when the game starts or when spawned

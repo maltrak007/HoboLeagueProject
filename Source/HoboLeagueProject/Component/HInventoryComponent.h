@@ -6,8 +6,8 @@
 #include "Components/ActorComponent.h"
 #include "HInventoryComponent.generated.h"
 
+class AHPlayerItem;
 class UHAbilitySystemComponent;
-class AHBaseItem;
 enum class EItemType : uint8;
 
 USTRUCT(BlueprintType)
@@ -19,7 +19,7 @@ struct FItemSlotRep
 	EItemType ItemType;
 
 	UPROPERTY()
-	AHBaseItem* Item;
+	AHPlayerItem* Item;
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -36,10 +36,10 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/** Add the abilities that the item holds and adds it to the TMap */
-	void AddItem(AHBaseItem* Item);
+	void AddItem(AHPlayerItem* Item);
 
 	/** Removes item from inventory but does not destroy it, also it will remove the abilities and binds from the player **/
-	void RemoveItem(AHBaseItem* Item);
+	void RemoveItem(AHPlayerItem* Item);
 
 	/** I will use this method to set the current equipped item and grant abilities to the player **/
 	void EquipItem(EItemType ItemType);
@@ -49,10 +49,10 @@ public:
 	
 	/** I will use this method to check if it's nullptr to switch to bare hands in the animation system **/
 	UFUNCTION(BlueprintCallable)
-	AHBaseItem* GetEquippedItem() const { return EquippedItem; }
+	AHPlayerItem* GetEquippedItem() const { return EquippedItem; }
 
 	/** I can use this method to compare the object type when im tracing to put in the HUD 'Pick up' or 'Swap ItemType' if there is an existing one **/
-	AHBaseItem* GetItemByType(EItemType ItemType) const;
+	AHPlayerItem* GetItemByType(EItemType ItemType) const;
 
 	/** Link the Ability System Component from the player state **/
 	void LinkAbilitySystemComponent();
@@ -63,7 +63,7 @@ protected:
 	
 	//Local representation of the inventory, not replicated
 	UPROPERTY()
-	TMap<EItemType, AHBaseItem*> ItemSlots;
+	TMap<EItemType, AHPlayerItem*> ItemSlots;
 
 	//Replicated representation of the inventory
 	//Necessary because TMap is not natively supported for replication
@@ -72,7 +72,7 @@ protected:
 	TArray<FItemSlotRep> ReplicatedSlots;
 
 	UPROPERTY(ReplicatedUsing=OnRep_EquippedItem)
-	AHBaseItem* EquippedItem = nullptr;
+	AHPlayerItem* EquippedItem = nullptr;
 
 	/** Setting if the item is auto-equipped when picked up **/
 	UPROPERTY(EditDefaultsOnly)
@@ -81,7 +81,7 @@ protected:
 	UFUNCTION()
 	void HandlePlayerDeath();
 	
-	void HandleEquipBindings(AHBaseItem* ItemToEquip);
+	void HandleEquipBindings(AHPlayerItem* ItemToEquip);
 	
 	UFUNCTION()
 	void OnRep_ItemSlots();

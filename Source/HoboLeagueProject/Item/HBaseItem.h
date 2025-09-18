@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemInteractableInterface.h"
 #include "GameFramework/Actor.h"
 #include "HBaseItem.generated.h"
 
@@ -11,56 +12,48 @@ class UHBaseItemDataAsset;
 class APlayerCharacter;
 
 UCLASS()
-class HOBOLEAGUEPROJECT_API AHBaseItem : public AActor
+class HOBOLEAGUEPROJECT_API AHBaseItem : public AActor, public IItemInteractableInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
 	AHBaseItem();
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
 	UHBaseItemDataAsset* ItemData;
 
-	UPROPERTY(ReplicatedUsing = OnRep_IsItemPickedUp)
-	bool bIsItemPickedUp = false;
-	
-	/** Player that owns this weapon (replicated) */
+	/** Player that owns this item (replicated) */
 	UPROPERTY(Replicated)
 	APlayerCharacter* OwningPlayer;
-	
+
 	UPROPERTY(VisibleAnywhere, Category = "Item")
 	UStaticMeshComponent* ItemMesh;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Item")
+	USkeletalMeshComponent* ItemSkeletalMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Item")
 	USphereComponent* CollisionSphere;
 
 	UFUNCTION()
 	void OnItemOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	                   UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	                   const FHitResult& SweepResult);
 
-	/** Attach the item to the player's mesh HOLSTER socket */
-	void AttachToHolsterSocket(APlayerCharacter* Player);
-
-	/** Detach the item from the player and enable collision */
-	void DetachFromPlayer();
-
-	/** Put the item in the player current ACTIVE socket */
-	void AttachToActiveSocket(APlayerCharacter* Player);
-
-	/** Server RPC to handle pickup */
-	UFUNCTION(Server, Reliable)
-	void ServerPickupItem(APlayerCharacter* Player);
-	
-	/** Called when bIsPickedUp changes on clients */
 	UFUNCTION()
-	void OnRep_IsItemPickedUp();
-	
+	void OnItemEndOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex
+	);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
-	
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

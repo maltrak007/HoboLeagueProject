@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "ItemInteractableInterface.generated.h"
 
+class APlayerCharacter;
 // This class does not need to be modified.
 UINTERFACE()
 class UItemInteractableInterface : public UInterface
@@ -23,5 +24,6 @@ class HOBOLEAGUEPROJECT_API IItemInteractableInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	// Called when a character interacts with an actor that implements this interface
-	virtual void Interact(AActor* InteractingActor) = 0;
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
+	void Interact(APlayerCharacter* PlayerOwner);
 };

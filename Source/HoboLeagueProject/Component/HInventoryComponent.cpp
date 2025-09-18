@@ -10,6 +10,7 @@
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "Net/UnrealNetwork.h"
 
 UHInventoryComponent::UHInventoryComponent()
@@ -36,7 +37,7 @@ void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void UHInventoryComponent::AddItem(AHBaseItem* Item)
+void UHInventoryComponent::AddItem(AHPlayerItem* Item)
 {
 	if (!Item || !Item->ItemData || !ASC) return;
 
@@ -45,7 +46,7 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 	EItemType Type = Item->ItemData->GetItemType();
 
 	//If exists remove it from the inventory
-	if (AHBaseItem** ExistingItemPtr = ItemSlots.Find(Type))
+	if (AHPlayerItem** ExistingItemPtr = ItemSlots.Find(Type))
 	{
 		if (*ExistingItemPtr)
 		{
@@ -75,7 +76,7 @@ void UHInventoryComponent::AddItem(AHBaseItem* Item)
 	}
 }
 
-void UHInventoryComponent::RemoveItem(AHBaseItem* Item)
+void UHInventoryComponent::RemoveItem(AHPlayerItem* Item)
 {
 	if (!Item || !Item->ItemData || !ASC) return;
 
@@ -142,7 +143,7 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 {
 	if (!ASC) return;
 
-	AHBaseItem* ItemToEquip = GetItemByType(ItemType);
+	AHPlayerItem* ItemToEquip = GetItemByType(ItemType);
 
 	// If the item type does not exist in the inventory, equip melee
 	if (!ItemToEquip && EquippedItem != nullptr)
@@ -178,7 +179,7 @@ void UHInventoryComponent::HandlePlayerDeath()
 	EquippedItem = nullptr;
 }
 
-void UHInventoryComponent::HandleEquipBindings(AHBaseItem* ItemToEquip)
+void UHInventoryComponent::HandleEquipBindings(AHPlayerItem* ItemToEquip)
 {
 	if (!ASC || !ItemToEquip) return;
 
@@ -215,7 +216,7 @@ void UHInventoryComponent::OnRep_ItemSlots()
 	}
 }
 
-AHBaseItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
+AHPlayerItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
 {
 	return ItemSlots.FindRef(ItemType);
 }
