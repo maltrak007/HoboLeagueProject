@@ -130,7 +130,7 @@ void AHBaseItem::OnItemOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
 	if (!Player || bIsItemPickedUp) return;
 
-	if (HasAuthority())
+	if (Player->HasAuthority())
 	{
 		ServerPickupItem(Player);
 	}
@@ -138,4 +138,6 @@ void AHBaseItem::OnItemOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		ServerPickupItem(Player); // Call to server
 	}
+
+	//TODO::SUBSTITUTE FOR THE INTERACTION COMPONENT and UI prompt
 }

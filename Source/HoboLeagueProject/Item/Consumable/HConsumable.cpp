@@ -2,6 +2,8 @@
 
 
 #include "HConsumable.h"
+#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
 
 
 // Sets default values
@@ -16,6 +18,14 @@ void AHConsumable::BeginPlay()
 {
 	Super::BeginPlay();
 	
+}
+
+void AHConsumable::Interact(AActor* InteractingActor)
+{
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(InteractingActor))
+	{
+		Player->InventoryComponent->AddItem(this);
+	}
 }
 
 

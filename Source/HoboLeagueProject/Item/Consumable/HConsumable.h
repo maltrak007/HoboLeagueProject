@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
+#include "HoboLeagueProject/Item/ItemInteractableInterface.h"
 #include "HConsumable.generated.h"
 
 UCLASS()
-class HOBOLEAGUEPROJECT_API AHConsumable : public AHBaseItem
+class HOBOLEAGUEPROJECT_API AHConsumable : public AHBaseItem, public IItemInteractableInterface
 {
 	GENERATED_BODY()
 
@@ -20,6 +21,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void Interact(AActor* InteractingActor) override;
+	
 private:
 	
 };

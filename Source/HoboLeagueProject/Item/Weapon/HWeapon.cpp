@@ -1,7 +1,6 @@
 #include "HWeapon.h"
-#include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
-#include "Net/UnrealNetwork.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
 
 AHWeapon::AHWeapon()
 {
@@ -11,6 +10,14 @@ AHWeapon::AHWeapon()
 void AHWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AHWeapon::Interact(AActor* InteractingActor)
+{
+	if (APlayerCharacter* Player = Cast<APlayerCharacter>(InteractingActor))
+	{
+		Player->InventoryComponent->AddItem(this);
+	}
 }
 
 
