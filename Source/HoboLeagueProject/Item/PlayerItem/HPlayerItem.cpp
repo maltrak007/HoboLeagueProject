@@ -3,6 +3,7 @@
 
 #include "HPlayerItem.h"
 
+#include "HPlayerDataAsset.h"
 #include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"
@@ -11,7 +12,7 @@
 
 
 // Sets default values
-AHPlayerItem::AHPlayerItem()
+AHPlayerItem::AHPlayerItem(): ItemData(nullptr)
 {
 	CollisionSphere->SetCollisionProfileName(TEXT("PlayerItemCollision"));
 	CollisionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -24,6 +25,7 @@ AHPlayerItem::AHPlayerItem()
 void AHPlayerItem::BeginPlay()
 {
 	Super::BeginPlay();
+	ItemMesh->SetStaticMesh(ItemData ? ItemData->GetItemMesh() : nullptr);
 }
 
 void AHPlayerItem::AttachToHolsterSocket(APlayerCharacter* Player)

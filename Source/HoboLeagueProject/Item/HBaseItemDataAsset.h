@@ -30,12 +30,6 @@ public:
 	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	EItemType ItemType;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	ERarityType ItemRarity;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	EItemSize ItemSize;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	FText ItemName;
@@ -50,22 +44,10 @@ public:
 	//   Visuals
 	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
-	UTexture2D* ItemIcon;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
 	UStaticMesh* ItemMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
 	USkeletalMesh* ItemSkeletalMesh;
-	
-	// ======================
-	//   Abilities
-	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TSubclassOf<UGameplayAbility> ItemPrimaryAbility;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TSubclassOf<UGameplayAbility> ItemSecondaryAbility;
 	
 	// ======== GETTERS ========
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
@@ -73,28 +55,13 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const FText& GetItemName() const { return ItemName; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const ERarityType& GetItemRarity() const { return ItemRarity; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const EItemSize& GetItemSize() const { return ItemSize; }
 	
 	UFUNCTION(BlueprintPure, Category = "Item|Effects")
 	const FGameplayTagContainer& GetStatusEffect() const { return StatusEffect; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Visual")
-	UTexture2D* GetItemIcon() const { return ItemIcon; }
-
+	
 	UFUNCTION(BlueprintPure, Category = "Item|Visual")
 	UStaticMesh* GetItemMesh() const { return ItemMesh; }
 
 	UFUNCTION(BlueprintPure, Category = "Item|Visual")
 	USkeletalMesh* GetItemSkeletalMesh() const { return ItemSkeletalMesh; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
-	TSubclassOf<UGameplayAbility> GetItemPrimaryAbility() const { return ItemPrimaryAbility; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
-	TSubclassOf<UGameplayAbility> GetItemSecondaryAbility() const { return ItemSecondaryAbility; }
 };

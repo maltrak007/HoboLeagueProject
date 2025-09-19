@@ -6,6 +6,8 @@
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HPlayerItem.generated.h"
 
+class UHPlayerDataAsset;
+
 UCLASS()
 class HOBOLEAGUEPROJECT_API AHPlayerItem : public AHBaseItem
 {
@@ -14,7 +16,10 @@ class HOBOLEAGUEPROJECT_API AHPlayerItem : public AHBaseItem
 public:
 	// Sets default values for this actor's properties
 	AHPlayerItem();
-
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	UHPlayerDataAsset* ItemData;
+	
 	/** Attach the item to the player's mesh HOLSTER socket */
 	UFUNCTION()
 	void AttachToHolsterSocket(APlayerCharacter* Player);
@@ -32,6 +37,5 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-
+	
 };

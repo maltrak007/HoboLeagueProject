@@ -7,9 +7,9 @@
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/GAS/GameplayAbilities/Abilities/PlayerAbilities/GA_Attack.h"
-#include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerDataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "Net/UnrealNetwork.h"
 
@@ -204,7 +204,7 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 		return;
 	}
 
-	if (EquippedItem != nullptr)
+	if (EquippedItem != nullptr && EquippedItem != ItemToEquip)
 	{
 		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 	}

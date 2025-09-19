@@ -19,10 +19,7 @@ class HOBOLEAGUEPROJECT_API AHBaseItem : public AActor, public IItemInteractable
 public:
 	// Sets default values for this actor's properties
 	AHBaseItem();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	UHBaseItemDataAsset* ItemData;
-
+	
 	/** Player that owns this item (replicated) */
 	UPROPERTY(Replicated)
 	APlayerCharacter* OwningPlayer;

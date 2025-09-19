@@ -1,14 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
-#include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
+#include <Engine/DataAsset.h>
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerDataAsset.h"
 #include "WeaponDataAsset.generated.h"
 
 
 
 UCLASS(BlueprintType)
-class HOBOLEAGUEPROJECT_API UWeaponDataAsset : public UHBaseItemDataAsset
+class HOBOLEAGUEPROJECT_API UWeaponDataAsset : public UHPlayerDataAsset
 {
 	GENERATED_BODY()
 

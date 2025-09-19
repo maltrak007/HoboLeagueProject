@@ -20,7 +20,6 @@ AHBaseItem::AHBaseItem()
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
 	CollisionSphere->SetupAttachment(ItemMesh);
 	CollisionSphere->SetSphereRadius(50.f);
-	//CollisionSphere->SetCollisionProfileName(TEXT("ItemCollision"));
 	CollisionSphere->SetGenerateOverlapEvents(true);
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHBaseItem::OnItemOverlap);
 	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AHBaseItem::OnItemEndOverlap);
@@ -29,7 +28,6 @@ AHBaseItem::AHBaseItem()
 void AHBaseItem::BeginPlay()
 {
 	Super::BeginPlay();
-	ItemMesh->SetStaticMesh(ItemData ? ItemData->GetItemMesh() : nullptr);
 }
 
 void AHBaseItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
