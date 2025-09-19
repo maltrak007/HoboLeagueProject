@@ -37,6 +37,25 @@ void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
+void UHInventoryComponent::LinkAbilitySystemComponent()
+{
+	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
+	{
+		if (APlayerState* PS = PawnOwner->GetPlayerState())
+		{
+			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
+		}
+	}
+}
+
+void UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UHInventoryComponent, ReplicatedSlots);
+	DOREPLIFETIME(UHInventoryComponent, EquippedItem);
+}
+
 void UHInventoryComponent::AddItem(AHPlayerItem* Item)
 {
 	if (!Item || !Item->ItemData || !ASC) return;
@@ -73,6 +92,10 @@ void UHInventoryComponent::AddItem(AHPlayerItem* Item)
 	if (bAutoEquipItem)
 	{
 		EquipItem(Type);
+	}
+	else
+	{
+		Item->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 	}
 }
 
@@ -172,13 +195,6 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 	HandleEquipBindings(ItemToEquip);
 }
 
-void UHInventoryComponent::HandlePlayerDeath()
-{
-	ASC->RemoveAllGrantedAbilities();
-	ItemSlots.Empty();
-	EquippedItem = nullptr;
-}
-
 void UHInventoryComponent::HandleEquipBindings(AHPlayerItem* ItemToEquip)
 {
 	if (!ASC || !ItemToEquip) return;
@@ -206,30 +222,16 @@ void UHInventoryComponent::HandleEquipBindings(AHPlayerItem* ItemToEquip)
 	//Include here the future FOnWeaponEquipped
 }
 
-void UHInventoryComponent::OnRep_ItemSlots()
-{
-	// Aquí el cliente puede refrescar UI (inventario visual).
-	ItemSlots.Empty();
-	for (const FItemSlotRep& Slot : ReplicatedSlots)
-	{
-		ItemSlots.Add(Slot.ItemType, Slot.Item);
-	}
-}
-
 AHPlayerItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
 {
 	return ItemSlots.FindRef(ItemType);
 }
 
-void UHInventoryComponent::LinkAbilitySystemComponent()
+void UHInventoryComponent::HandlePlayerDeath()
 {
-	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
-	{
-		if (APlayerState* PS = PawnOwner->GetPlayerState())
-		{
-			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
-		}
-	}
+	ASC->RemoveAllGrantedAbilities();
+	ItemSlots.Empty();
+	EquippedItem = nullptr;
 }
 
 //TODO:: REPLICATION MIGHT CAUSE THE BIND TO HAPPEN TWICE, CHECK IT
@@ -239,10 +241,12 @@ void UHInventoryComponent::OnRep_EquippedItem()
 	HandleEquipBindings(EquippedItem);
 }
 
-void UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void UHInventoryComponent::OnRep_ItemSlots()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(UHInventoryComponent, ReplicatedSlots);
-	DOREPLIFETIME(UHInventoryComponent, EquippedItem);
+	// Aquí el cliente puede refrescar UI (inventario visual).
+	ItemSlots.Empty();
+	for (const FItemSlotRep& Slot : ReplicatedSlots)
+	{
+		ItemSlots.Add(Slot.ItemType, Slot.Item);
+	}
 }

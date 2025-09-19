@@ -20,7 +20,7 @@ AHBaseItem::AHBaseItem()
 	CollisionSphere = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
 	CollisionSphere->SetupAttachment(ItemMesh);
 	CollisionSphere->SetSphereRadius(50.f);
-	CollisionSphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	//CollisionSphere->SetCollisionProfileName(TEXT("ItemCollision"));
 	CollisionSphere->SetGenerateOverlapEvents(true);
 	CollisionSphere->OnComponentBeginOverlap.AddDynamic(this, &AHBaseItem::OnItemOverlap);
 	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AHBaseItem::OnItemEndOverlap);

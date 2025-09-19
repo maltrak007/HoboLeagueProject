@@ -3,8 +3,6 @@
 
 #include "HInteractionComponent.h"
 
-#include "GameFramework/PlayerState.h"
-#include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
 
 
