@@ -8,7 +8,7 @@
 
 UHInteractionComponent::UHInteractionComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 // Called when the game starts
@@ -23,24 +23,24 @@ void UHInteractionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	ClearInteractableObjects();
 }
 
-void UHInteractionComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-                                           FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	for (const TScriptInterface<IItemInteractableInterface>& InteractableObject : NearbyInteractableObjects)
-	{
-		if (InteractableObject.GetObject())
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				0.f, // duration 0 means refresh every frame
-				FColor::Green,
-				FString::Printf(TEXT("Nearby Interactable Object: %s"), *InteractableObject.GetObject()->GetName())
-			);
-		}
-	}
-}
+// void UHInteractionComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+//                                            FActorComponentTickFunction* ThisTickFunction)
+// {
+// 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+//
+// 	for (const TScriptInterface<IItemInteractableInterface>& InteractableObject : NearbyInteractableObjects)
+// 	{
+// 		if (InteractableObject.GetObject())
+// 		{
+// 			GEngine->AddOnScreenDebugMessage(
+// 				-1,
+// 				0.f, // duration 0 means refresh every frame
+// 				FColor::Green,
+// 				FString::Printf(TEXT("Nearby Interactable Object: %s"), *InteractableObject.GetObject()->GetName())
+// 			);
+// 		}
+// 	}
+// }
 
 
 void UHInteractionComponent::AddInteractableObject(AHBaseItem* InteractableObject)

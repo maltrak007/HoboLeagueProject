@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Components/ActorComponent.h"
 #include "HInventoryComponent.generated.h"
 
@@ -90,4 +91,5 @@ protected:
 	void OnRep_EquippedItem();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	void OnDeathTagChanged(FGameplayTag Tag, int32 NewCount);
 };

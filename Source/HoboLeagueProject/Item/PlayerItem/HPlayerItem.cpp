@@ -5,6 +5,7 @@
 
 #include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/Component/HInteractionComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
 
@@ -86,5 +87,7 @@ void AHPlayerItem::Interact_Implementation(APlayerCharacter* PlayerOwner)
 		OwningPlayer = PlayerOwner;
 
 		OwningPlayer->InventoryComponent->AddItem(this);
+
+		OwningPlayer->InteractionComponent->RemoveInteractableObject(this);
 	}
 }

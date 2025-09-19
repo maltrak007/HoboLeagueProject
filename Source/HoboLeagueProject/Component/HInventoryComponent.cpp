@@ -29,6 +29,8 @@ void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (ASC && EndPlayReason == EEndPlayReason::Destroyed)
 	{
 		ASC->RemoveAllGrantedAbilities();
+		ASC->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag(FName("Status.Dead")),
+		                              EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
 	}
 
 	ItemSlots.Empty();
@@ -44,6 +46,13 @@ void UHInventoryComponent::LinkAbilitySystemComponent()
 		if (APlayerState* PS = PawnOwner->GetPlayerState())
 		{
 			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
+
+			if (ASC)
+			{
+				ASC->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag(FName("Status.Dead")),
+				                              EGameplayTagEventType::NewOrRemoved).AddUObject(
+					this, &UHInventoryComponent::OnDeathTagChanged);
+			}
 		}
 	}
 }
@@ -54,6 +63,14 @@ void UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(UHInventoryComponent, ReplicatedSlots);
 	DOREPLIFETIME(UHInventoryComponent, EquippedItem);
+}
+
+void UHInventoryComponent::OnDeathTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	if (NewCount > 0)
+	{
+		HandlePlayerDeath();
+	}
 }
 
 void UHInventoryComponent::AddItem(AHPlayerItem* Item)
@@ -148,7 +165,7 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* Item)
 	});
 
 	EquippedItem = nullptr;
-	
+
 	// If no items are left, bind the basic abilities (Melee)
 	if (ItemSlots.IsEmpty())
 	{
@@ -173,16 +190,16 @@ void UHInventoryComponent::EquipItem(EItemType ItemType)
 	{
 		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
 		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
-		
+
 		for (auto& Pair : ASC->GetBasicAbilities())
 		{
 			if (Pair.Value)
 				ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
 		}
-		
+
 		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 		EquippedItem = nullptr;
-		
+
 		//Include here the future FOnWeaponEquipped
 		return;
 	}
@@ -229,7 +246,14 @@ AHPlayerItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
 
 void UHInventoryComponent::HandlePlayerDeath()
 {
-	ASC->RemoveAllGrantedAbilities();
+	for (auto& Pair : ItemSlots)
+	{
+		if (AHPlayerItem* Item = Pair.Value)
+		{
+			RemoveItem(Item);
+		}
+	}
+
 	ItemSlots.Empty();
 	EquippedItem = nullptr;
 }
