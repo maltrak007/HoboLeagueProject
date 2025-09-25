@@ -43,6 +43,7 @@ public:
 	FGameplayTag Event_Combo_Change_Melee04;
 	FGameplayTag Event_Combo_Change_End;
 	FGameplayTag Event_Combo_Damage;
+	FGameplayTag Event_Combo_UseStamina;
 
 	//**************************************************************
 	//     ****************************************************

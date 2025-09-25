@@ -73,6 +73,10 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 		FName("Event.Combo.Damage"),
 		FString("Notify to apply damage to target"));
 
+	GameplayTags.Event_Combo_UseStamina = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.UseStamina"),
+		FString("Notify to Use Stamina"));
+
 
 	/*************************************************************************************/
 	/*	 								ABILITIES										 */

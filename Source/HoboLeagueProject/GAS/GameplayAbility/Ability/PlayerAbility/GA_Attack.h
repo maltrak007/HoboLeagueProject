@@ -22,7 +22,8 @@ public:
 	static FGameplayTag GetComboChangedEventTag();
 	static FGameplayTag GetComboChangedEventEndTag();
 	static FGameplayTag GetComboTargetEventTag();
-	
+	FGameplayTag GetComboUseStaminaEventTag();
+
 private:
 
 	void SetupWaitComboInputPress();
@@ -39,7 +40,18 @@ private:
 	TMap<FName, TSubclassOf<UGameplayEffect>> DamageEffectMap;
 
 	TSubclassOf<UGameplayEffect> GetDamageEffectForCurrentCombo() const;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
+	TSubclassOf<UGameplayEffect> DefaultStaminaCost;
+
+	UPROPERTY(EditDefaultsOnly, Category="Gameplay Effect")
+	TMap<FName, TSubclassOf<UGameplayEffect>> StaminaCostMap;
 	
+	TSubclassOf<UGameplayEffect> GetStaminaEffectCostForCurrentCombo() const;
+
+	UFUNCTION()
+	void ConsumeStamina(FGameplayEventData Data);
+
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* AttackMontage;
 

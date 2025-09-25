@@ -35,12 +35,6 @@ protected:
 
 	UFUNCTION()
 	void HandlePlayerRespawn() const;
-
-	// ---------- Stamina ---------- //
-	void OnStaminaTagChanged(FGameplayTag Tag, int32 NewCount);
-	
-	UFUNCTION()
-	void HandlePlayerStamina() const;
 	
 	// ---------- Overdose ---------- //
 	UFUNCTION()
