@@ -6,7 +6,7 @@
 #include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
-#include "HoboLeagueProject/GAS/GameplayAbilities/Abilities/PlayerAbilities/GA_Attack.h"
+#include "HoboLeagueProject/GAS/GameplayAbility/Ability/PlayerAbility/GA_Attack.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerDataAsset.h"

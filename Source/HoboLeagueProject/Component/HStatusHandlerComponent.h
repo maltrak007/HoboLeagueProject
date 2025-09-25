@@ -15,27 +15,41 @@ class HOBOLEAGUEPROJECT_API UHStatusHandlerComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	UHStatusHandlerComponent();
 
 	/** Link the Ability System Component from the player state **/
 	void LinkAbilitySystemComponent();
 	
 protected:
-	// Called when the game starts
+	
 	virtual void BeginPlay() override;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	// ---------- Death / Respawn ---------- //
 	UFUNCTION()
 	void OnDeathTagChanged(FGameplayTag Tag, int32 NewCount);
-
-	UPROPERTY()
-	UHAbilitySystemComponent* ASC = nullptr;
 	
 	UFUNCTION()
 	void HandlePlayerDeath() const;
 
 	UFUNCTION()
 	void HandlePlayerRespawn() const;
+
+	// ---------- Stamina ---------- //
+	void OnStaminaTagChanged(FGameplayTag Tag, int32 NewCount);
+	
+	UFUNCTION()
+	void HandlePlayerStamina() const;
+	
+	// ---------- Overdose ---------- //
+	UFUNCTION()
+	void OnOverdoseTagChanged(FGameplayTag Tag, int32 NewCount);
+	
+	UFUNCTION()
+	void HandlePlayerOverdose();
+	// ----------------------------------------- //
+	
+	UPROPERTY()
+	UHAbilitySystemComponent* ASC = nullptr;
 };

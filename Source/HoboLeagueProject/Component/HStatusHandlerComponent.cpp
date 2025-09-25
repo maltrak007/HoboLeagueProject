@@ -3,7 +3,11 @@
 
 #include "HStatusHandlerComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
+#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/GAS/FGameplayTags.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
+#include "HoboLeagueProject/GAS/GameplayAbility/Ability/PlayerAbility/GA_RegenerateStamina.h"
 
 
 // Sets default values for this component's properties
@@ -18,20 +22,53 @@ UHStatusHandlerComponent::UHStatusHandlerComponent()
 void UHStatusHandlerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//Subscribe to the delegate that will be called when the player is dead
 }
 
 void UHStatusHandlerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	if (ASC)
 	{
-		ASC->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag(FName("Status.Dead")),
-		                              EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
+		ASC->RegisterGameplayTagEvent(
+			FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_Dead)),
+			EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
+
+		ASC->RegisterGameplayTagEvent(
+			FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_Overdosing)),
+			EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
 	}
 
 	Super::EndPlay(EndPlayReason);
 }
 
+void UHStatusHandlerComponent::LinkAbilitySystemComponent()
+{
+	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
+	{
+		if (APlayerState* PS = PawnOwner->GetPlayerState())
+		{
+			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
+
+			//I Choose this approach because this method automatically replicates the changes to all clients
+			// and it is more efficient than using a multicast RPC
+			if (ASC)
+			{
+				ASC->RegisterGameplayTagEvent(
+					FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_Dead)),
+					EGameplayTagEventType::NewOrRemoved).AddUObject(
+					this, &UHStatusHandlerComponent::OnDeathTagChanged);
+				
+
+				ASC->RegisterGameplayTagEvent(
+					FGameplayTag::RequestGameplayTag(
+						FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_Overdosing)),
+					EGameplayTagEventType::NewOrRemoved).AddUObject(
+					this, &UHStatusHandlerComponent::OnOverdoseTagChanged);
+			}
+		}
+	}
+}
+
+// ---------- Death / Respawn ---------- //
 void UHStatusHandlerComponent::OnDeathTagChanged(FGameplayTag Tag, int32 NewCount)
 {
 	if (NewCount > 0)
@@ -66,22 +103,21 @@ void UHStatusHandlerComponent::HandlePlayerRespawn() const
 	}
 }
 
-void UHStatusHandlerComponent::LinkAbilitySystemComponent()
+// ---------- Overdose ---------- //
+void UHStatusHandlerComponent::OnOverdoseTagChanged(FGameplayTag Tag, int32 NewCount)
 {
-	if (APawn* PawnOwner = Cast<APawn>(GetOwner()))
+	if (NewCount > 0)
 	{
-		if (APlayerState* PS = PawnOwner->GetPlayerState())
-		{
-			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
-
-			//I Choose this approach because this method automatically replicates the changes to all clients
-			// and it is more efficient than using a multicast RPC
-			if (ASC)
-			{
-				ASC->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag(FName("Status.Dead")),
-											  EGameplayTagEventType::NewOrRemoved).AddUObject(
-					this, &UHStatusHandlerComponent::OnDeathTagChanged);
-			}
-		}
+		HandlePlayerOverdose();
 	}
 }
+
+void UHStatusHandlerComponent::HandlePlayerOverdose()
+{
+	// START A TIMER TO KILL THE PLAYER AFTER A FEW SECONDS
+	// SHOW WIDGET TO INDICATE THE TIME LEFT TO DIE
+	// IF THE PLAYER USES AN ANTIDOTE, CLEAR THE TIMER AND REMOVE THE WIDGET
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PLAYER IS OVERDOSING"));
+}
+
+// ----------------------------------------- //

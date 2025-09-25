@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"
-#include "HoboLeagueProject/GAS/GameplayAbilities/HBaseGameplayAbility.h"
+#include "HoboLeagueProject/GAS/GameplayAbility/HBaseGameplayAbility.h"
 #include "GA_Interact.generated.h"
 
 /**

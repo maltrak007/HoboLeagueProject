@@ -11,24 +11,29 @@ UGA_SwapItem::UGA_SwapItem()
 }
 
 void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+                                   const FGameplayAbilityActivationInfo ActivationInfo,
+                                   const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	if (!K2_CommitAbility())
+	{
+		K2_EndAbility();
+		return;
+	}
 
 	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
-	if (!PC) 
+	if (!PC)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
-	
+
 	UHInventoryComponent* Inventory = PC->FindComponentByClass<UHInventoryComponent>();
 	if (!Inventory)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
-	
+
 	Inventory->EquipItem(ItemTypeToSwap);
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

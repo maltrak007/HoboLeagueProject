@@ -40,19 +40,32 @@ public:
 	}
 
 private:
+	// ---------- Attribute Change Callbacks ---------- //
 	void HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData);
+	
+	void StaminaUpdated(const FOnAttributeChangeData& OnAttributeChangeData);
+	
+	void OverdoseUpdated(const FOnAttributeChangeData& OnAttributeChangeData);
 
+	// --------- Gameplay Effects needed for callbacks-------------- //
 	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TSubclassOf<UGameplayEffect> DeathEffect;
+
+	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
+	TSubclassOf<UGameplayEffect> OverdoseEffect;
 	
+	// --------- Gameplay Effects -------------- //
 	UPROPERTY(EditAnywhere, Category="Hobo | Initial Effects", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> InitialEffects;
 	
 	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay Abilities", meta=(AllowPrivateAccess="true"))
 	TMap<EHAbilityInputID,TSubclassOf<UGameplayAbility>> Abilities;
 
-	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay BasicAbilities", meta=(AllowPrivateAccess="true"))
+	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay Abilities", meta=(AllowPrivateAccess="true"))
 	TMap<EHAbilityInputID,TSubclassOf<UGameplayAbility>> BasicAbilities;
+
+	UPROPERTY(EditAnywhere, Category="Hobo | Gameplay Abilities", meta=(AllowPrivateAccess="true"))
+	TArray<TSubclassOf<UGameplayAbility>> PassiveAbilities;
 	
 	UPROPERTY()
 	bool StartUpAbilitiesGiven = false;

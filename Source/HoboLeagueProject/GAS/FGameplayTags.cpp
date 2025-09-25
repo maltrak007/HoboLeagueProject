@@ -12,6 +12,14 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 		FName("Status.Dead"),
 		FString("Dead Status Effect"));
 
+	GameplayTags.Status_Overdosing = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.Overdosing"),
+		FString("Overdosing Status Effect"));
+
+	GameplayTags.Status_StaminaDepletion = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Status.StaminaDepletion"),
+		FString("Stamina Depletion Status Effect"));
+
 	GameplayTags.Status_Bleeding = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Status.Bleeding"),
 		FString("Bleeding Status Effect"));
@@ -112,6 +120,9 @@ FString("Ability to swap to Consumable"));
 	GameplayTags.Abilities_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Abilities.Interact"),
 FString("Ability to Interact"));
+	GameplayTags.Abilities_RegenerateStamina = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Abilities.RegenerateStamina"),
+FString("Regenerate Stamina Ability"));
 	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */

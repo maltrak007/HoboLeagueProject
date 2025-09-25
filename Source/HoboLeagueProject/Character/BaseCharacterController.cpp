@@ -112,7 +112,12 @@ void ABaseCharacterController::Look(const FInputActionValue& Value)
 	const FVector2D LookAxisValue = Value.Get<FVector2D>();
 
 	AddYawInput(LookAxisValue.X);
-	AddPitchInput(LookAxisValue.Y);
+	// Invert the pitch input if needed with bool
+	//if (bInvertPitch)
+	//{
+	//	LookAxisValue.Y;
+	//}
+	AddPitchInput(LookAxisValue.Y * -1.f);
 }
 
 void ABaseCharacterController::Jump(const FInputActionValue& Value)

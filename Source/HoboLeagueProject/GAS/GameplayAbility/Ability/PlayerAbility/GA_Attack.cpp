@@ -20,8 +20,6 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                  const FGameplayAbilityActivationInfo ActivationInfo,
                                  const FGameplayEventData* TriggerEventData)
 {
-	//Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
-
 	if (!K2_CommitAbility())
 	{
 		K2_EndAbility();

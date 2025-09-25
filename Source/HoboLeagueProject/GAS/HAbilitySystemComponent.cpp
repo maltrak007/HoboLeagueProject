@@ -2,13 +2,23 @@
 
 
 #include "HAbilitySystemComponent.h"
+
+#include "FGameplayTags.h"
 #include "HAttributeSet.h"
 
 
 UHAbilitySystemComponent::UHAbilitySystemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	GetGameplayAttributeValueChangeDelegate(UHAttributeSet::GetHealthAttribute()).AddUObject(this, &UHAbilitySystemComponent::HealthUpdated);
+	
+	GetGameplayAttributeValueChangeDelegate(UHAttributeSet::GetHealthAttribute()).AddUObject(
+		this, &UHAbilitySystemComponent::HealthUpdated);
+	
+	GetGameplayAttributeValueChangeDelegate(UHAttributeSet::GetStaminaAttribute()).AddUObject(
+		this, &UHAbilitySystemComponent::StaminaUpdated);
+	
+	GetGameplayAttributeValueChangeDelegate(UHAttributeSet::GetOverdoseAttribute()).AddUObject(
+		this, &UHAbilitySystemComponent::OverdoseUpdated);
 }
 
 void UHAbilitySystemComponent::ApplyInitialEffects()
@@ -42,6 +52,11 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	for (const TPair<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& AbilityPair : BasicAbilities)
 	{
 		GiveAbility(FGameplayAbilitySpec(AbilityPair.Value, 1.0f, (int32)AbilityPair.Key, nullptr));
+	}
+
+	for (TSubclassOf<UGameplayAbility>& Ability : PassiveAbilities)
+	{
+		GiveAbility(FGameplayAbilitySpec(Ability, 1.0f, INDEX_NONE, nullptr));
 	}
 }
 
@@ -126,6 +141,36 @@ void UHAbilitySystemComponent::HealthUpdated(const FOnAttributeChangeData& OnAtt
 	if (OnAttributeChangeData.NewValue <= 0 && GetOwner()->HasAuthority() && DeathEffect)
 	{
 		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(DeathEffect, 1, MakeEffectContext());
+		ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
+	}
+}
+
+void UHAbilitySystemComponent::StaminaUpdated(const FOnAttributeChangeData& OnAttributeChangeData)
+{
+	if (!GetOwner()) return;
+
+	const float MaxStamina = GetSet<UHAttributeSet>()->GetMaxStamina();
+
+	if (OnAttributeChangeData.NewValue < MaxStamina && GetOwner()->HasAuthority() && !HasMatchingGameplayTag(
+		FHGameplayTags::Get().Status_StaminaDepletion))
+	{
+		AddLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
+	}
+	else if (OnAttributeChangeData.NewValue >= MaxStamina && HasMatchingGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion))
+	{
+		RemoveLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
+	}
+}
+
+void UHAbilitySystemComponent::OverdoseUpdated(const FOnAttributeChangeData& OnAttributeChangeData)
+{
+	if (!GetOwner()) return;
+
+	const float MaxOverdose = GetSet<UHAttributeSet>()->GetMaxOverdose();
+
+	if (OnAttributeChangeData.NewValue >= MaxOverdose && GetOwner()->HasAuthority() && OverdoseEffect)
+	{
+		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpec(OverdoseEffect, 1, MakeEffectContext());
 		ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 	}
 }

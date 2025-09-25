@@ -9,6 +9,11 @@ public:
 	static FHGameplayTags GameplayTags;
 	
 	static const FHGameplayTags& Get(){return GameplayTags;}
+
+	static FName GetTagName(const FGameplayTag& Tag)
+	{
+		return Tag.GetTagName();
+	}
 	
 	static void InitializeNativeGameplayTags();
 	
@@ -18,6 +23,8 @@ public:
 	//     ****************************************************
 	//**************************************************************
 	FGameplayTag Status_Dead;
+	FGameplayTag Status_Overdosing;
+	FGameplayTag Status_StaminaDepletion;
 	FGameplayTag Status_Bleeding;
 
 	//**************************************************************
@@ -58,6 +65,7 @@ public:
 	//     ****************************************************
 	//**************************************************************
 	FGameplayTag Abilities_Interact;
+	FGameplayTag Abilities_RegenerateStamina;
 	//**************************************************************
 	//     ****************************************************
 	//						  GAMEPLAY CUES

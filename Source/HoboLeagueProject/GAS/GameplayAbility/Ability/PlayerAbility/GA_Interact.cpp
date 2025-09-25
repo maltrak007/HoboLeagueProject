@@ -9,16 +9,20 @@
 
 UGA_Interact::UGA_Interact()
 {
-	
 }
 
 void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-                                   const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
+                                   const FGameplayAbilityActivationInfo ActivationInfo,
+                                   const FGameplayEventData* TriggerEventData)
 {
-	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
+	if (!K2_CommitAbility())
+	{
+		K2_EndAbility();
+		return;
+	}
 
 	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
-	if (!PC) 
+	if (!PC)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
@@ -34,7 +38,6 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	AHBaseItem* Target = RetrieveInteractableItem(PC, InteractionComp);
 	if (Target)
 	{
-		// Call Interact on the target (via interface)
 		IItemInteractableInterface::Execute_Interact(Target, PC);
 	}
 
@@ -54,12 +57,12 @@ AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHI
 	// Settings
 	const int32 NumRays = 6;
 	const float AngleStep = 10.0f; // degrees between rays
-	const float MaxDistance = 300.0f;
+	const float MaxDistance = 400.0f;
 
 	AHBaseItem* BestTarget = nullptr;
 	float BestDistSq = TNumericLimits<float>::Max();
 
-	for (int32 i = -NumRays/2; i <= NumRays/2; ++i)
+	for (int32 i = -NumRays / 2; i <= NumRays / 2; ++i)
 	{
 		FRotator SpreadRot = Forward.Rotation();
 		SpreadRot.Yaw += i * AngleStep;
@@ -78,6 +81,7 @@ AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHI
 				if (HitActor->GetClass()->ImplementsInterface(UItemInteractableInterface::StaticClass()) &&
 					InteractionComp->NearbyInteractableObjects.Contains(HitActor))
 				{
+					// Find the closest valid target
 					float DistSq = FVector::DistSquared(Start, HitActor->GetActorLocation());
 					if (DistSq < BestDistSq)
 					{
@@ -88,7 +92,6 @@ AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHI
 			}
 		}
 
-		// Debug draw
 		DrawDebugLine(World, Start, End, FColor::Green, false, 1.0f, 0, 1.5f);
 	}
 
