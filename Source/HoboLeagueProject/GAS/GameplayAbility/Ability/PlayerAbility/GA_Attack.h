@@ -57,6 +57,7 @@ private:
 
 	UFUNCTION()
 	void GetComboChangedEventReceived(FGameplayEventData Data);
+	bool CanPayStaminaForSection(FName SectionName) const;
 
 	UFUNCTION()
 	void DealDamage(FGameplayEventData Data);

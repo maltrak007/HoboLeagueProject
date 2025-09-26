@@ -8,7 +8,7 @@
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
-#include "HoboLeagueProject/Item/PlayerItem/HPlayerDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "Net/UnrealNetwork.h"
 

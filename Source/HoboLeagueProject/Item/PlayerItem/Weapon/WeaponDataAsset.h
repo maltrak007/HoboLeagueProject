@@ -2,13 +2,13 @@
 
 #include "CoreMinimal.h"
 #include <Engine/DataAsset.h>
-#include "HoboLeagueProject/Item/PlayerItem/HPlayerDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
 #include "WeaponDataAsset.generated.h"
 
 
 
 UCLASS(BlueprintType)
-class HOBOLEAGUEPROJECT_API UWeaponDataAsset : public UHPlayerDataAsset
+class HOBOLEAGUEPROJECT_API UWeaponDataAsset : public UHPlayerItemDataAsset
 {
 	GENERATED_BODY()
 

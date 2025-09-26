@@ -25,9 +25,9 @@ public:
 
 		// Attribute to modify
 		FGameplayModifierInfo ModifierInfo;
-		ModifierInfo.Attribute = UHAttributeSet::GetStaminaAttribute(); // <- replace with your attribute
+		ModifierInfo.Attribute = UHAttributeSet::GetStaminaAttribute(); 
 		ModifierInfo.ModifierOp = EGameplayModOp::Additive;
-		ModifierInfo.ModifierMagnitude = FScalableFloat(0.5f); // +0.5 per tick
+		ModifierInfo.ModifierMagnitude = FScalableFloat(0.5f);
 
 		Modifiers.Add(ModifierInfo);
 	}

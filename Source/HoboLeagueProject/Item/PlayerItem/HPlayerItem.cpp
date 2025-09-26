@@ -3,7 +3,7 @@
 
 #include "HPlayerItem.h"
 
-#include "HPlayerDataAsset.h"
+#include "HPlayerItemDataAsset.h"
 #include "Components/SphereComponent.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"

@@ -6,7 +6,7 @@
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HPlayerItem.generated.h"
 
-class UHPlayerDataAsset;
+class UHPlayerItemDataAsset;
 
 UCLASS()
 class HOBOLEAGUEPROJECT_API AHPlayerItem : public AHBaseItem
@@ -18,7 +18,7 @@ public:
 	AHPlayerItem();
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	UHPlayerDataAsset* ItemData;
+	UHPlayerItemDataAsset* ItemData;
 	
 	/** Attach the item to the player's mesh HOLSTER socket */
 	UFUNCTION()

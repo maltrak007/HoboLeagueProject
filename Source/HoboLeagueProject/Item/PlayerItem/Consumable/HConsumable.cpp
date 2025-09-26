@@ -2,8 +2,6 @@
 
 
 #include "HConsumable.h"
-#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
-#include "HoboLeagueProject/Component/HInventoryComponent.h"
 
 
 // Sets default values

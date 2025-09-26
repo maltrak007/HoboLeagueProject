@@ -207,11 +207,55 @@ void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
 	if (TagNames.Num() > 0)
 	{
 		NextComboName = TagNames.Last();
-
+		
+		// ✅ Check stamina before accepting this combo
+		if (!CanPayStaminaForSection(NextComboName))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for combo section: %s"), *NextComboName.ToString());
+			// Optionally cancel ability or just ignore input
+			return;
+		}
+		
 		UE_LOG(LogTemp, Warning, TEXT("Next Combo is now :: %s"), *NextComboName.ToString());
 
 		SetupWaitComboInputPress();
 	}
+}
+
+bool UGA_Attack::CanPayStaminaForSection(FName SectionName) const
+{
+	TSubclassOf<UGameplayEffect> StaminaCostEffect = DefaultStaminaCost;
+
+	if (const TSubclassOf<UGameplayEffect>* FoundEffect = StaminaCostMap.Find(SectionName))
+	{
+		StaminaCostEffect = *FoundEffect;
+	}
+
+	if (!StaminaCostEffect) return true; // no GE means no cost
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+		FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(StaminaCostEffect, AbilityLevel);
+
+		if (!CostSpecHandle.IsValid())
+		{
+			return false;
+		}
+
+		// Temporarily override ability's cost GE for CheckCost
+		TSubclassOf<UGameplayEffect> SavedCostGE = CostGameplayEffectClass;
+		const_cast<UGA_Attack*>(this)->CostGameplayEffectClass = StaminaCostEffect;
+
+		FGameplayTagContainer OutTags;
+		const bool bCanPay = CheckCost(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), &OutTags);
+
+		const_cast<UGA_Attack*>(this)->CostGameplayEffectClass = SavedCostGE;
+
+		return bCanPay;
+	}
+
+	return false;
 }
 
 void UGA_Attack::DealDamage(FGameplayEventData Data)

@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
-#include "HPlayerDataAsset.generated.h"
+#include "HPlayerItemDataAsset.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class HOBOLEAGUEPROJECT_API UHPlayerDataAsset : public UHBaseItemDataAsset
+class HOBOLEAGUEPROJECT_API UHPlayerItemDataAsset : public UHBaseItemDataAsset
 {
 	GENERATED_BODY()
 public:
