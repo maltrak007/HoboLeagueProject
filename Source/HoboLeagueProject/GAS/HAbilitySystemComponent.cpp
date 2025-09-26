@@ -151,16 +151,22 @@ void UHAbilitySystemComponent::StaminaUpdated(const FOnAttributeChangeData& OnAt
 
 	const float MaxStamina = GetSet<UHAttributeSet>()->GetMaxStamina();
 
-	if (OnAttributeChangeData.NewValue < MaxStamina && GetOwner()->HasAuthority() && !HasMatchingGameplayTag(
-		FHGameplayTags::Get().Status_StaminaDepletion))
+	if (GetOwner()->HasAuthority())
 	{
-		AddLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
-	}
-	else if (OnAttributeChangeData.NewValue >= MaxStamina && HasMatchingGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion))
-	{
-		RemoveLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
+		if (OnAttributeChangeData.NewValue < MaxStamina &&
+			!HasMatchingGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion))
+		{
+			// This is the valid GAS method to add a replicated tag
+			AddLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
+		}
+		else if (OnAttributeChangeData.NewValue >= MaxStamina &&
+				 HasMatchingGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion))
+		{
+			RemoveLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
+		}
 	}
 }
+
 
 void UHAbilitySystemComponent::OverdoseUpdated(const FOnAttributeChangeData& OnAttributeChangeData)
 {

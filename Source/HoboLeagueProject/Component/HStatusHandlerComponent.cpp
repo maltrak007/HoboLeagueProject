@@ -33,6 +33,10 @@ void UHStatusHandlerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 			EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
 
 		ASC->RegisterGameplayTagEvent(
+			FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_StaminaDepletion)),
+			EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
+
+		ASC->RegisterGameplayTagEvent(
 			FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_Overdosing)),
 			EGameplayTagEventType::NewOrRemoved).RemoveAll(this);
 	}
@@ -56,7 +60,11 @@ void UHStatusHandlerComponent::LinkAbilitySystemComponent()
 					FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_Dead)),
 					EGameplayTagEventType::NewOrRemoved).AddUObject(
 					this, &UHStatusHandlerComponent::OnDeathTagChanged);
-				
+
+				ASC->RegisterGameplayTagEvent(
+					FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Status_StaminaDepletion)),
+					EGameplayTagEventType::NewOrRemoved).AddUObject(
+					this, &UHStatusHandlerComponent::OnStaminaDepletionTagChanged);
 
 				ASC->RegisterGameplayTagEvent(
 					FGameplayTag::RequestGameplayTag(
@@ -100,6 +108,30 @@ void UHStatusHandlerComponent::HandlePlayerRespawn() const
 		PawnOwner->EnableInput(PC);
 		PawnOwner->SetActorEnableCollision(true);
 		PawnOwner->SetActorHiddenInGame(false);
+	}
+}
+
+void UHStatusHandlerComponent::OnStaminaDepletionTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	if (!ASC || !GetOwner()) return;
+
+	if (NewCount > 0)
+	{
+		// Tag appeared -> try to activate the regeneration ability
+		FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromClass(UGA_RegenerateStamina::StaticClass());
+		if (Spec && Spec->Ability)
+		{
+			bool bActiveRegen = ASC->TryActivateAbility(Spec->Handle, true);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Stamina Regeneration Ability Activated: %s"), bActiveRegen ? TEXT("True") : TEXT("False")));
+		}
+	}
+	else
+	{
+		FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromClass(UGA_RegenerateStamina::StaticClass());
+		if (Spec && Spec->Ability)
+		{
+			ASC->CancelAbility(Spec->Ability);
+		}
 	}
 }
 
