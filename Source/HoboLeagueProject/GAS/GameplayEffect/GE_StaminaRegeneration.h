@@ -28,7 +28,7 @@ public:
 		ModifierInfo.Attribute = UHAttributeSet::GetStaminaAttribute(); 
 		ModifierInfo.ModifierOp = EGameplayModOp::Additive;
 		ModifierInfo.ModifierMagnitude = FScalableFloat(0.5f);
-
+		
 		Modifiers.Add(ModifierInfo);
 	}
 };

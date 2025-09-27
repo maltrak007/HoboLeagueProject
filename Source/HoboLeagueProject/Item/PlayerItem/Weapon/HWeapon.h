@@ -18,11 +18,16 @@ class HOBOLEAGUEPROJECT_API AHWeapon : public AHPlayerItem
 
 public:
 	AHWeapon();
+
+	UPROPERTY(BlueprintReadOnly)
+	float RemainingDurability;
 	
 protected:
 	virtual void BeginPlay() override;
-
 	
-private:
+	void ReduceWeaponDurability();
 
+private:
+	UPROPERTY()
+	TObjectPtr<UWeaponDataAsset> WeaponData;
 };

@@ -3,8 +3,6 @@
 
 #include "HStatusHandlerComponent.h"
 #include "GameFramework/PlayerState.h"
-#include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
-#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/GAS/GameplayAbility/Ability/PlayerAbility/GA_RegenerateStamina.h"
@@ -117,12 +115,11 @@ void UHStatusHandlerComponent::OnStaminaDepletionTagChanged(FGameplayTag Tag, in
 
 	if (NewCount > 0)
 	{
-		// Tag appeared -> try to activate the regeneration ability
 		FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromClass(UGA_RegenerateStamina::StaticClass());
 		if (Spec && Spec->Ability)
 		{
 			bool bActiveRegen = ASC->TryActivateAbility(Spec->Handle, true);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Stamina Regeneration Ability Activated: %s"), bActiveRegen ? TEXT("True") : TEXT("False")));
+			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Stamina Regeneration Ability Activated: %s"), bActiveRegen ? TEXT("True") : TEXT("False")));
 		}
 	}
 	else
@@ -147,8 +144,8 @@ void UHStatusHandlerComponent::OnOverdoseTagChanged(FGameplayTag Tag, int32 NewC
 void UHStatusHandlerComponent::HandlePlayerOverdose()
 {
 	// START A TIMER TO KILL THE PLAYER AFTER A FEW SECONDS
-	// SHOW WIDGET TO INDICATE THE TIME LEFT TO DIE
-	// IF THE PLAYER USES AN ANTIDOTE, CLEAR THE TIMER AND REMOVE THE WIDGET
+	// SHOW WIDGET TO INDICATE THE TIME LEFT TO DIE AND THE KEY TO ACTIVATE THE VOICE CHAT TO CALL FOR HELP
+	// IF ANOTHER PLAYER HELPS HIM, CLEAR THE TIMER AND REMOVE THE WIDGET IF NOT KILL THE PLAYER
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("PLAYER IS OVERDOSING"));
 }
 

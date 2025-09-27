@@ -9,9 +9,10 @@
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
+#include "HoboLeagueProject/GAS/FGameplayTags.h"
 
 
-UGA_Attack::UGA_Attack(): AttackMontage(nullptr)
+UGA_Attack::UGA_Attack() : AttackMontage(nullptr)
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
@@ -54,14 +55,17 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		WaitTargetingEventTask->ReadyForActivation();
 
 		UAbilityTask_WaitGameplayEvent* WaitStaminaEventTask =
-		UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, GetComboUseStaminaEventTag());
+			UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, GetComboUseStaminaEventTag());
 		WaitStaminaEventTask->EventReceived.AddDynamic(this, &UGA_Attack::ConsumeStamina);
 		WaitStaminaEventTask->ReadyForActivation();
+		
 	}
 
 	SetupWaitComboInputPress();
 }
 
+// Do not substitue this because is aiming to get only the prefix "Event.Combo.Change"
+// and not the full tag "Event.Combo.Change.X" where X is the combo name
 FGameplayTag UGA_Attack::GetComboChangedEventTag()
 {
 	return FGameplayTag::RequestGameplayTag("Event.Combo.Change");
@@ -69,17 +73,17 @@ FGameplayTag UGA_Attack::GetComboChangedEventTag()
 
 FGameplayTag UGA_Attack::GetComboChangedEventEndTag()
 {
-	return FGameplayTag::RequestGameplayTag("Event.Combo.Change.End");
+	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_Change_End));
 }
 
 FGameplayTag UGA_Attack::GetComboTargetEventTag()
 {
-	return FGameplayTag::RequestGameplayTag("Event.Combo.Damage");
+	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_Damage));
 }
 
 FGameplayTag UGA_Attack::GetComboUseStaminaEventTag()
 {
-	return FGameplayTag::RequestGameplayTag("Event.Combo.UseStamina");
+	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_UseStamina));
 }
 
 void UGA_Attack::SetupWaitComboInputPress()
@@ -140,55 +144,56 @@ TSubclassOf<UGameplayEffect> UGA_Attack::GetStaminaEffectCostForCurrentCombo() c
 
 void UGA_Attack::ConsumeStamina(FGameplayEventData Data)
 {
-    // Authority only — apply authoritative cost changes on the server.
-    if (!K2_HasAuthority())
-    {
-        return;
-    }
+	// Authority only — apply authoritative cost changes on the server.
+	if (!K2_HasAuthority())
+	{
+		return;
+	}
 
-    TSubclassOf<UGameplayEffect> StaminaCostEffect = GetStaminaEffectCostForCurrentCombo();
-    if (!StaminaCostEffect) return;
+	TSubclassOf<UGameplayEffect> StaminaCostEffect = GetStaminaEffectCostForCurrentCombo();
+	if (!StaminaCostEffect) return;
 
-    if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
-    {
-        // --- Build the outgoing spec (we'll apply this later if allowed) ---
-        const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-        FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(StaminaCostEffect, AbilityLevel);
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		// --- Build the outgoing spec (we'll apply this later if allowed) ---
+		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+		FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(StaminaCostEffect, AbilityLevel);
 
-        if (!CostSpecHandle.IsValid())
-        {
-            return;
-        }
+		if (!CostSpecHandle.IsValid())
+		{
+			return;
+		}
 
-        // --- IMPORTANT: Use CheckCost on the ability instance, but CheckCost inspects the ability's
-        // CostGameplayEffectClass. Temporarily override it so CheckCost checks the section GE. ---
-        TSubclassOf<UGameplayEffect> SavedCostGE = CostGameplayEffectClass; // store original
+		// --- IMPORTANT: Use CheckCost on the ability instance, but CheckCost inspects the ability's
+		// CostGameplayEffectClass. Temporarily override it so CheckCost checks the section GE. ---
+		TSubclassOf<UGameplayEffect> SavedCostGE = CostGameplayEffectClass; // store original
 
-        CostGameplayEffectClass = StaminaCostEffect; // temporarily point ability's cost to section GE
+		CostGameplayEffectClass = StaminaCostEffect; // temporarily point ability's cost to section GE
 
-        // Optional: collect tags that CheckCost returns (not required)
-        FGameplayTagContainer OutRelevantTags;
-        const bool bCanPay = CheckCost(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), &OutRelevantTags);
+		// Optional: collect tags that CheckCost returns (not required)
+		FGameplayTagContainer OutRelevantTags;
+		const bool bCanPay = CheckCost(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), &OutRelevantTags);
 
-        // restore original cost GE immediately
-        CostGameplayEffectClass = SavedCostGE;
+		// restore original cost GE immediately
+		CostGameplayEffectClass = SavedCostGE;
 
-        // CheckCost returns true when the cost CAN be paid
-        if (!bCanPay)
-        {
-            UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for section (NextComboName = %s)"), *NextComboName.ToString());
-            // handle failure: cancel combo / end ability / play feedback, etc.
-            K2_EndAbility();
-            return;
-        }
+		// CheckCost returns true when the cost CAN be paid
+		if (!bCanPay)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for section (NextComboName = %s)"),
+			       *NextComboName.ToString());
+			// handle failure: cancel combo / end ability / play feedback, etc.
+			K2_EndAbility();
+			return;
+		}
 
-        // --- Apply the cost effect to self (server authoritative) ---
-        // If your cost GE uses SetByCaller, set magnitudes on CostSpecHandle.Data here before applying.
-        if (CostSpecHandle.IsValid() && CostSpecHandle.Data.IsValid())
-        {
-            ASC->ApplyGameplayEffectSpecToSelf(*CostSpecHandle.Data.Get());
-        }
-    }
+		// --- Apply the cost effect to self (server authoritative) ---
+		// If your cost GE uses SetByCaller, set magnitudes on CostSpecHandle.Data here before applying.
+		if (CostSpecHandle.IsValid() && CostSpecHandle.Data.IsValid())
+		{
+			ASC->ApplyGameplayEffectSpecToSelf(*CostSpecHandle.Data.Get());
+		}
+	}
 }
 
 
@@ -207,7 +212,7 @@ void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
 	if (TagNames.Num() > 0)
 	{
 		NextComboName = TagNames.Last();
-		
+
 		// ✅ Check stamina before accepting this combo
 		if (!CanPayStaminaForSection(NextComboName))
 		{
@@ -215,7 +220,7 @@ void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
 			// Optionally cancel ability or just ignore input
 			return;
 		}
-		
+
 		UE_LOG(LogTemp, Warning, TEXT("Next Combo is now :: %s"), *NextComboName.ToString());
 
 		SetupWaitComboInputPress();
@@ -264,10 +269,14 @@ void UGA_Attack::DealDamage(FGameplayEventData Data)
 	for (const FHitResult& HitResult : HitResults)
 	{
 		TSubclassOf<UGameplayEffect> DamageEffect = GetDamageEffectForCurrentCombo();
-		
+
 		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(
 			DamageEffect, GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo()));
 		ApplyGameplayEffectSpecToTarget(GetCurrentAbilitySpecHandle(), CurrentActorInfo, CurrentActivationInfo,
-		                                EffectSpecHandle, UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(HitResult.GetActor()));
+		                                EffectSpecHandle,
+		                                UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(
+			                                HitResult.GetActor()));
+		
+		OnWeaponHitDelegate.Broadcast();
 	}
 }

@@ -22,13 +22,18 @@ public:
 	float Damage;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
-	float Durability;
+	float TotalDurability;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	float LostDurability;
+	
 	// ======== GETTERS ========
-
 	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
 	float GetDamage() const { return Damage; }
 	
 	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
-	float GetDurability() const { return Durability; }
+	float GetTotalDurability() const { return TotalDurability; }
+
+	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
+	float GetLostDurability() const { return LostDurability; }
 };

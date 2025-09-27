@@ -6,6 +6,7 @@
 #include "HoboLeagueProject/GAS/GameplayAbility/HBaseGameplayAbility.h"
 #include "GA_Attack.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnWeaponHit);
 /**
  * 
  */
@@ -24,8 +25,9 @@ public:
 	static FGameplayTag GetComboTargetEventTag();
 	FGameplayTag GetComboUseStaminaEventTag();
 
+	FOnWeaponHit OnWeaponHitDelegate;
+	
 private:
-
 	void SetupWaitComboInputPress();
 
 	UFUNCTION()
@@ -33,36 +35,37 @@ private:
 
 	void TryCommitCombo();
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
-	TSubclassOf<UGameplayEffect> DefaultDamageEffect;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
-	TMap<FName, TSubclassOf<UGameplayEffect>> DamageEffectMap;
-
 	TSubclassOf<UGameplayEffect> GetDamageEffectForCurrentCombo() const;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
-	TSubclassOf<UGameplayEffect> DefaultStaminaCost;
-
-	UPROPERTY(EditDefaultsOnly, Category="Gameplay Effect")
-	TMap<FName, TSubclassOf<UGameplayEffect>> StaminaCostMap;
 	
 	TSubclassOf<UGameplayEffect> GetStaminaEffectCostForCurrentCombo() const;
 
 	UFUNCTION()
 	void ConsumeStamina(FGameplayEventData Data);
-
+	
+	bool CanPayStaminaForSection(FName SectionName) const;
+	
+	UFUNCTION()
+	void GetComboChangedEventReceived(FGameplayEventData Data);
+	
+	UFUNCTION()
+	void DealDamage(FGameplayEventData Data);
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
+	TSubclassOf<UGameplayEffect> DefaultDamageEffect;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
+	TMap<FName, TSubclassOf<UGameplayEffect>> DamageEffectMap;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UAnimMontage* AttackMontage;
 
-	UFUNCTION()
-	void GetComboChangedEventReceived(FGameplayEventData Data);
-	bool CanPayStaminaForSection(FName SectionName) const;
-
-	UFUNCTION()
-	void DealDamage(FGameplayEventData Data);
-
 	FName NextComboName;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
+	TSubclassOf<UGameplayEffect> DefaultStaminaCost;
+
+	UPROPERTY(EditDefaultsOnly, Category="Gameplay Effect")
+	TMap<FName, TSubclassOf<UGameplayEffect>> StaminaCostMap;
 };
 
 

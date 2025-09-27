@@ -13,6 +13,7 @@ UGA_RegenerateStamina::UGA_RegenerateStamina()
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
 	AbilityTags.AddTag(FHGameplayTags::Get().Abilities_RegenerateStamina);
 	ActivationBlockedTags.AddTag(FHGameplayTags::Get().Status_Dead);
+	ActivationBlockedTags.AddTag(FHGameplayTags::Get().Status_Overdosing);
 	FAbilityTriggerData TriggerData;
 	TriggerData.TriggerTag = FHGameplayTags::Get().Status_StaminaDepletion;
 	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::OwnedTagPresent;

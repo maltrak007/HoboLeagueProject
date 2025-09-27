@@ -23,8 +23,7 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Status_Bleeding = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Status.Bleeding"),
 		FString("Bleeding Status Effect"));
-
-
+	
 	/*************************************************************************************/
 	/*	 								ANIMATIONS										 */
 	/*************************************************************************************/
@@ -76,6 +75,10 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Event_Combo_UseStamina = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Event.Combo.UseStamina"),
 		FString("Notify to Use Stamina"));
+
+	GameplayTags.Event_Consume = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Consume"),
+		FString("Notify to consume item"));
 
 
 	/*************************************************************************************/

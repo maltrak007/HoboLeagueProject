@@ -9,5 +9,5 @@ UWeaponDataAsset::UWeaponDataAsset()
 {
 	ItemType = EItemType::Weapon;
 	Damage = 25.f;
-	Durability = 100.f;
+	TotalDurability = 100.f;
 }

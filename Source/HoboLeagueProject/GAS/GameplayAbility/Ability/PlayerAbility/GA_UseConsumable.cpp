@@ -2,3 +2,94 @@
 
 
 #include "GA_UseConsumable.h"
+
+#include "AbilitySystemComponent.h"
+#include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HoboLeagueProject/GAS/FGameplayTags.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
+#include "HoboLeagueProject/Item/PlayerItem/Consumable/ConsumableDataAsset.h"
+
+void UGA_UseConsumable::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+                                        const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                        const FGameplayEventData* TriggerEventData)
+{
+	if (!K2_CommitAbility())
+	{
+		K2_EndAbility();
+		return;
+	}
+	
+	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	{
+		UAbilityTask_PlayMontageAndWait* PlayMontageTask =
+			UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+				this, NAME_None, ConsumableMontage);
+		PlayMontageTask->OnCompleted.AddDynamic(this, &UGA_UseConsumable::K2_EndAbility);
+		PlayMontageTask->OnCancelled.AddDynamic(this, &UGA_UseConsumable::K2_EndAbility);
+		PlayMontageTask->OnInterrupted.AddDynamic(this, &UGA_UseConsumable::K2_EndAbility);
+		PlayMontageTask->OnBlendOut.AddDynamic(this, &UGA_UseConsumable::K2_EndAbility);
+		PlayMontageTask->ReadyForActivation();
+	}
+
+	if (K2_HasAuthority())
+	{
+		UAbilityTask_WaitGameplayEvent* WaitTargetingEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this,
+			GetUseConsumableEventTag());
+		WaitTargetingEventTask->EventReceived.AddDynamic(this, &UGA_UseConsumable::ApplyConsumableEffect);
+		WaitTargetingEventTask->ReadyForActivation();
+	}
+}
+
+FGameplayTag UGA_UseConsumable::GetUseConsumableEventTag()
+{
+	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Consume));
+}
+
+void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
+{
+	if (!K2_HasAuthority())
+		return; // server-authority check
+
+	if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetAvatarActorFromActorInfo()))
+	{
+		if (AHPlayerItem* EquippedItem = PlayerCharacter->InventoryComponent->GetEquippedItem())
+		{
+			ItemConsumableDataAsset = Cast<UConsumableDataAsset>(EquippedItem->ItemData);
+		}
+	}
+	
+	if (!ItemConsumableDataAsset)
+		return; 
+
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	{
+		if (ItemConsumableDataAsset->GetHasManyGameplayEffects())
+		{
+			for (auto Element : ItemConsumableDataAsset->GetGameplayEffects())
+			{
+				const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+				FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(Element, AbilityLevel);
+
+				if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
+				{
+					ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+				}
+			}
+			ItemConsumableDataAsset = nullptr;
+		}
+		else
+		{
+			const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+			FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec( ItemConsumableDataAsset->GetGameplayEffect(), AbilityLevel);
+
+			if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
+			{
+				ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+			}
+			ItemConsumableDataAsset = nullptr;
+		}
+	}
+}

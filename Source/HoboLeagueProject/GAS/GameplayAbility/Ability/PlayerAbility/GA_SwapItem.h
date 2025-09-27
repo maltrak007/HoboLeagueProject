@@ -23,6 +23,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Swap")
 	EItemType ItemTypeToSwap;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UAnimMontage* SwapItemMontage;
 protected:
 	
 private:
