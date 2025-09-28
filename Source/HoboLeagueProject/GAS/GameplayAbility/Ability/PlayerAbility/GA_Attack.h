@@ -6,7 +6,7 @@
 #include "HoboLeagueProject/GAS/GameplayAbility/HBaseGameplayAbility.h"
 #include "GA_Attack.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnWeaponHit);
+class APlayerCharacter;
 /**
  * 
  */
@@ -20,12 +20,15 @@ public:
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+	
 	static FGameplayTag GetComboChangedEventTag();
+	
 	static FGameplayTag GetComboChangedEventEndTag();
+	
 	static FGameplayTag GetComboTargetEventTag();
+	
 	FGameplayTag GetComboUseStaminaEventTag();
-
-	FOnWeaponHit OnWeaponHitDelegate;
 	
 private:
 	void SetupWaitComboInputPress();

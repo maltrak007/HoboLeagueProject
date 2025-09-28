@@ -7,6 +7,8 @@
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "HWeapon.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnWeaponHit);
+
 class USphereComponent;
 class UWeaponDataAsset;
 class APlayerCharacter;
@@ -19,15 +21,23 @@ class HOBOLEAGUEPROJECT_API AHWeapon : public AHPlayerItem
 public:
 	AHWeapon();
 
-	UPROPERTY(BlueprintReadOnly)
-	float RemainingDurability;
+	FOnWeaponHit OnWeaponHit;
+	
+	UFUNCTION()
+	void ReduceWeaponDurability();
 	
 protected:
 	virtual void BeginPlay() override;
-	
-	void ReduceWeaponDurability();
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+	UFUNCTION()
+	void RestoreWeaponProperties();
+	
 private:
+	// Need to create a pointer to the custom UDataAsset to access the custom properties that the weapon has //
 	UPROPERTY()
 	TObjectPtr<UWeaponDataAsset> WeaponData;
+	
+	float RemainingDurability;
 };

@@ -3,21 +3,54 @@
 
 #include "HConsumable.h"
 
+#include "ConsumableDataAsset.h"
+#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
 
-// Sets default values
 AHConsumable::AHConsumable()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
 void AHConsumable::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	ConsumableData = Cast<UConsumableDataAsset>(ItemData);
+	
+	if (ConsumableData)
+	{
+		RemainingCharges = ConsumableData->GetCharges();
+	}
+}
+
+void AHConsumable::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
 }
 
 
+void AHConsumable::ReduceConsumableCharges()
+{
+	if (!ConsumableData) return;
+	
+	RemainingCharges = FMath::Clamp(
+		RemainingCharges - 1,
+		0,
+		ConsumableData->GetCharges()
+	);
+	
+	if (RemainingCharges <= 0)
+	{
+		if (UHInventoryComponent* InvComp = OwningPlayer->GetInventoryComponent())
+		{
+			InvComp->RemoveItem(this);
+		}
+	}
+}
 
+void AHConsumable::RestoreConsumableProperties()
+{
+	
+}
 

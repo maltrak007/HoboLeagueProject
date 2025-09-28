@@ -50,7 +50,7 @@ void AHBaseItem::OnItemOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
 	if (!Player) return;
 	
-	Player->InteractionComponent->AddInteractableObject(this);
+	Player->GetInteractionComponent()->AddInteractableObject(this);
 }
 
 void AHBaseItem::OnItemEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -59,7 +59,7 @@ void AHBaseItem::OnItemEndOverlap(UPrimitiveComponent* OverlappedComponent, AAct
 	APlayerCharacter* Player = Cast<APlayerCharacter>(OtherActor);
 	if (!Player) return;
 
-	Player->InteractionComponent->RemoveInteractableObject(this);
+	Player->GetInteractionComponent()->RemoveInteractableObject(this);
 }
 
 

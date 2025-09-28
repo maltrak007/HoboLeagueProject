@@ -11,9 +11,15 @@
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "HoboLeagueProject/Item/PlayerItem/Consumable/ConsumableDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/Consumable/HConsumable.h"
+
+UGA_UseConsumable::UGA_UseConsumable()
+{
+}
 
 void UGA_UseConsumable::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-                                        const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                        const FGameplayAbilityActorInfo* ActorInfo,
+                                        const FGameplayAbilityActivationInfo ActivationInfo,
                                         const FGameplayEventData* TriggerEventData)
 {
 	if (!K2_CommitAbility())
@@ -43,6 +49,13 @@ void UGA_UseConsumable::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 }
 
+void UGA_UseConsumable::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+                                   const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
+                                   bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
 FGameplayTag UGA_UseConsumable::GetUseConsumableEventTag()
 {
 	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Consume));
@@ -51,45 +64,48 @@ FGameplayTag UGA_UseConsumable::GetUseConsumableEventTag()
 void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 {
 	if (!K2_HasAuthority())
-		return; // server-authority check
+		return;
 
-	if (APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetAvatarActorFromActorInfo()))
-	{
-		if (AHPlayerItem* EquippedItem = PlayerCharacter->InventoryComponent->GetEquippedItem())
-		{
-			ItemConsumableDataAsset = Cast<UConsumableDataAsset>(EquippedItem->ItemData);
-		}
-	}
+	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
 	
+	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
+	
+	AHConsumable* ConsumableItem = Cast<AHConsumable>(PC->GetInventoryComponent()->GetEquippedItem());
+
+	if (!ConsumableItem)
+		return;
+
+	UConsumableDataAsset* ItemConsumableDataAsset = ConsumableItem->GetItemConsumableDataAsset();
+
 	if (!ItemConsumableDataAsset)
-		return; 
+		return;
 
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	if (ItemConsumableDataAsset->GetHasManyGameplayEffects())
 	{
-		if (ItemConsumableDataAsset->GetHasManyGameplayEffects())
-		{
-			for (auto Element : ItemConsumableDataAsset->GetGameplayEffects())
-			{
-				const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-				FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(Element, AbilityLevel);
-
-				if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
-				{
-					ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-				}
-			}
-			ItemConsumableDataAsset = nullptr;
-		}
-		else
+		for (auto Element : ItemConsumableDataAsset->GetGameplayEffects())
 		{
 			const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-			FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec( ItemConsumableDataAsset->GetGameplayEffect(), AbilityLevel);
+			FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(Element, AbilityLevel);
 
 			if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
 			{
-				ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+				PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 			}
-			ItemConsumableDataAsset = nullptr;
 		}
+		ConsumableItem->ReduceConsumableCharges();
+		ConsumableItem->OnConsumableUsed.Broadcast();
+	}
+	else
+	{
+		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+			ItemConsumableDataAsset->GetGameplayEffect(), AbilityLevel);
+
+		if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
+		{
+			PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		}
+		ConsumableItem->ReduceConsumableCharges();
+		ConsumableItem->OnConsumableUsed.Broadcast();
 	}
 }

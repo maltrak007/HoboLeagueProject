@@ -9,7 +9,10 @@
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
+#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
+#include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeapon.h"
 
 
 UGA_Attack::UGA_Attack() : AttackMontage(nullptr)
@@ -27,7 +30,7 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		K2_EndAbility();
 		return;
 	}
-
+	
 	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
 		UAbilityTask_PlayMontageAndWait* PlayMontageTask =
@@ -58,10 +61,15 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 			UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, GetComboUseStaminaEventTag());
 		WaitStaminaEventTask->EventReceived.AddDynamic(this, &UGA_Attack::ConsumeStamina);
 		WaitStaminaEventTask->ReadyForActivation();
-		
 	}
 
 	SetupWaitComboInputPress();
+}
+
+void UGA_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
 // Do not substitue this because is aiming to get only the prefix "Event.Combo.Change"
@@ -263,6 +271,7 @@ bool UGA_Attack::CanPayStaminaForSection(FName SectionName) const
 	return false;
 }
 
+
 void UGA_Attack::DealDamage(FGameplayEventData Data)
 {
 	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(Data.TargetData, 30.f, true, true);
@@ -276,7 +285,16 @@ void UGA_Attack::DealDamage(FGameplayEventData Data)
 		                                EffectSpecHandle,
 		                                UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(
 			                                HitResult.GetActor()));
+
+		const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
 		
-		OnWeaponHitDelegate.Broadcast();
+		APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
+		
+		//Study other ways of doing this without casting to PlayerCharacter
+		if (AHWeapon* Weapon = Cast<AHWeapon>(PC->GetInventoryComponent()->GetEquippedItem()))
+		{
+			Weapon->ReduceWeaponDurability();
+			Weapon->OnWeaponHit.Broadcast();
+		}
 	}
 }

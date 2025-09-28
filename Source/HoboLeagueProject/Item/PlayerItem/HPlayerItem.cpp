@@ -88,8 +88,8 @@ void AHPlayerItem::Interact_Implementation(APlayerCharacter* PlayerOwner)
 	{
 		OwningPlayer = PlayerOwner;
 
-		OwningPlayer->InventoryComponent->AddItem(this);
+		OwningPlayer->GetInventoryComponent()->AddItem(this);
 
-		OwningPlayer->InteractionComponent->RemoveInteractableObject(this);
+		OwningPlayer->GetInteractionComponent()->RemoveInteractableObject(this);
 	}
 }

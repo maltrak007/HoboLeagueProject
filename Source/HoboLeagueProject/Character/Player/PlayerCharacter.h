@@ -25,19 +25,25 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UHInventoryComponent> InventoryComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UHStatusHandlerComponent> StatusHandlerComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<UHInteractionComponent> InteractionComponent;
+	UHInventoryComponent* GetInventoryComponent() const { return InventoryComponent; }
 	
+	UHStatusHandlerComponent* GetStatusHandlerComponent() const { return StatusHandlerComponent; }
+	
+	UHInteractionComponent* GetInteractionComponent() const { return InteractionComponent; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
 private:
 	void InitAbilityActorInfo();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UHInventoryComponent> InventoryComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UHStatusHandlerComponent> StatusHandlerComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UHInteractionComponent> InteractionComponent;
 };

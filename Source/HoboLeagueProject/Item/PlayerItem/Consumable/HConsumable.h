@@ -7,6 +7,10 @@
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "HConsumable.generated.h"
 
+DECLARE_MULTICAST_DELEGATE(FOnConsumableUsed);
+
+class UConsumableDataAsset;
+
 UCLASS()
 class HOBOLEAGUEPROJECT_API AHConsumable : public AHPlayerItem
 {
@@ -16,13 +20,23 @@ public:
 	// Sets default values for this actor's properties
 	AHConsumable();
 
-	UPROPERTY(BlueprintReadOnly)
-	int RemainingCharges;
+	FOnConsumableUsed OnConsumableUsed;
+	
+	UFUNCTION()
+	void ReduceConsumableCharges();
+
+	UConsumableDataAsset* GetItemConsumableDataAsset(){return ConsumableData;}
 	
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
-private:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void RestoreConsumableProperties();
 	
+private:
+	UPROPERTY()
+	TObjectPtr<UConsumableDataAsset> ConsumableData;
+	
+	int RemainingCharges;
 };
