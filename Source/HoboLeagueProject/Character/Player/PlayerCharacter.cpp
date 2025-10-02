@@ -4,10 +4,13 @@
 #include "PlayerCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "BasePlayerCharacterState.h"
+#include "HoboLeagueProject/Character/BaseCharacterController.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/Component/HStatusHandlerComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
+#include "HoboLeagueProject/GAS/HAttributeSet.h"
+#include "HoboLeagueProject/UI/HoboHUD.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -15,7 +18,7 @@ APlayerCharacter::APlayerCharacter()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	bAlwaysRelevant = true;
-	
+	SetNetUpdateFrequency(100.f);
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 	StatusHandlerComponent = CreateDefaultSubobject<UHStatusHandlerComponent>(TEXT("StatusHandlerComponent"));
 	InteractionComponent = CreateDefaultSubobject<UHInteractionComponent>(TEXT("InteractionComponent"));
@@ -78,6 +81,14 @@ void APlayerCharacter::InitAbilityActorInfo()
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
 	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
+
+	if (ABaseCharacterController* HoboPlayerController = Cast<ABaseCharacterController>(GetController()))
+	{
+		if (AHoboHUD* HoboHUD = Cast<AHoboHUD>(HoboPlayerController->GetHUD()))
+		{
+			HoboHUD->InitOverlay(HoboPlayerController,HoboPlayerState,HAbilitySystemComponent,HAttributeSet);
+		}
+	}
 }
 
 

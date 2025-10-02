@@ -44,6 +44,7 @@ void AHConsumable::ReduceConsumableCharges()
 	{
 		if (UHInventoryComponent* InvComp = OwningPlayer->GetInventoryComponent())
 		{
+			RestoreConsumableProperties();
 			InvComp->RemoveItem(this);
 		}
 	}
@@ -51,6 +52,6 @@ void AHConsumable::ReduceConsumableCharges()
 
 void AHConsumable::RestoreConsumableProperties()
 {
-	
+	RemainingCharges = ConsumableData->GetCharges();
 }
 

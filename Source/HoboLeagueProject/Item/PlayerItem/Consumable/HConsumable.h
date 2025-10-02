@@ -17,7 +17,6 @@ class HOBOLEAGUEPROJECT_API AHConsumable : public AHPlayerItem
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
 	AHConsumable();
 
 	FOnConsumableUsed OnConsumableUsed;

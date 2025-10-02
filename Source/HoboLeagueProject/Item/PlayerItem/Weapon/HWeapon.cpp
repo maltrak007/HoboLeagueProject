@@ -26,11 +26,6 @@ void AHWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void AHWeapon::RestoreWeaponProperties()
-{
-	//TODO:: Restore all the default properties
-}
-
 void AHWeapon::ReduceWeaponDurability()
 {
 	if (!WeaponData) return;
@@ -50,9 +45,15 @@ void AHWeapon::ReduceWeaponDurability()
 	{
 		if (UHInventoryComponent* InvComp = OwningPlayer->GetInventoryComponent())
 		{
+			RestoreWeaponProperties();
 			InvComp->RemoveItem(this);
 		}
 	}
+}
+
+void AHWeapon::RestoreWeaponProperties()
+{
+	RemainingDurability = WeaponData->GetTotalDurability();
 }
 // PRAGMA_DISABLE_OPTIMIZATION
 // PRAGMA_ENABLE_OPTIMIZATION

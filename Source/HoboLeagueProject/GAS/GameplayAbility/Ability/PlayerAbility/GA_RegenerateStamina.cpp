@@ -11,7 +11,7 @@ UGA_RegenerateStamina::UGA_RegenerateStamina()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
-	AbilityTags.AddTag(FHGameplayTags::Get().Abilities_RegenerateStamina);
+	SetAssetTags(FGameplayTagContainer(FHGameplayTags::Get().Abilities_RegenerateStamina));
 	ActivationBlockedTags.AddTag(FHGameplayTags::Get().Status_Dead);
 	ActivationBlockedTags.AddTag(FHGameplayTags::Get().Status_Overdosing);
 	FAbilityTriggerData TriggerData;
@@ -50,7 +50,6 @@ void UGA_RegenerateStamina::EndAbility(const FGameplayAbilitySpecHandle Handle,
 {
 	if (ActorInfo->AbilitySystemComponent.IsValid() && ActiveStaminaRegeneration.IsValid())
 	{
-		// Remove the active effect
 		ActorInfo->AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveStaminaRegeneration);
 		ActiveStaminaRegeneration.Invalidate();
 	}

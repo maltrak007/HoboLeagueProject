@@ -290,7 +290,6 @@ void UGA_Attack::DealDamage(FGameplayEventData Data)
 		
 		APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
 		
-		//Study other ways of doing this without casting to PlayerCharacter
 		if (AHWeapon* Weapon = Cast<AHWeapon>(PC->GetInventoryComponent()->GetEquippedItem()))
 		{
 			Weapon->ReduceWeaponDurability();

@@ -13,4 +13,18 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API UHoboUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
+	
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetWidgetController(UObject* NewController);
+	
+	UPROPERTY(BlueprintReadOnly)
+	TObjectPtr<UObject> WidgetController;
+	
+protected:
+	UFUNCTION(BlueprintImplementableEvent)
+	void WidgetControllerSet();
+	
+private:
+	
 };
