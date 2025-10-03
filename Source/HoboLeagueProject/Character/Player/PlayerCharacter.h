@@ -37,6 +37,8 @@ protected:
 	
 private:
 	void InitAbilityActorInfo();
+	
+	void InitActorHUD();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UHInventoryComponent> InventoryComponent;

@@ -49,6 +49,8 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
+
+	InitActorHUD();
 }
 
 //Client side init
@@ -70,6 +72,8 @@ void APlayerCharacter::OnRep_PlayerState()
 	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
+
+	InitActorHUD();
 }
 
 void APlayerCharacter::InitAbilityActorInfo()
@@ -81,15 +85,20 @@ void APlayerCharacter::InitAbilityActorInfo()
 	//Este da error si no lo casteo por motivos de conversion al tener que castear un *AbilitySystem y no el *AbilitySystem custom que creamos
 	HAbilitySystemComponent = Cast<UHAbilitySystemComponent>(HoboPlayerState->GetAbilitySystemComponent()); 
 	HAttributeSet = HoboPlayerState->GetAttributeSet();
+}
 
+void APlayerCharacter::InitActorHUD()
+{
 	if (ABaseCharacterController* HoboPlayerController = Cast<ABaseCharacterController>(GetController()))
 	{
 		if (AHoboHUD* HoboHUD = Cast<AHoboHUD>(HoboPlayerController->GetHUD()))
 		{
-			HoboHUD->InitOverlay(HoboPlayerController,HoboPlayerState,HAbilitySystemComponent,HAttributeSet);
+			if (ABasePlayerCharacterState* HoboPlayerState = Cast<ABasePlayerCharacterState>(GetPlayerState()))
+			{
+				HoboHUD->InitOverlay(HoboPlayerController,HoboPlayerState,HAbilitySystemComponent,HAttributeSet);
+			}
 		}
 	}
 }
-
 
 

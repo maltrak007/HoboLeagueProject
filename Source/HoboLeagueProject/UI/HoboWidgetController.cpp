@@ -15,3 +15,8 @@ void UHoboWidgetController::SetWidgetControllerParams(const FWidgetControllerPar
 	AbilitySystemComponent = Params.AbilitySystemComponent;
 	AttributeSet = Params.AttributeSet;
 }
+
+void UHoboWidgetController::BroadcastInitialValues()
+{
+	
+}

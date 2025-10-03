@@ -25,10 +25,7 @@ public:
 	UOverlayWidgetController* GetOverlayWidgetController(const FWidgetControllerParams Params);
 
 	void InitOverlay(APlayerController* PC, APlayerState* PlayerState, UAbilitySystemComponent* AbilitySystemComponent, UAttributeSet* AttributeSet);
-	
-protected:
-	virtual void BeginPlay() override;
-	
+
 private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UHoboUserWidget> OverlayHoboWidgetClass;

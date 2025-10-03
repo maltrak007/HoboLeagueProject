@@ -5,17 +5,13 @@
 #include "HoboUserWidget.h"
 #include "OverlayWidgetController.h"
 
-void AHoboHUD::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 UOverlayWidgetController* AHoboHUD::GetOverlayWidgetController(const FWidgetControllerParams Params)
 {
 	if (OverlayWidgetController == nullptr)
 	{
 		OverlayWidgetController = NewObject<UOverlayWidgetController>(this, OverlayWidgetControllerClass);
 		OverlayWidgetController->SetWidgetControllerParams(Params);
+		OverlayWidgetController->BindCallbacksToAttributes();
 		return OverlayWidgetController;
 	}
 	return OverlayWidgetController;
@@ -31,6 +27,8 @@ void AHoboHUD::InitOverlay(APlayerController* PC, APlayerState* PS,
 	UOverlayWidgetController* NewOverlayWidgetController = GetOverlayWidgetController(WidgetControllerParams);
 
 	OverlayHoboWidget->SetWidgetController(NewOverlayWidgetController);
+
+	NewOverlayWidgetController->BroadcastInitialValues();
 	
 	Widget->AddToViewport();
 }
