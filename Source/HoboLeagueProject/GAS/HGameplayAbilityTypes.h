@@ -10,7 +10,10 @@ enum class EHAbilityInputID : uint8
 {
 	None							UMETA(DisplayName = "None"),
 	PrimaryAbility					UMETA(DisplayName = "Primary Ability"),
+	PrimaryHoldAbility				UMETA(DisplayName = "Primary Hold Ability"),
 	SecondaryAbility				UMETA(DisplayName = "Secondary Ability"),
+	SecondaryHoldAbility			UMETA(DisplayName = "Secondary Hold Ability"),
+	AimAbility						UMETA(DisplayName = "Aim Ability"),
 	MeleeSlot						UMETA(DisplayName = "Melee Slot"),
 	WeaponSlot						UMETA(DisplayName = "Weapon Slot"),
 	ConsumableSlot					UMETA(DisplayName = "Consumable Slot"),

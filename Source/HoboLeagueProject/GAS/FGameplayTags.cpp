@@ -130,6 +130,22 @@ FString("Ability to Interact"));
 	GameplayTags.Abilities_RegenerateStamina = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Abilities.RegenerateStamina"),
 FString("Regenerate Stamina Ability"));
+
+	/*************************************************************************************/
+	/*	 						     ITEM EQUIPPED   									 */
+	/*************************************************************************************/
+	GameplayTags.Item_Weapon_Knife = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Weapon.Knife"),
+FString("Knife Weapon"));
+	GameplayTags.Item_Weapon_Sword = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Weapon.Sword"),
+FString("Sword Weapon"));
+	GameplayTags.Item_Consumable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.Pill"),
+FString("Pill Consumable"));
+	GameplayTags.Item_Consumable_Cigarette = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.Cigarette"),
+FString("Cigarette Consumable"));
 	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */

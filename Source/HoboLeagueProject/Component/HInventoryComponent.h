@@ -82,7 +82,7 @@ protected:
 	UFUNCTION()
 	void HandlePlayerDeath();
 	
-	void HandleEquipBindings(AHPlayerItem* ItemToEquip);
+	//void HandleEquipBindings(AHPlayerItem* ItemToEquip);
 	
 	UFUNCTION()
 	void OnRep_ItemSlots();

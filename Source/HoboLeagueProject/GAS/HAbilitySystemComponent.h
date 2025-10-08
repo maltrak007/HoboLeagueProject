@@ -23,7 +23,7 @@ public:
 	
 	//** Gameplay Abilities Givers and Removers **/
 	UFUNCTION(BlueprintCallable, Category="Abilities")
-	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1);
+	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1, EHAbilityInputID InputID = EHAbilityInputID::None);
 	UFUNCTION(BlueprintCallable, Category="Abilities")
 	void RemoveAbilityByClass(TSubclassOf<UGameplayAbility> AbilityClass);
 	UFUNCTION(BlueprintCallable, Category="Abilities")

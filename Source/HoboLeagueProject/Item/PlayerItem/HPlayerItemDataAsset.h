@@ -23,7 +23,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	EItemSize ItemSize;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	FGameplayTag ItemTag;
 	// ======================
 	//   Visuals
 	// ======================
@@ -38,10 +40,13 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TSubclassOf<UGameplayAbility> ItemSecondaryAbility;
-
+	
 	// ======== GETTERS ========
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const ERarityType& GetItemRarity() const { return ItemRarity; }
+
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const FGameplayTag& GetItemTag() const { return ItemTag; }
 
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const EItemSize& GetItemSize() const { return ItemSize; }

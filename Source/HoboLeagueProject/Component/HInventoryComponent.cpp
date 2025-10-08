@@ -5,7 +5,9 @@
 
 #include "HoboLeagueProject/Character/Player/BasePlayerCharacterState.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
+#include "HoboLeagueProject/GAS/FGameplayTags.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
+#include "HoboLeagueProject/GAS/GameplayAbility/Ability/PlayerAbility/GA_Attack.h"
 #include "HoboLeagueProject/Item/HItemType.h"
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
@@ -98,12 +100,26 @@ void UHInventoryComponent::AddItem(AHPlayerItem* Item)
 	NewSlot.Item = Item;
 	ReplicatedSlots.Add(NewSlot);
 
-	// Grant abilities to player
-	if (Item->ItemData->GetItemPrimaryAbility())
-		ASC->GrantAbility(Item->ItemData->GetItemPrimaryAbility());
-	if (Item->ItemData->GetItemSecondaryAbility())
-		ASC->GrantAbility(Item->ItemData->GetItemSecondaryAbility());
-
+	if (Type == EItemType::Weapon)
+	{
+		if (Item->ItemData->GetItemPrimaryAbility())
+			ASC->GrantAbility(Item->ItemData->GetItemPrimaryAbility(),1, EHAbilityInputID::PrimaryAbility);
+		if (Item->ItemData->GetItemSecondaryAbility())
+			ASC->GrantAbility(Item->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::PrimaryHoldAbility);
+	}
+	else if (Type == EItemType::Consumable)
+	{
+		if (Item->ItemData->GetItemPrimaryAbility())
+		{
+			ASC->GrantAbility(Item->ItemData->GetItemPrimaryAbility(),1, EHAbilityInputID::SecondaryAbility);
+		}
+		if (Item->ItemData->GetItemSecondaryAbility())
+		{
+			ASC->GrantAbility(Item->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::SecondaryHoldAbility);
+		}
+		
+	}
+	
 	//** ACTIVATE IT IN PLAYER_SETTINGS **//
 	if (bAutoEquipItem)
 	{
@@ -180,63 +196,67 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* Item)
 
 void UHInventoryComponent::EquipItem(EItemType ItemType)
 {
+	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
 	if (!ASC) return;
 
 	AHPlayerItem* ItemToEquip = GetItemByType(ItemType);
 
 	// If the item type does not exist in the inventory, equip melee
-	if (!ItemToEquip && EquippedItem != nullptr)
+	if (ItemType == EItemType::Melee)
 	{
-		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
-		ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
-
-		for (auto& Pair : ASC->GetBasicAbilities())
+		if (EquippedItem)
 		{
-			if (Pair.Value)
-				ASC->BindAbilityToInputID(Pair.Key, Pair.Value);
+			ASC->RemoveLooseGameplayTag(EquippedItem->ItemData->GetItemTag());
+			EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
+			EquippedItem = nullptr;
 		}
-
-		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
-		EquippedItem = nullptr;
-
-		//Include here the future FOnWeaponEquipped
+		
 		return;
 	}
 
-	if (EquippedItem != nullptr && EquippedItem != ItemToEquip)
+	// Its the same object that is already equipped?
+	if (ItemToEquip == EquippedItem) return;
+	
+
+	ASC->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
+	if (EquippedItem)
 	{
+		ASC->RemoveLooseGameplayTag(EquippedItem->ItemData->GetItemTag());
 		EquippedItem->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 	}
-
-	HandleEquipBindings(ItemToEquip);
-}
-
-void UHInventoryComponent::HandleEquipBindings(AHPlayerItem* ItemToEquip)
-{
-	if (!ASC || !ItemToEquip) return;
-
-	// Already equipped? Do nothing
-	if (EquippedItem == ItemToEquip)
-	{
-		return;
-	}
-
-	// Unbind previous equipped item’s abilities if any
-	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
-	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
-
 	EquippedItem = ItemToEquip;
-
-	// Bind the new abilities
-	if (ItemToEquip->ItemData->GetItemPrimaryAbility())
-		ASC->BindAbilityToInputID(EHAbilityInputID::PrimaryAbility, ItemToEquip->ItemData->GetItemPrimaryAbility());
-	if (ItemToEquip->ItemData->GetItemSecondaryAbility())
-		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
-
 	EquippedItem->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
-
-	//Include here the future FOnWeaponEquipped
+	
+	
+	//HandleEquipBindings(ItemToEquip);
 }
+
+// void UHInventoryComponent::HandleEquipBindings(AHPlayerItem* ItemToEquip)
+// {
+// 	if (!ASC || !ItemToEquip) return;
+//
+// 	// Already equipped? Do nothing
+// 	if (EquippedItem == ItemToEquip)
+// 	{
+// 		return;
+// 	}
+//
+// 	// Unbind previous equipped item’s abilities if any
+// 	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::PrimaryAbility);
+// 	ASC->UnbindAllAbilitiesFromInputID(EHAbilityInputID::SecondaryAbility);
+//
+// 	EquippedItem = ItemToEquip;
+//
+// 	// Bind the new abilities
+// 	if (ItemToEquip->ItemData->GetItemPrimaryAbility())
+// 		ASC->BindAbilityToInputID(EHAbilityInputID::PrimaryAbility, ItemToEquip->ItemData->GetItemPrimaryAbility());
+// 	if (ItemToEquip->ItemData->GetItemSecondaryAbility())
+// 		ASC->BindAbilityToInputID(EHAbilityInputID::SecondaryAbility, ItemToEquip->ItemData->GetItemSecondaryAbility());
+//
+// 	EquippedItem->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
+//
+// 	//Include here the future FOnWeaponEquipped
+// }
 
 AHPlayerItem* UHInventoryComponent::GetItemByType(EItemType ItemType) const
 {
@@ -261,7 +281,7 @@ void UHInventoryComponent::HandlePlayerDeath()
 void UHInventoryComponent::OnRep_EquippedItem()
 {
 	// Client actualize and bind the abilities
-	HandleEquipBindings(EquippedItem);
+	//HandleEquipBindings(EquippedItem);
 }
 
 void UHInventoryComponent::OnRep_ItemSlots()

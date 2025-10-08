@@ -61,11 +61,11 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 }
 
 FGameplayAbilitySpecHandle UHAbilitySystemComponent::GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass,
-                                                                  int32 Level)
+                                                                  int32 Level, EHAbilityInputID InputID)
 {
 	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return FGameplayAbilitySpecHandle();
 
-	return GiveAbility(FGameplayAbilitySpec(AbilityClass, Level, INDEX_NONE, this));
+	return GiveAbility(FGameplayAbilitySpec(AbilityClass, Level, static_cast<int32>(InputID), this));
 }
 
 void UHAbilitySystemComponent::RemoveAbilityByClass(TSubclassOf<UGameplayAbility> AbilityClass)
