@@ -70,7 +70,7 @@ void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 	
 	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
 	
-	AHConsumable* ConsumableItem = Cast<AHConsumable>(PC->GetInventoryComponent()->GetEquippedItem());
+	AHConsumable* ConsumableItem = Cast<AHConsumable>(PC->GetInventoryComponent()->GetActiveConsumable());
 
 	if (!ConsumableItem)
 		return;

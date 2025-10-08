@@ -5,6 +5,11 @@
 
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HoboLeagueProject/Item/HItemType.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
+#include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/Consumable/HConsumable.h"
+#include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeapon.h"
 
 UGA_SwapItem::UGA_SwapItem()
 {
@@ -26,15 +31,42 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
-
+	
 	UHInventoryComponent* Inventory = PC->FindComponentByClass<UHInventoryComponent>();
 	if (!Inventory)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
-	
-	Inventory->EquipItem(ItemTypeToSwap);
+	// Look at the Type to retrieve the correct item
+	if (ItemTypeToSwap == EItemType::Weapon)
+	{
+		for (auto Element : Inventory->GetInventoryItems())
+		{
+			if (Element && Element->ItemData->GetItemType() == EItemType::Weapon && Cast<AHWeapon>(Element) != Inventory->GetActiveWeapon())
+			{
+				Inventory->EquipItem(Element);
+				break;
+			}
+		}
+	}
+	else if (ItemTypeToSwap == EItemType::Consumable)
+	{
+		for (auto Element : Inventory->GetInventoryItems())
+		{
+			if (Element && Element->ItemData->GetItemType() == EItemType::Consumable && Cast<AHConsumable>(Element) != Inventory->GetActiveConsumable())
+			{
+				Inventory->EquipItem(Element);
+				break;
+			}
+		}
+	}
+	else if (ItemTypeToSwap == EItemType::Melee)
+	{
+		Inventory->EquipItem(nullptr);
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
+		return;
+	}
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }
