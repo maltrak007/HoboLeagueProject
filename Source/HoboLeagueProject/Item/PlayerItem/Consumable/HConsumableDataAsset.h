@@ -6,7 +6,7 @@
 #include "GameplayEffect.h"
 #include "Engine/DataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
-#include "ConsumableDataAsset.generated.h"
+#include "HConsumableDataAsset.generated.h"
 
 
 enum class EGameplayEffectDurationType : uint8;
@@ -14,12 +14,12 @@ enum class EGameplayEffectDurationType : uint8;
  * 
  */
 UCLASS()
-class HOBOLEAGUEPROJECT_API UConsumableDataAsset : public UHPlayerItemDataAsset
+class HOBOLEAGUEPROJECT_API UHConsumableDataAsset : public UHPlayerItemDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	UConsumableDataAsset();
+	UHConsumableDataAsset();
 
 	// ======================
 	//   Consumable Stats

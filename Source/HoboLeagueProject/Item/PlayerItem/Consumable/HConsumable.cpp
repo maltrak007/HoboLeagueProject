@@ -3,7 +3,7 @@
 
 #include "HConsumable.h"
 
-#include "ConsumableDataAsset.h"
+#include "HConsumableDataAsset.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 
@@ -16,7 +16,7 @@ void AHConsumable::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	ConsumableData = Cast<UConsumableDataAsset>(ItemData);
+	ConsumableData = Cast<UHConsumableDataAsset>(ItemData);
 	
 	if (ConsumableData)
 	{

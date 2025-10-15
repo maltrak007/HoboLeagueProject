@@ -140,12 +140,56 @@ FString("Knife Weapon"));
 	GameplayTags.Item_Weapon_Sword = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Item.Weapon.Sword"),
 FString("Sword Weapon"));
+	GameplayTags.Item_Weapon_Crowbar = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Weapon.Crowbar"),
+FString("Crowbar Weapon"));
+	GameplayTags.Item_Weapon_BaseballBat = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Weapon.BaseballBat"),
+FString("BaseballBat Weapon"));
+	GameplayTags.Item_Weapon_StopSign = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Weapon.StopSign"),
+FString("StopSign Weapon"));
+	
 	GameplayTags.Item_Consumable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Item.Consumable.Pill"),
 FString("Pill Consumable"));
 	GameplayTags.Item_Consumable_Cigarette = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Item.Consumable.Cigarette"),
 FString("Cigarette Consumable"));
+	GameplayTags.Item_Consumable_Beer = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.Beer"),
+FString("Beer Consumable"));
+	GameplayTags.Item_Consumable_Glue = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.Glue"),
+FString("Glue Consumable"));
+	GameplayTags.Item_Consumable_FentanylSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.FentanylSyringe"),
+FString("FentanylSyringe Consumable"));
+	GameplayTags.Item_Consumable_AdrenalineSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.AdrenalineSyringe"),
+FString("AdrenalineSyringe Consumable"));
+	
+	/*************************************************************************************/
+	/*	 						    OVERDRIVE TAGS   									 */
+	/*************************************************************************************/
+	GameplayTags.Overdrive_Consumable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Consumable.Pill"),
+FString("Pill Overdrive"));
+	GameplayTags.Overdrive_Consumable_Cigarette = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Consumable.Cigarette"),
+FString("Cigarette Overdrive"));
+	GameplayTags.Overdrive_Consumable_Beer = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Consumable.Beer"),
+FString("Beer Overdrive"));
+	GameplayTags.Overdrive_Consumable_Glue = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Consumable.Glue"),
+FString("Glue Overdrive"));
+	GameplayTags.Overdrive_Consumable_FentanylSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Consumable.FentanylSyringe"),
+FString("FentanylSyringe Overdrive"));
+	GameplayTags.Overdrive_Consumable_AdrenalineSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Consumable.AdrenalineSyringe"),
+FString("AdrenalineSyringe Overdrive"));
 	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */

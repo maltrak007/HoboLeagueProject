@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "ItemInteractableInterface.generated.h"
+#include "HItemInteractableInterface.generated.h"
 
 class APlayerCharacter;
 // This class does not need to be modified.
 UINTERFACE()
-class UItemInteractableInterface : public UInterface
+class UHItemInteractableInterface : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -17,7 +17,7 @@ class UItemInteractableInterface : public UInterface
 /**
  * 
  */
-class HOBOLEAGUEPROJECT_API IItemInteractableInterface
+class HOBOLEAGUEPROJECT_API IHItemInteractableInterface
 {
 	GENERATED_BODY()
 

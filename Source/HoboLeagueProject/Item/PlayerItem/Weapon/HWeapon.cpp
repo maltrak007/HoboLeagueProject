@@ -1,6 +1,6 @@
 #include "HWeapon.h"
 
-#include "WeaponDataAsset.h"
+#include "HWeaponDataAsset.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 
@@ -13,17 +13,12 @@ void AHWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	WeaponData = Cast<UWeaponDataAsset>(ItemData);
+	WeaponData = Cast<UHWeaponDataAsset>(ItemData);
 
 	if (WeaponData)
 	{
 		RemainingDurability = WeaponData->GetTotalDurability();
 	}
-}
-
-void AHWeapon::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
 }
 
 void AHWeapon::ReduceWeaponDurability()
@@ -35,11 +30,6 @@ void AHWeapon::ReduceWeaponDurability()
 		0.0f,
 		WeaponData->GetTotalDurability()
 	);
-	
-	// GEngine->AddOnScreenDebugMessage(
-	// 	-1, 5.f, FColor::Red,
-	// 	FString::Printf(TEXT("Durability Left: %f"), RemainingDurability)
-	// );
 
 	if (RemainingDurability <= 0)
 	{

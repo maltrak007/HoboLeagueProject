@@ -82,9 +82,34 @@ public:
 	FGameplayTag Item_Weapon_Knife;
 	FGameplayTag Item_Weapon_Sword;
 	FGameplayTag Item_Weapon_Crowbar;
+	FGameplayTag Item_Weapon_BaseballBat;
+	FGameplayTag Item_Weapon_StopSign;
+
+	
 	FGameplayTag Item_Consumable_Pill;
 	FGameplayTag Item_Consumable_Cigarette;
 	FGameplayTag Item_Consumable_Beer;
+	FGameplayTag Item_Consumable_Glue;
+	FGameplayTag Item_Consumable_FentanylSyringe;
+	FGameplayTag Item_Consumable_AdrenalineSyringe;
+
+	//**************************************************************
+	//     ****************************************************
+	//						  OVERDRIVE TAGS
+	//     ****************************************************
+	//**************************************************************
+	FGameplayTag Overdrive_Consumable_Pill;
+	FGameplayTag Overdrive_Consumable_Cigarette;
+	FGameplayTag Overdrive_Consumable_Beer;
+	FGameplayTag Overdrive_Consumable_Glue;
+	FGameplayTag Overdrive_Consumable_FentanylSyringe;
+	FGameplayTag Overdrive_Consumable_AdrenalineSyringe;
+
+	FGameplayTag Overdrive_Status_SuperSaiyanJunkie;
+	FGameplayTag Overdrive_Status_VoyeurForce;
+	FGameplayTag Overdrive_Status_DreamerState;
+	FGameplayTag Overdrive_Status_Nirvana;
+	FGameplayTag Overdrive_Status_GlassMirror;
 	
 	//**************************************************************
 	//     ****************************************************

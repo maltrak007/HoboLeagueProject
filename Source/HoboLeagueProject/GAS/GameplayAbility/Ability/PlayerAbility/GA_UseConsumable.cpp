@@ -10,7 +10,7 @@
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
-#include "HoboLeagueProject/Item/PlayerItem/Consumable/ConsumableDataAsset.h"
+#include "HoboLeagueProject/Item/PlayerItem/Consumable/HConsumableDataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/Consumable/HConsumable.h"
 
 UGA_UseConsumable::UGA_UseConsumable()
@@ -75,7 +75,7 @@ void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 	if (!ConsumableItem)
 		return;
 
-	UConsumableDataAsset* ItemConsumableDataAsset = ConsumableItem->GetItemConsumableDataAsset();
+	UHConsumableDataAsset* ItemConsumableDataAsset = ConsumableItem->GetItemConsumableDataAsset();
 
 	if (!ItemConsumableDataAsset)
 		return;

@@ -10,7 +10,7 @@
 DECLARE_MULTICAST_DELEGATE(FOnWeaponHit);
 
 class USphereComponent;
-class UWeaponDataAsset;
+class UHWeaponDataAsset;
 class APlayerCharacter;
 
 UCLASS()
@@ -28,16 +28,13 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 	UFUNCTION()
 	void RestoreWeaponProperties();
 	
 private:
-	// Need to create a pointer to the custom UDataAsset to access the custom properties that the weapon has //
 	UPROPERTY()
-	TObjectPtr<UWeaponDataAsset> WeaponData;
+	TObjectPtr<UHWeaponDataAsset> WeaponData;
 	
 	float RemainingDurability;
 };

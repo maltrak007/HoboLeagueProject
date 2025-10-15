@@ -9,7 +9,7 @@
 
 DECLARE_MULTICAST_DELEGATE(FOnConsumableUsed);
 
-class UConsumableDataAsset;
+class UHConsumableDataAsset;
 
 UCLASS()
 class HOBOLEAGUEPROJECT_API AHConsumable : public AHPlayerItem
@@ -24,7 +24,7 @@ public:
 	UFUNCTION()
 	void ReduceConsumableCharges();
 
-	UConsumableDataAsset* GetItemConsumableDataAsset(){return ConsumableData;}
+	UHConsumableDataAsset* GetItemConsumableDataAsset(){return ConsumableData;}
 	
 protected:
 	virtual void BeginPlay() override;
@@ -35,7 +35,7 @@ protected:
 	
 private:
 	UPROPERTY()
-	TObjectPtr<UConsumableDataAsset> ConsumableData;
+	TObjectPtr<UHConsumableDataAsset> ConsumableData;
 	
 	int RemainingCharges;
 };

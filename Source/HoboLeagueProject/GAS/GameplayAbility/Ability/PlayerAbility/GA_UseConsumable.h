@@ -8,7 +8,7 @@
 
 class AHConsumable;
 class APlayerCharacter;
-class UConsumableDataAsset;
+class UHConsumableDataAsset;
 /**
  * 
  */

@@ -5,7 +5,7 @@
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
-#include "HoboLeagueProject/Item/ItemInteractableInterface.h"
+#include "HoboLeagueProject/Item/HItemInteractableInterface.h"
 
 UGA_Interact::UGA_Interact()
 {
@@ -38,7 +38,7 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	AHBaseItem* Target = RetrieveInteractableItem(PC, InteractionComp);
 	if (Target)
 	{
-		IItemInteractableInterface::Execute_Interact(Target, PC);
+		IHItemInteractableInterface::Execute_Interact(Target, PC);
 	}
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
@@ -78,7 +78,7 @@ AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHI
 			if (AHBaseItem* HitActor = Cast<AHBaseItem>(Hit.GetActor()))
 			{
 				// Must implement interface and be in the interaction array
-				if (HitActor->GetClass()->ImplementsInterface(UItemInteractableInterface::StaticClass()) &&
+				if (HitActor->GetClass()->ImplementsInterface(UHItemInteractableInterface::StaticClass()) &&
 					InteractionComp->NearbyInteractableObjects.Contains(HitActor))
 				{
 					// Find the closest valid target

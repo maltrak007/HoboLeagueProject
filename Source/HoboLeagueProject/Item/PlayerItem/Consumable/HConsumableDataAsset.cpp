@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "ConsumableDataAsset.h"
+#include "HConsumableDataAsset.h"
 
 #include "HoboLeagueProject/Item/HItemType.h"
 
-UConsumableDataAsset::UConsumableDataAsset()
+UHConsumableDataAsset::UHConsumableDataAsset()
 {
 	ItemType = EItemType::Consumable;
 	Charges = 1;

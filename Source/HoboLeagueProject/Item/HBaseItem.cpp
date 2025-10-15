@@ -25,11 +25,6 @@ AHBaseItem::AHBaseItem()
 	CollisionSphere->OnComponentEndOverlap.AddDynamic(this, &AHBaseItem::OnItemEndOverlap);
 }
 
-void AHBaseItem::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AHBaseItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);

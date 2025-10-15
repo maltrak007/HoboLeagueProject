@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemInteractableInterface.h"
+#include "HItemInteractableInterface.h"
 #include "GameFramework/Actor.h"
 #include "HBaseItem.generated.h"
 
@@ -12,7 +12,7 @@ class UHBaseItemDataAsset;
 class APlayerCharacter;
 
 UCLASS()
-class HOBOLEAGUEPROJECT_API AHBaseItem : public AActor, public IItemInteractableInterface
+class HOBOLEAGUEPROJECT_API AHBaseItem : public AActor, public IHItemInteractableInterface
 {
 	GENERATED_BODY()
 
@@ -47,9 +47,6 @@ public:
 	);
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
