@@ -105,11 +105,15 @@ public:
 	FGameplayTag Overdrive_Consumable_FentanylSyringe;
 	FGameplayTag Overdrive_Consumable_AdrenalineSyringe;
 
-	FGameplayTag Overdrive_Status_SuperSaiyanJunkie;
-	FGameplayTag Overdrive_Status_VoyeurForce;
-	FGameplayTag Overdrive_Status_DreamerState;
-	FGameplayTag Overdrive_Status_Nirvana;
-	FGameplayTag Overdrive_Status_GlassMirror;
+	//Debuff Combinations
+	FGameplayTag Overdrive_Status_GlassBones; //(Receive 30% more damage)
+	FGameplayTag Overdrive_Status_NeedlePhobia; //(Cannot use syringes-consumables and if forced to, the overdose will augment by 30% and the beneficial effects cannot be applied)
+	FGameplayTag Overdrive_Status_JabberingJaw; //(Cannot use drink-consumables and if forced to, the overdose will augment by 30% and the beneficial effects cannot be applied)
+
+	//Buff Combinations
+	FGameplayTag Overdrive_Status_SuperJunkie; //(Receive 20% less damage and regenerate 10 stamina per second)
+	FGameplayTag Overdrive_Status_MrCharlieSheen; //(You are inmune to overdose effects and you regenerate 15 stamina per second)
+	FGameplayTag Overdrive_Status_PimPumTakeLacasitos; //(While in air every damage will turn into healing)
 	
 	//**************************************************************
 	//     ****************************************************

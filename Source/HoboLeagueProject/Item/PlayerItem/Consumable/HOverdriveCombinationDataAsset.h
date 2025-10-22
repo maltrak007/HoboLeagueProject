@@ -35,11 +35,6 @@ struct FOverdriveDataStruct
 		return GameplayEffects;
 	}
 
-	TArray<TSubclassOf<UGameplayAbility>> GetGameplayAbilities() const
-	{
-		return GameplayAbilities;
-	}
-
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
 	FName CombinationName;
@@ -52,9 +47,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
 	TArray<TSubclassOf<UGameplayEffect>> GameplayEffects;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
-	TArray<TSubclassOf<UGameplayAbility>> GameplayAbilities;
 };
 
 /**

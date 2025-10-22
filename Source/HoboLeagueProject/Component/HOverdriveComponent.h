@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "HoboLeagueProject/Item/PlayerItem/Consumable/HOverdriveCombinationDataAsset.h"
 #include "HOverdriveComponent.generated.h"
 
+
+class UAbilitySystemComponent;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class HOBOLEAGUEPROJECT_API UHOverdriveComponent : public UActorComponent
@@ -14,7 +17,14 @@ class HOBOLEAGUEPROJECT_API UHOverdriveComponent : public UActorComponent
 
 public:
 	UHOverdriveComponent();
+
+	void LinkASC(UAbilitySystemComponent* _ASC);
+	
+	void CheckOverdriveCombination(FGameplayTagContainer CurrentTags);
 	
 protected:
-	
+	UPROPERTY(EditDefaultsOnly, Category="Overdrive")
+	TObjectPtr<UHOverdriveCombinationDataAsset> OverdriveCombinationDataAsset;
+
+	UAbilitySystemComponent* AbilitySystemComponent;
 };
