@@ -7,6 +7,7 @@
 #include "HInventoryComponent.generated.h"
 
 
+class UAbilitySystemComponent;
 class UHAbilitySystemComponent;
 class AHConsumable;
 class AHWeapon;
@@ -32,7 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UnequipItem(AHPlayerItem* ItemToEquip);
 
-	void LinkAbilitySystemComponent();
+	void LinkAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	
 	// ** Getters ** //
 	TArray<AHPlayerItem*> GetInventoryItems() { return InventoryItems; }
@@ -42,7 +43,7 @@ public:
 	AHConsumable* GetActiveConsumable() const { return ActiveConsumable; }
 	
 protected:
-	TObjectPtr<UHAbilitySystemComponent> ASC;
+	TObjectPtr<UHAbilitySystemComponent> AbilitySystemComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory|Limits")
 	int numMaxWeapons = 2;

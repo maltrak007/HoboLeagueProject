@@ -86,9 +86,9 @@ public:
 	FGameplayTag Item_Weapon_StopSign;
 
 	
-	FGameplayTag Item_Consumable_Pill;
+	FGameplayTag Item_Consumable_Drinkable_Pill;
 	FGameplayTag Item_Consumable_Cigarette;
-	FGameplayTag Item_Consumable_Beer;
+	FGameplayTag Item_Consumable_Drinkable_Beer;
 	FGameplayTag Item_Consumable_Glue;
 	FGameplayTag Item_Consumable_FentanylSyringe;
 	FGameplayTag Item_Consumable_AdrenalineSyringe;

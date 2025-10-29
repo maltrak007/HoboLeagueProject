@@ -2,8 +2,6 @@
 
 
 #include "HInventoryComponent.h"
-
-#include "GameFramework/PlayerState.h"
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/Item/HItemType.h"
@@ -25,7 +23,7 @@ void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 {
 	// Checks if the item is valid
 	// Checks if the player HasAuthority()
-	if (!ItemToAdd || !GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
+	if (!ItemToAdd || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 
 	// Checks if the item is already in the inventory
 	if (InventoryItems.Contains(ItemToAdd)) return;
@@ -63,13 +61,13 @@ void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 	// Grant the item abilities to the ASC
 	if (ItemType == EItemType::Weapon)
 	{
-		ASC->GrantAbility(ItemToAdd->ItemData->GetItemPrimaryAbility(), 1, EHAbilityInputID::PrimaryAbility);
-		ASC->GrantAbility(ItemToAdd->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::PrimaryHoldAbility);
+		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemPrimaryAbility(), 1, EHAbilityInputID::PrimaryAbility);
+		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::PrimaryHoldAbility);
 	}
 	else if (ItemType == EItemType::Consumable)
 	{
-		ASC->GrantAbility(ItemToAdd->ItemData->GetItemPrimaryAbility(), 1, EHAbilityInputID::SecondaryAbility);
-		ASC->GrantAbility(ItemToAdd->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::SecondaryHoldAbility);
+		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemPrimaryAbility(), 1, EHAbilityInputID::SecondaryAbility);
+		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::SecondaryHoldAbility);
 	}
 
 	// If there is no equipped item of this type equip it
@@ -88,7 +86,7 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* ItemToRemove)
 {
 	// Checks if the item is valid
 	// Checks if the player HasAuthority()
-	if (!ItemToRemove || !GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
+	if (!ItemToRemove || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 
 	// If the item to remove is the current item equipped unequip it
 	if (Cast<AHWeapon>(ItemToRemove) == ActiveWeapon || Cast<AHConsumable>(ItemToRemove) == ActiveConsumable)
@@ -96,13 +94,13 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* ItemToRemove)
 		UnequipItem(ItemToRemove);
 	}
 
-	ASC->RemoveLooseGameplayTag(ItemToRemove->ItemData->GetItemTag());
+	AbilitySystemComp->RemoveLooseGameplayTag(ItemToRemove->ItemData->GetItemTag());
 
 	// Remove the item from the inventory
 
 	// Remove the item abilities from the ASC
-	ASC->RemoveAbilityByClass(ItemToRemove->ItemData->GetItemPrimaryAbility());
-	ASC->RemoveAbilityByClass(ItemToRemove->ItemData->GetItemSecondaryAbility());
+	AbilitySystemComp->RemoveAbilityByClass(ItemToRemove->ItemData->GetItemPrimaryAbility());
+	AbilitySystemComp->RemoveAbilityByClass(ItemToRemove->ItemData->GetItemSecondaryAbility());
 
 	// Deattach it from the player
 	ItemToRemove->DetachFromPlayer();
@@ -114,7 +112,7 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 {
 	// Checks if the player HasAuthority()
 	//if (!ItemToEquip || !GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
-	if (!GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
+	if (!GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
 	// GA_Swap send nullptr indicating the player wants to equip melee
 	if (ItemToEquip == nullptr)
@@ -123,7 +121,7 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 		if (ActiveWeapon)
 		{
 			//Unequip the current weapon
-			ASC->RemoveLooseGameplayTag(ActiveWeapon->ItemData->GetItemTag());
+			AbilitySystemComp->RemoveLooseGameplayTag(ActiveWeapon->ItemData->GetItemTag());
 
 			UnequipItem(ActiveWeapon);
 
@@ -146,12 +144,12 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 
 			if (ActiveWeapon)
 			{
-				ASC->RemoveLooseGameplayTag(ActiveWeapon->ItemData->GetItemTag());
+				AbilitySystemComp->RemoveLooseGameplayTag(ActiveWeapon->ItemData->GetItemTag());
 				UnequipItem(ActiveWeapon);
 			}
 
 			SetActiveWeapon(Cast<AHWeapon>(ItemToEquip));
-			ASC->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
+			AbilitySystemComp->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
 			GetActiveWeapon()->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
 			break;
 		}
@@ -162,12 +160,12 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 
 			if (ActiveConsumable)
 			{
-				ASC->RemoveLooseGameplayTag(ActiveConsumable->ItemData->GetItemTag());
+				AbilitySystemComp->RemoveLooseGameplayTag(ActiveConsumable->ItemData->GetItemTag());
 				UnequipItem(ActiveConsumable);
 			}
 
 			SetActiveConsumable(Cast<AHConsumable>(ItemToEquip));
-			ASC->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
+			AbilitySystemComp->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
 			GetActiveConsumable()->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
 			break;
 		}
@@ -181,7 +179,7 @@ void UHInventoryComponent::UnequipItem(AHPlayerItem* ItemToUnequip)
 {
 	// Checks if the item is valid
 	// Checks if the player HasAuthority()
-	if (!ItemToUnequip || !GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
+	if (!ItemToUnequip || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
 	ItemToUnequip->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 
@@ -209,15 +207,9 @@ void UHInventoryComponent::OnRep_ActiveConsumable()
 	}
 }
 
-void UHInventoryComponent::LinkAbilitySystemComponent()
+void UHInventoryComponent::LinkAbilitySystemComponent(UAbilitySystemComponent* ASC)
 {
-	if (APawn* OwnerPawn = Cast<APawn>(GetOwner()))
-	{
-		if (APlayerState* PS = OwnerPawn->GetPlayerState())
-		{
-			ASC = PS->FindComponentByClass<UHAbilitySystemComponent>();
-		}
-	}
+	AbilitySystemComp = Cast<UHAbilitySystemComponent>(ASC);
 }
 
 void UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

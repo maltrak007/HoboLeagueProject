@@ -7,6 +7,7 @@
 #include "HoboLeagueProject/Character/BaseCharacterController.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HoboLeagueProject/Component/HOverdriveComponent.h"
 #include "HoboLeagueProject/Component/HStatusHandlerComponent.h"
 #include "HoboLeagueProject/GAS/HAbilitySystemComponent.h"
 #include "HoboLeagueProject/GAS/HAttributeSet.h"
@@ -22,6 +23,7 @@ APlayerCharacter::APlayerCharacter()
 	InventoryComponent = CreateDefaultSubobject<UHInventoryComponent>(TEXT("InventoryComponent"));
 	StatusHandlerComponent = CreateDefaultSubobject<UHStatusHandlerComponent>(TEXT("StatusHandlerComponent"));
 	InteractionComponent = CreateDefaultSubobject<UHInteractionComponent>(TEXT("InteractionComponent"));
+	OverdriveComponent = CreateDefaultSubobject<UHOverdriveComponent>(TEXT("OverdriveComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -39,12 +41,17 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	
 	if (InventoryComponent)
 	{
-		InventoryComponent->LinkAbilitySystemComponent(); 
+		InventoryComponent->LinkAbilitySystemComponent(HAbilitySystemComponent); 
 	}
 
 	if (StatusHandlerComponent)
 	{
-		StatusHandlerComponent->LinkAbilitySystemComponent(); 
+		StatusHandlerComponent->LinkAbilitySystemComponent(HAbilitySystemComponent); 
+	}
+
+	if(OverdriveComponent)
+	{
+		OverdriveComponent->LinkASC(HAbilitySystemComponent);
 	}
 	
 	HAbilitySystemComponent->ApplyInitialEffects();
@@ -62,12 +69,17 @@ void APlayerCharacter::OnRep_PlayerState()
 
 	if (InventoryComponent)
 	{
-		InventoryComponent->LinkAbilitySystemComponent(); 
+		InventoryComponent->LinkAbilitySystemComponent(HAbilitySystemComponent); 
 	}
 	
 	if (StatusHandlerComponent)
 	{
-		StatusHandlerComponent->LinkAbilitySystemComponent(); 
+		StatusHandlerComponent->LinkAbilitySystemComponent(HAbilitySystemComponent); 
+	}
+
+	if(OverdriveComponent)
+	{
+		OverdriveComponent->LinkASC(HAbilitySystemComponent);
 	}
 	
 	HAbilitySystemComponent->ApplyInitialEffects();

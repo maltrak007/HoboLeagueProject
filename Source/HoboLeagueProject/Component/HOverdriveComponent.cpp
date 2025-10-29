@@ -5,7 +5,6 @@
 
 #include "AbilitySystemComponent.h"
 
-
 // Sets default values for this component's properties
 UHOverdriveComponent::UHOverdriveComponent()
 {
@@ -15,20 +14,36 @@ UHOverdriveComponent::UHOverdriveComponent()
 void UHOverdriveComponent::LinkASC(UAbilitySystemComponent* _ASC)
 {
 	AbilitySystemComponent = _ASC;
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(FGameplayTag::RequestGameplayTag(FName("Overdrive.Consumable")),
+	                                                 EGameplayTagEventType::AnyCountChange).AddUObject(
+		this, &UHOverdriveComponent::OnItemConsumableTagChanged);
 }
 
-void UHOverdriveComponent::CheckOverdriveCombination(FGameplayTagContainer CurrentTags)
+void UHOverdriveComponent::CheckOverdriveCombination()
 {
+	if (!AbilitySystemComponent) return;
+
 	FGameplayTagContainer TagContainer = AbilitySystemComponent->GetOwnedGameplayTags();
-	if (TagContainer.HasAllExact(CurrentTags))
+
+	for (auto Element : OverdriveCombinationDataAsset->GetDataCombinations())
 	{
-		OverdriveCombinationDataAsset->GetDataCombinations();
+		FGameplayTagContainer OverdriveRequiredTagContainer = Element.GetRequiredTags();
+		if (TagContainer.HasAll(OverdriveRequiredTagContainer) && OverdriveRequiredTagContainer.Num() >= 2)
+		{
+			for (auto GameplayEffectClass : Element.GetGameplayEffects())
+			{
+				AbilitySystemComponent->ApplyGameplayEffectToSelf(GameplayEffectClass.GetDefaultObject(), 1.0f,
+				                                                  AbilitySystemComponent->MakeEffectContext());
+			}
+		}
 	}
 }
 
-
-
-
-
-
-
+void UHOverdriveComponent::OnItemConsumableTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	if(NewCount > 0)
+	{
+		CheckOverdriveCombination();
+	}
+}

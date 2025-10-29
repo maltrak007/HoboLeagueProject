@@ -14,7 +14,7 @@ USTRUCT(BlueprintType)
 struct FOverdriveDataStruct
 {
 	GENERATED_BODY()
-
+	
 	FName GetCombinationName() const
 	{
 		return CombinationName;

@@ -6,6 +6,7 @@
 #include "HoboLeagueProject/Character/BaseCharacter.h"
 #include "PlayerCharacter.generated.h"
 
+class UHOverdriveComponent;
 class UHInteractionComponent;
 class UHStatusHandlerComponent;
 class UHInventoryComponent;
@@ -31,6 +32,7 @@ public:
 	
 	UHInteractionComponent* GetInteractionComponent() const { return InteractionComponent; }
 
+	UHOverdriveComponent* GetOverdriveComponent() const {return OverdriveComponent; }
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -48,4 +50,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
 	TObjectPtr<UHInteractionComponent> InteractionComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess="true"))
+	TObjectPtr<UHOverdriveComponent> OverdriveComponent;
 };

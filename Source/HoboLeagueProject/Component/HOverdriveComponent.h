@@ -20,11 +20,14 @@ public:
 
 	void LinkASC(UAbilitySystemComponent* _ASC);
 	
-	void CheckOverdriveCombination(FGameplayTagContainer CurrentTags);
+	void CheckOverdriveCombination();
+
+	void OnItemConsumableTagChanged(FGameplayTag Tag, int32 NewCount);
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="Overdrive")
 	TObjectPtr<UHOverdriveCombinationDataAsset> OverdriveCombinationDataAsset;
 
-	UAbilitySystemComponent* AbilitySystemComponent;
+	UPROPERTY(EditDefaultsOnly, Category="Overdrive")
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 };

@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "HStatusHandlerComponent.generated.h"
 
+class UAbilitySystemComponent;
 struct FGameplayTag;
 class UHAbilitySystemComponent;
 
@@ -18,7 +19,7 @@ public:
 	UHStatusHandlerComponent();
 
 	/** Link the Ability System Component from the player state **/
-	void LinkAbilitySystemComponent();
+	void LinkAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	
 protected:
 	
@@ -47,5 +48,5 @@ protected:
 	// ----------------------------------------- //
 	
 	UPROPERTY()
-	UHAbilitySystemComponent* ASC = nullptr;
+	UAbilitySystemComponent* AbilitySystemComp = nullptr;
 };

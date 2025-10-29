@@ -150,14 +150,14 @@ FString("BaseballBat Weapon"));
 FName("Item.Weapon.StopSign"),
 FString("StopSign Weapon"));
 	
-	GameplayTags.Item_Consumable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.Pill"),
+	GameplayTags.Item_Consumable_Drinkable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.Drinkable.Pill"),
 FString("Pill Consumable"));
 	GameplayTags.Item_Consumable_Cigarette = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Item.Consumable.Cigarette"),
 FString("Cigarette Consumable"));
-	GameplayTags.Item_Consumable_Beer = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.Beer"),
+	GameplayTags.Item_Consumable_Drinkable_Beer = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Item.Consumable.Drinkable.Beer"),
 FString("Beer Consumable"));
 	GameplayTags.Item_Consumable_Glue = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Item.Consumable.Glue"),
@@ -190,6 +190,26 @@ FString("FentanylSyringe Overdrive"));
 	GameplayTags.Overdrive_Consumable_AdrenalineSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
 FName("Overdrive.Consumable.AdrenalineSyringe"),
 FString("AdrenalineSyringe Overdrive"));
+
+	GameplayTags.Overdrive_Status_GlassBones = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Status.GlassBones"),
+FString("GlassBones Overdrive Status"));
+	GameplayTags.Overdrive_Status_NeedlePhobia = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Status.NeedlePhobia"),
+FString("NeedlePhobia Overdrive Status"));
+	GameplayTags.Overdrive_Status_JabberingJaw = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Status.JabberingJaw"),
+FString("JabberingJaw Overdrive Status"));
+
+	GameplayTags.Overdrive_Status_SuperJunkie = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Status.SuperJunkie"),
+FString("SuperJunkie Overdrive Status"));
+	GameplayTags.Overdrive_Status_MrCharlieSheen = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Status.MrCharlieSheen"),
+FString("MrCharlieSheen Overdrive Status"));
+	GameplayTags.Overdrive_Status_PimPumTakeLacasitos = UGameplayTagsManager::Get().AddNativeGameplayTag(
+FName("Overdrive.Status.PimPumTakeLacasitos"),
+FString("PimPumTakeLacasitos Overdrive Status"));
 	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */
