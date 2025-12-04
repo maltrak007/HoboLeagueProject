@@ -7,6 +7,8 @@
 #include "GA_Aim.generated.h"
 
 /**
+ *
+ *This class could be the common ability that needs and UI and certain parameters to met 
  * 
  */
 UCLASS()

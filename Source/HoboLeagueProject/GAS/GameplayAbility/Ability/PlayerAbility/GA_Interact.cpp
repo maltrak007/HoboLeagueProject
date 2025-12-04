@@ -53,47 +53,70 @@ AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHI
 
 	FVector Start = Player->GetActorLocation();
 	FVector Forward = Player->GetActorForwardVector();
-
-	// Settings
-	const int32 NumRays = 6;
-	const float AngleStep = 10.0f; // degrees between rays
-	const float MaxDistance = 400.0f;
-
+	
 	AHBaseItem* BestTarget = nullptr;
 	float BestDistSq = TNumericLimits<float>::Max();
-
-	for (int32 i = -NumRays / 2; i <= NumRays / 2; ++i)
+	
+	if (bUseSphereTrace)
 	{
-		FRotator SpreadRot = Forward.Rotation();
-		SpreadRot.Yaw += i * AngleStep;
-
-		FVector End = Start + SpreadRot.Vector() * MaxDistance;
-
+		// ✅ Spherical detection
 		FHitResult Hit;
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(Player);
 
-		if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+		FVector End = Start + Forward * MaxDistance;
+
+		// Sphere sweep to detect any nearby interactables
+		if (World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereRadius), Params))
 		{
 			if (AHBaseItem* HitActor = Cast<AHBaseItem>(Hit.GetActor()))
 			{
-				// Must implement interface and be in the interaction array
 				if (HitActor->GetClass()->ImplementsInterface(UHItemInteractableInterface::StaticClass()) &&
 					InteractionComp->NearbyInteractableObjects.Contains(HitActor))
 				{
-					// Find the closest valid target
-					float DistSq = FVector::DistSquared(Start, HitActor->GetActorLocation());
-					if (DistSq < BestDistSq)
-					{
-						BestDistSq = DistSq;
-						BestTarget = HitActor;
-					}
+					BestTarget = HitActor;
 				}
 			}
 		}
-
-		DrawDebugLine(World, Start, End, FColor::Green, false, 1.0f, 0, 1.5f);
+		
+		DrawDebugLine(World, Start, End, FColor::Cyan, false, 1.0f, 0, 1.5f);
+		DrawDebugSphere(World, End, SphereRadius, 16, FColor::Cyan, false, 1.0f);
 	}
+	else
+	{
+		for (int32 i = -NumRays / 2; i <= NumRays / 2; ++i)
+		{
+			FRotator SpreadRot = Forward.Rotation();
+			SpreadRot.Yaw += i * AngleStep;
 
+			FVector End = Start + SpreadRot.Vector() * MaxDistance;
+
+			FHitResult Hit;
+			FCollisionQueryParams Params;
+			Params.AddIgnoredActor(Player);
+
+			if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
+			{
+				if (AHBaseItem* HitActor = Cast<AHBaseItem>(Hit.GetActor()))
+				{
+					// Must implement interface and be in the interaction array
+					if (HitActor->GetClass()->ImplementsInterface(UHItemInteractableInterface::StaticClass()) &&
+						InteractionComp->NearbyInteractableObjects.Contains(HitActor))
+					{
+						// Find the closest valid target
+						float DistSq = FVector::DistSquared(Start, HitActor->GetActorLocation());
+						if (DistSq < BestDistSq)
+						{
+							BestDistSq = DistSq;
+							BestTarget = HitActor;
+						}
+					}
+				}
+			}
+
+			DrawDebugLine(World, Start, End, FColor::Green, false, 1.0f, 0, 1.5f);
+		}
+	}
+	
 	return BestTarget;
 }
