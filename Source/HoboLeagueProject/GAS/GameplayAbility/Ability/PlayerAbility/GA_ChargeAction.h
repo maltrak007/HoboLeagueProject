@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HoboLeagueProject/GAS/GameplayAbility/HBaseGameplayAbility.h"
-#include "GA_Aim.generated.h"
+#include "GA_ChargeAction.generated.h"
 
 /**
  *
@@ -12,7 +12,14 @@
  * 
  */
 UCLASS()
-class HOBOLEAGUEPROJECT_API UGA_Aim : public UHBaseGameplayAbility
+class HOBOLEAGUEPROJECT_API UGA_ChargeAction : public UHBaseGameplayAbility
 {
 	GENERATED_BODY()
+	
+public:
+
+protected:
+
+private:
+	
 };

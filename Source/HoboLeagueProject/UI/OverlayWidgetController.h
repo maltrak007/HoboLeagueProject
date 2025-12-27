@@ -19,6 +19,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnOverdoseChangedSignature, float, 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxOverdoseChangedSignature, float, NewMaxOverdose);
 
+//** Finish the rest of the class to display the changes in the HUD
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChargedBarSignature, float, NewChargedBar);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMaxChargedBarSignature, float, NewMaxChargedBar);
+
 /**
  * 
  */

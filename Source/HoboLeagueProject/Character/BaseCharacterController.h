@@ -49,7 +49,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Hobo | Input")
 	TMap<EHAbilityInputID, UInputAction*> GameplayAbilityInputActions;
-
 	
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);

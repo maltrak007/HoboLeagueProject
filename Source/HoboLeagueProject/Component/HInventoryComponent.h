@@ -36,10 +36,13 @@ public:
 	void LinkAbilitySystemComponent(UAbilitySystemComponent* ASC);
 	
 	// ** Getters ** //
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	TArray<AHPlayerItem*> GetInventoryItems() { return InventoryItems; }
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AHWeapon* GetActiveWeapon() const { return ActiveWeapon; }
-	
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AHConsumable* GetActiveConsumable() const { return ActiveConsumable; }
 	
 protected:

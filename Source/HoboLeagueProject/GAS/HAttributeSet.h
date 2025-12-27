@@ -27,6 +27,8 @@ public:
 	ATTRIBUTE_ACCESSORS(UHAttributeSet, MaxStamina)
 	ATTRIBUTE_ACCESSORS(UHAttributeSet, Overdose)
 	ATTRIBUTE_ACCESSORS(UHAttributeSet, MaxOverdose)
+	ATTRIBUTE_ACCESSORS(UHAttributeSet, ChargeBar)
+	ATTRIBUTE_ACCESSORS(UHAttributeSet, MaxChargeBar)
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -64,6 +66,12 @@ private:
 	UPROPERTY(ReplicatedUsing = OnRep_MaxOverdose)
 	FGameplayAttributeData MaxOverdose;
 
+	UPROPERTY(ReplicatedUsing = OnRep_ChargeBar)
+	FGameplayAttributeData ChargeBar;
+
+	UPROPERTY(ReplicatedUsing = OnRep_MaxChargeBar)
+	FGameplayAttributeData MaxChargeBar;
+
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
 
@@ -81,4 +89,10 @@ private:
 
 	UFUNCTION()
 	void OnRep_MaxOverdose(const FGameplayAttributeData& OldMaxOverdose) const;
+
+	UFUNCTION()
+	void OnRep_ChargeBar(const FGameplayAttributeData& OldChargeBar) const;
+
+	UFUNCTION()
+	void OnRep_MaxChargeBar(const FGameplayAttributeData& OldMaxChargeBar) const;
 };

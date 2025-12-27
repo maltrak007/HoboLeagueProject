@@ -13,6 +13,8 @@ void UHAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MaxStamina, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, Overdose, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MaxOverdose, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, ChargeBar, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MaxChargeBar, COND_None, REPNOTIFY_Always);
 }
 
 void UHAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -29,6 +31,10 @@ void UHAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, flo
 	{
 		NewValue = FMath::Clamp(NewValue, 0.f, GetMaxOverdose());
 	}
+	if(Attribute == GetChargeBarAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue,0.f, GetMaxChargeBar());
+	}
 }
 
 void UHAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
@@ -44,6 +50,10 @@ void UHAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCa
 	if (Data.EvaluatedData.Attribute == GetOverdoseAttribute())
 	{
 		SetOverdose(FMath::Clamp(GetOverdose(), 0.f, GetMaxOverdose()));
+	}
+	if (Data.EvaluatedData.Attribute == GetChargeBarAttribute())
+	{
+		SetChargeBar(FMath::Clamp(GetChargeBar(), 0.f, GetMaxChargeBar()));
 	}
 }
 
@@ -69,10 +79,20 @@ void UHAttributeSet::OnRep_MaxStamina(const FGameplayAttributeData& OldMaxStamin
 
 void UHAttributeSet::OnRep_Overdose(const FGameplayAttributeData& OldOverdose) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxStamina, OldOverdose);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, Overdose, OldOverdose);
 }
 
 void UHAttributeSet::OnRep_MaxOverdose(const FGameplayAttributeData& OldMaxOverdose) const
 {
-	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxStamina, OldMaxOverdose);
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxOverdose, OldMaxOverdose);
+}
+
+void UHAttributeSet::OnRep_ChargeBar(const FGameplayAttributeData& OldChargeBar) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, ChargeBar, OldChargeBar);
+}
+
+void UHAttributeSet::OnRep_MaxChargeBar(const FGameplayAttributeData& OldMaxChargeBar) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxChargeBar, OldMaxChargeBar);
 }
