@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "HoboLeagueProject/GAS/HGameplayAbilityTypes.h"
 #include "HBaseGameplayAbility.generated.h"
 
+enum class EHAbilityInputID : uint8;
 /**
  * 
  */
@@ -13,6 +15,9 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API UHBaseGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Hobo | Ability Info")
+	EHAbilityInputID AbilityInputID = EHAbilityInputID::None;
 	
 protected:
 	UAnimInstance* GetOwnerAnimInstance() const;
@@ -25,4 +30,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hobo | Ability Info")
 	bool IsPassiveAbility = false;
+
+	
 };

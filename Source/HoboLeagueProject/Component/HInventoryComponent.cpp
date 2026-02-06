@@ -19,6 +19,17 @@ UHInventoryComponent::UHInventoryComponent()
 	SetIsReplicatedByDefault(true);
 }
 
+void UHInventoryComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+}
+
+void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+}
+
 void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 {
 	// Checks if the item is valid
@@ -41,8 +52,8 @@ void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 		}
 	}
 
-	if ((ItemType == EItemType::Weapon && TypeCount >= numMaxWeapons) ||
-		(ItemType == EItemType::Consumable && TypeCount >= numMaxConsumables))
+	if ((ItemType == EItemType::Weapon && TypeCount >= MaxWeapons) ||
+		(ItemType == EItemType::Consumable && TypeCount >= MaxConsumables))
 	{
 		for (int32 i = InventoryItems.Num() - 1; i >= 0; i--)
 		{
@@ -57,22 +68,10 @@ void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 
 	// Add the item to the inventory
 	InventoryItems.Add(ItemToAdd);
-
-	// Grant the item abilities to the ASC
-	if (ItemType == EItemType::Weapon)
-	{
-		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemPrimaryAbility(), 1, EHAbilityInputID::PrimaryAbility);
-		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::PrimaryHoldAbility);
-	}
-	else if (ItemType == EItemType::Consumable)
-	{
-		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemPrimaryAbility(), 1, EHAbilityInputID::SecondaryAbility);
-		AbilitySystemComp->GrantAbility(ItemToAdd->ItemData->GetItemSecondaryAbility(), 1, EHAbilityInputID::SecondaryHoldAbility);
-	}
-
-	// If there is no equipped item of this type equip it
-	if ((ItemType == EItemType::Weapon && !ActiveWeapon) ||
-		(ItemType == EItemType::Consumable && !ActiveConsumable))
+	
+	// If auto-equip option is true & there is no equipped item of this type equip it, else attach it to the holster socket
+	if ((ItemType == EItemType::Weapon && !ActiveWeapon && bShouldAutoEquip) ||
+		(ItemType == EItemType::Consumable && !ActiveConsumable && bShouldAutoEquip))
 	{
 		EquipItem(ItemToAdd);
 	}
@@ -93,19 +92,11 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* ItemToRemove)
 	{
 		UnequipItem(ItemToRemove);
 	}
-
-	AbilitySystemComp->RemoveLooseGameplayTag(ItemToRemove->ItemData->GetItemTag());
-
-	// Remove the item from the inventory
-
-	// Remove the item abilities from the ASC
-	AbilitySystemComp->RemoveAbilityByClass(ItemToRemove->ItemData->GetItemPrimaryAbility());
-	AbilitySystemComp->RemoveAbilityByClass(ItemToRemove->ItemData->GetItemSecondaryAbility());
-
+	
 	// Deattach it from the player
 	ItemToRemove->DetachFromPlayer();
 
-	InventoryItems.Remove(ItemToRemove);
+	InventoryItems.RemoveSwap(ItemToRemove);
 }
 
 void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
@@ -114,28 +105,11 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 	//if (!ItemToEquip || !GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
 	if (!GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
-	// GA_Swap send nullptr indicating the player wants to equip melee
-	if (ItemToEquip == nullptr)
-	{
-		// If ActiveWeapon is null that means that the player is already in melee
-		if (ActiveWeapon)
-		{
-			//Unequip the current weapon
-			AbilitySystemComp->RemoveLooseGameplayTag(ActiveWeapon->ItemData->GetItemTag());
-
-			UnequipItem(ActiveWeapon);
-
-			SetActiveWeapon(nullptr);
-		}
-		return;
-	}
-
 	// If there is another item of the same type unequip it -> UnequipItem ()
 	// Set the new item as active
 	//Bind Input from ASC
 	// AttachToActiveSocket
-	EItemType ItemType = ItemToEquip->ItemData->GetItemType();
-	switch (ItemType)
+	switch (ItemToEquip->ItemData->GetItemType())
 	{
 	case EItemType::Weapon:
 		{
@@ -144,12 +118,15 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 
 			if (ActiveWeapon)
 			{
-				AbilitySystemComp->RemoveLooseGameplayTag(ActiveWeapon->ItemData->GetItemTag());
+				AbilitySystemComp->RemoveReplicatedLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
 				UnequipItem(ActiveWeapon);
 			}
 
 			SetActiveWeapon(Cast<AHWeapon>(ItemToEquip));
-			AbilitySystemComp->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
+
+			//Grant Item Abilities to the player
+			ItemToEquip->GrantedAbilityHandles = AbilitySystemComp->GrantAbility(ItemToEquip->ItemData->GetItemAbilities());
+			
 			GetActiveWeapon()->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
 			break;
 		}
@@ -160,12 +137,12 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 
 			if (ActiveConsumable)
 			{
-				AbilitySystemComp->RemoveLooseGameplayTag(ActiveConsumable->ItemData->GetItemTag());
 				UnequipItem(ActiveConsumable);
 			}
 
 			SetActiveConsumable(Cast<AHConsumable>(ItemToEquip));
-			AbilitySystemComp->AddLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
+			
+			ItemToEquip->GrantedAbilityHandles = AbilitySystemComp->GrantAbility(ItemToEquip->ItemData->GetItemAbilities());
 			GetActiveConsumable()->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
 			break;
 		}
@@ -180,6 +157,8 @@ void UHInventoryComponent::UnequipItem(AHPlayerItem* ItemToUnequip)
 	// Checks if the item is valid
 	// Checks if the player HasAuthority()
 	if (!ItemToUnequip || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
+	
+	AbilitySystemComp->RemoveGrantedAbility(ItemToUnequip->GrantedAbilityHandles);
 	
 	ItemToUnequip->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
 
@@ -211,6 +190,7 @@ void UHInventoryComponent::LinkAbilitySystemComponent(UAbilitySystemComponent* A
 {
 	AbilitySystemComp = Cast<UHAbilitySystemComponent>(ASC);
 }
+
 
 void UHInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

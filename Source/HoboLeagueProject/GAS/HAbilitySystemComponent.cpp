@@ -5,6 +5,7 @@
 
 #include "FGameplayTags.h"
 #include "HAttributeSet.h"
+#include "GameplayAbility/HBaseGameplayAbility.h"
 
 
 UHAbilitySystemComponent::UHAbilitySystemComponent()
@@ -60,79 +61,42 @@ void UHAbilitySystemComponent::GiveInitialAbilities()
 	}
 }
 
-FGameplayAbilitySpecHandle UHAbilitySystemComponent::GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass,
-                                                                  int32 Level, EHAbilityInputID InputID)
+TArray<FGameplayAbilitySpecHandle> UHAbilitySystemComponent::GrantAbility(
+	TArray<TSubclassOf<UGameplayAbility>> AbilitiesToGrant, int32 Level)
 {
-	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return FGameplayAbilitySpecHandle();
+	if (!GetOwner()->HasAuthority()) return TArray<FGameplayAbilitySpecHandle>();
 
-	return GiveAbility(FGameplayAbilitySpec(AbilityClass, Level, static_cast<int32>(InputID), this));
-}
-
-void UHAbilitySystemComponent::RemoveAbilityByClass(TSubclassOf<UGameplayAbility> AbilityClass)
-{
-	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
-
-	if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromClass(AbilityClass))
+	TArray<FGameplayAbilitySpecHandle> GrantedHandles;
+	
+	for (TSubclassOf<UGameplayAbility> Ability : AbilitiesToGrant)
 	{
-		ClearAbility(Spec->Handle);
-	}
-}
-
-void UHAbilitySystemComponent::RemoveAllGrantedAbilities()
-{
-	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
-
-	for (auto It = ActivatableAbilities.Items.CreateIterator(); It; ++It)
-	{
-		ClearAbility(It->Handle);
-	}
-}
-
-void UHAbilitySystemComponent::BindAbilityToInputID(EHAbilityInputID InputID,
-                                                    TSubclassOf<UGameplayAbility> AbilityClass)
-{
-	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
-
-	if (FGameplayAbilitySpec* Spec = FindAbilitySpecFromClass(AbilityClass))
-	{
-		Spec->InputID = static_cast<int32>(InputID);
-		MarkAbilitySpecDirty(*Spec);
-	}
-}
-
-void UHAbilitySystemComponent::UnbindAbilityByInputID_Class(EHAbilityInputID InputID,
-                                                            TSubclassOf<UGameplayAbility> AbilityClass)
-{
-	if (!AbilityClass || !GetOwner() || !GetOwner()->HasAuthority()) return;
-
-	// Find the ability spec for this ability
-	FGameplayAbilitySpec* Spec = FindAbilitySpecFromClass(AbilityClass);
-	if (Spec)
-	{
-		// If the input matches, unbind it
-		if (Spec->InputID == static_cast<int32>(InputID))
+		int32 InputID = -1;
+		if (const UHBaseGameplayAbility* BaseAbilityCDO = GetDefault<UHBaseGameplayAbility>(Ability))
 		{
-			Spec->InputID = INDEX_NONE; // No input will trigger this ability now
-			MarkAbilitySpecDirty(*Spec); // Replicate change to clients
+			InputID = static_cast<int32>(BaseAbilityCDO->AbilityInputID);
 		}
+		
+		FGameplayAbilitySpecHandle SpecHandle = GiveAbility(FGameplayAbilitySpec(Ability, Level, InputID, nullptr));
+		GrantedHandles.Add(SpecHandle);
+	}
+	
+	return GrantedHandles;
+}
+
+void UHAbilitySystemComponent::RemoveGrantedAbility(TArray<FGameplayAbilitySpecHandle> HandleRemoval)
+{
+	if (!GetOwner()->HasAuthority()) return;
+
+	for (FGameplayAbilitySpecHandle SpecHandle : HandleRemoval)
+	{
+		ClearAbility(SpecHandle);
 	}
 }
 
-void UHAbilitySystemComponent::UnbindAllAbilitiesFromInputID(EHAbilityInputID InputID)
+void UHAbilitySystemComponent::OnRep_ActivateAbilities()
 {
-	if (!GetOwner() || !GetOwner()->HasAuthority()) return;
-
-	const int32 TargetID = static_cast<int32>(InputID);
-
-	// Iterate over all granted abilities
-	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
-	{
-		if (Spec.InputID == TargetID)
-		{
-			Spec.InputID = INDEX_NONE; // Clear the binding
-			MarkAbilitySpecDirty(Spec); // Ensure replication to clients
-		}
-	}
+	Super::OnRep_ActivateAbilities();
+	
 }
 
 void UHAbilitySystemComponent::HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData)

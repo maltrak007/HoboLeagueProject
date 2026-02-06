@@ -18,8 +18,8 @@ void UHInteractionComponent::BeginPlay()
 
 void UHInteractionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::EndPlay(EndPlayReason);
 	ClearInteractableObjects();
+	Super::EndPlay(EndPlayReason);
 }
 
 void UHInteractionComponent::AddInteractableObject(AHBaseItem* InteractableObject)

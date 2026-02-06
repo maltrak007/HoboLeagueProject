@@ -23,7 +23,7 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Status_Bleeding = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Status.Bleeding"),
 		FString("Bleeding Status Effect"));
-	
+
 	/*************************************************************************************/
 	/*	 								ANIMATIONS										 */
 	/*************************************************************************************/
@@ -86,151 +86,157 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	/*************************************************************************************/
 
 	GameplayTags.Abilities_PrimaryAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Abilities.PrimaryAttack"),
-	FString("Ability to Primary Attack"));
-
+		FName("Abilities.PrimaryAttack"),
+		FString("Ability to Primary Attack"));
+	
+	GameplayTags.Abilities_PrimaryHoldAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.PrimaryHoldAttack"),
+		FString("Ability to Primary Hold Attack"));
+	
 	GameplayTags.Abilities_SecondaryAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.SecondaryAttack"),
-FString("Ability to Secondary Attack"));
+		FName("Abilities.SecondaryAttack"),
+		FString("Ability to Secondary Attack"));
 
-	GameplayTags.Abilities_MeleeAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.MeleeAttack"),
-FString("Ability to Melee Attack"));
-
+	GameplayTags.Abilities_SecondaryHoldAttack = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Abilities.SecondaryHoldAttack"),
+		FString("Ability to Secondary Hold Attack"));
+	
 	GameplayTags.Abilities_UseConsumable = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.UseConsumable"),
-FString("Ability to Use Consumable"));
+		FName("Abilities.UseConsumable"),
+		FString("Ability to Use Consumable"));
 
 	GameplayTags.Abilities_PickUp = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.PickUp"),
-FString("Ability to PickUp"));
+		FName("Abilities.PickUp"),
+		FString("Ability to PickUp"));
 
 	GameplayTags.Abilities_DropDown = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.DropDown"),
-FString("Ability to DropDown"));
+		FName("Abilities.DropDown"),
+		FString("Ability to DropDown"));
 
 	GameplayTags.Abilities_MSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.MSwapItem"),
-FString("Ability to swap to Melee"));
+		FName("Abilities.MSwapItem"),
+		FString("Ability to swap to Melee"));
 
 	GameplayTags.Abilities_WSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.WSwapItem"),
-FString("Ability to swap to Weapon"));
+		FName("Abilities.WSwapItem"),
+		FString("Ability to swap to Weapon"));
 
 	GameplayTags.Abilities_CSwapItem = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.CSwapItem"),
-FString("Ability to swap to Consumable"));
-	
+		FName("Abilities.CSwapItem"),
+		FString("Ability to swap to Consumable"));
+
 	/*************************************************************************************/
 	/*	 						     PASIVE ABILITIES									 */
 	/*************************************************************************************/
 	GameplayTags.Abilities_Interact = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.Interact"),
-FString("Ability to Interact"));
+		FName("Abilities.Interact"),
+		FString("Ability to Interact"));
 	GameplayTags.Abilities_RegenerateStamina = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Abilities.RegenerateStamina"),
-FString("Regenerate Stamina Ability"));
+		FName("Abilities.RegenerateStamina"),
+		FString("Regenerate Stamina Ability"));
 
 	/*************************************************************************************/
 	/*	 						     ITEM EQUIPPED   									 */
 	/*************************************************************************************/
+	GameplayTags.Item_Weapon_Fist = UGameplayTagsManager::Get().AddNativeGameplayTag(
+			FName("Item.Weapon.Fist"),
+			FString("Fist Weapon"));
 	GameplayTags.Item_Weapon_Knife = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Weapon.Knife"),
-FString("Knife Weapon"));
+		FName("Item.Weapon.Knife"),
+		FString("Knife Weapon"));
 	GameplayTags.Item_Weapon_Sword = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Weapon.Sword"),
-FString("Sword Weapon"));
+		FName("Item.Weapon.Sword"),
+		FString("Sword Weapon"));
 	GameplayTags.Item_Weapon_Crowbar = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Weapon.Crowbar"),
-FString("Crowbar Weapon"));
+		FName("Item.Weapon.Crowbar"),
+		FString("Crowbar Weapon"));
 	GameplayTags.Item_Weapon_BaseballBat = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Weapon.BaseballBat"),
-FString("BaseballBat Weapon"));
+		FName("Item.Weapon.BaseballBat"),
+		FString("BaseballBat Weapon"));
 	GameplayTags.Item_Weapon_StopSign = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Weapon.StopSign"),
-FString("StopSign Weapon"));
-	
+		FName("Item.Weapon.StopSign"),
+		FString("StopSign Weapon"));
+
 	GameplayTags.Item_Consumable_Drinkable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.Drinkable.Pill"),
-FString("Pill Consumable"));
+		FName("Item.Consumable.Drinkable.Pill"),
+		FString("Pill Consumable"));
 	GameplayTags.Item_Consumable_Cigarette = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.Cigarette"),
-FString("Cigarette Consumable"));
+		FName("Item.Consumable.Cigarette"),
+		FString("Cigarette Consumable"));
 	GameplayTags.Item_Consumable_Drinkable_Beer = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.Drinkable.Beer"),
-FString("Beer Consumable"));
+		FName("Item.Consumable.Drinkable.Beer"),
+		FString("Beer Consumable"));
 	GameplayTags.Item_Consumable_Glue = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.Glue"),
-FString("Glue Consumable"));
+		FName("Item.Consumable.Glue"),
+		FString("Glue Consumable"));
 	GameplayTags.Item_Consumable_FentanylSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.FentanylSyringe"),
-FString("FentanylSyringe Consumable"));
+		FName("Item.Consumable.FentanylSyringe"),
+		FString("FentanylSyringe Consumable"));
 	GameplayTags.Item_Consumable_AdrenalineSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Item.Consumable.AdrenalineSyringe"),
-FString("AdrenalineSyringe Consumable"));
-	
+		FName("Item.Consumable.AdrenalineSyringe"),
+		FString("AdrenalineSyringe Consumable"));
+
 	/*************************************************************************************/
 	/*	 						    OVERDRIVE TAGS   									 */
 	/*************************************************************************************/
 	GameplayTags.Overdrive_Consumable_Pill = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Consumable.Pill"),
-FString("Pill Overdrive"));
+		FName("Overdrive.Consumable.Pill"),
+		FString("Pill Overdrive"));
 	GameplayTags.Overdrive_Consumable_Cigarette = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Consumable.Cigarette"),
-FString("Cigarette Overdrive"));
+		FName("Overdrive.Consumable.Cigarette"),
+		FString("Cigarette Overdrive"));
 	GameplayTags.Overdrive_Consumable_Beer = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Consumable.Beer"),
-FString("Beer Overdrive"));
+		FName("Overdrive.Consumable.Beer"),
+		FString("Beer Overdrive"));
 	GameplayTags.Overdrive_Consumable_Glue = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Consumable.Glue"),
-FString("Glue Overdrive"));
+		FName("Overdrive.Consumable.Glue"),
+		FString("Glue Overdrive"));
 	GameplayTags.Overdrive_Consumable_FentanylSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Consumable.FentanylSyringe"),
-FString("FentanylSyringe Overdrive"));
+		FName("Overdrive.Consumable.FentanylSyringe"),
+		FString("FentanylSyringe Overdrive"));
 	GameplayTags.Overdrive_Consumable_AdrenalineSyringe = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Consumable.AdrenalineSyringe"),
-FString("AdrenalineSyringe Overdrive"));
+		FName("Overdrive.Consumable.AdrenalineSyringe"),
+		FString("AdrenalineSyringe Overdrive"));
 
 	GameplayTags.Overdrive_Status_GlassBones = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Status.GlassBones"),
-FString("GlassBones Overdrive Status"));
+		FName("Overdrive.Status.GlassBones"),
+		FString("GlassBones Overdrive Status"));
 	GameplayTags.Overdrive_Status_NeedlePhobia = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Status.NeedlePhobia"),
-FString("NeedlePhobia Overdrive Status"));
+		FName("Overdrive.Status.NeedlePhobia"),
+		FString("NeedlePhobia Overdrive Status"));
 	GameplayTags.Overdrive_Status_JabberingJaw = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Status.JabberingJaw"),
-FString("JabberingJaw Overdrive Status"));
+		FName("Overdrive.Status.JabberingJaw"),
+		FString("JabberingJaw Overdrive Status"));
 
 	GameplayTags.Overdrive_Status_SuperJunkie = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Status.SuperJunkie"),
-FString("SuperJunkie Overdrive Status"));
+		FName("Overdrive.Status.SuperJunkie"),
+		FString("SuperJunkie Overdrive Status"));
 	GameplayTags.Overdrive_Status_MrCharlieSheen = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Status.MrCharlieSheen"),
-FString("MrCharlieSheen Overdrive Status"));
+		FName("Overdrive.Status.MrCharlieSheen"),
+		FString("MrCharlieSheen Overdrive Status"));
 	GameplayTags.Overdrive_Status_PimPumTakeLacasitos = UGameplayTagsManager::Get().AddNativeGameplayTag(
-FName("Overdrive.Status.PimPumTakeLacasitos"),
-FString("PimPumTakeLacasitos Overdrive Status"));
-	
+		FName("Overdrive.Status.PimPumTakeLacasitos"),
+		FString("PimPumTakeLacasitos Overdrive Status"));
+
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */
 	/*************************************************************************************/
 	GameplayTags.Activation_Fail_BlockedByTags = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation.Fail.BlockedByTags"),
-	FString("Activation Fail Blocked By Tags"));
+		FName("Activation.Fail.BlockedByTags"),
+		FString("Activation Fail Blocked By Tags"));
 	GameplayTags.Activation_Fail_CantAffordCost = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation.Fail.CantAffordCost"),
-	FString("Activation Fail Cant Afford Cost"));
+		FName("Activation.Fail.CantAffordCost"),
+		FString("Activation Fail Cant Afford Cost"));
 	GameplayTags.Activation_Fail_IsDead = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation.Fail.IsDead"),
-	FString("Activation Fail Is Dead"));
+		FName("Activation.Fail.IsDead"),
+		FString("Activation Fail Is Dead"));
 	GameplayTags.Activation_Fail_MissingTags = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation.Fail.MissingTags"),
-	FString("Activation Fail Missing Tags"));
+		FName("Activation.Fail.MissingTags"),
+		FString("Activation Fail Missing Tags"));
 	GameplayTags.Activation_Fail_Networking = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation.Fail.Networking"),
-	FString("Activation Fail Networking"));
+		FName("Activation.Fail.Networking"),
+		FString("Activation Fail Networking"));
 	GameplayTags.Activation_Fail_OnCooldown = UGameplayTagsManager::Get().AddNativeGameplayTag(
-	FName("Activation.Fail.OnCooldown"),
-	FString("Activation Fail On Cooldown"));
-	
+		FName("Activation.Fail.OnCooldown"),
+		FString("Activation Fail On Cooldown"));
 }

@@ -23,14 +23,18 @@ void AHWeapon::BeginPlay()
 
 void AHWeapon::ReduceWeaponDurability()
 {
+	if (!HasAuthority()) return;
+	
 	if (!WeaponData) return;
-
+	
 	RemainingDurability = FMath::Clamp(
 		RemainingDurability - WeaponData->GetLostDurability(),
 		0.0f,
 		WeaponData->GetTotalDurability()
 	);
 
+	OnWeaponHit.Broadcast();
+	
 	if (RemainingDurability <= 0)
 	{
 		if (UHInventoryComponent* InvComp = OwningPlayer->GetInventoryComponent())

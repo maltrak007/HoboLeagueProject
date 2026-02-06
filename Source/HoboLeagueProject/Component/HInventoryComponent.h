@@ -7,6 +7,7 @@
 #include "HInventoryComponent.generated.h"
 
 
+class APlayerCharacter;
 class UAbilitySystemComponent;
 class UHAbilitySystemComponent;
 class AHConsumable;
@@ -46,23 +47,31 @@ public:
 	AHConsumable* GetActiveConsumable() const { return ActiveConsumable; }
 	
 protected:
+	UPROPERTY(Transient)
 	TObjectPtr<UHAbilitySystemComponent> AbilitySystemComp;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Inventory|Limits")
-	int numMaxWeapons = 2;
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory|Limits", meta=(ClampMin="1",ClampMax="10"))
+	int32 MaxWeapons = 2;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory|Limits", meta=(ClampMin="1",ClampMax="10"))
+	int32 MaxConsumables = 2;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory|Limits")
-	int numMaxConsumables = 2;
-
+	bool bShouldAutoEquip = true;
+	
 	UPROPERTY(Replicated)
 	TArray<TObjectPtr<AHPlayerItem>> InventoryItems;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ActiveWeapon)
-	AHWeapon* ActiveWeapon;
+	TObjectPtr<AHWeapon> ActiveWeapon;
 
 	UPROPERTY(ReplicatedUsing = OnRep_ActiveConsumable)
-	AHConsumable* ActiveConsumable;
+	TObjectPtr<AHConsumable> ActiveConsumable;
 
+	virtual void BeginPlay() override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 	UFUNCTION()
 	void OnRep_ActiveWeapon();
 

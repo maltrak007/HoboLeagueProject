@@ -21,24 +21,17 @@ public:
 	void ApplyInitialEffects();
 	void GiveInitialAbilities();
 	
-	//** Gameplay Abilities Givers and Removers **/
+	//** Gameplay Abilities Givers **/
 	UFUNCTION(BlueprintCallable, Category="Abilities")
-	FGameplayAbilitySpecHandle GrantAbility(TSubclassOf<UGameplayAbility> AbilityClass, int32 Level = 1, EHAbilityInputID InputID = EHAbilityInputID::None);
-	UFUNCTION(BlueprintCallable, Category="Abilities")
-	void RemoveAbilityByClass(TSubclassOf<UGameplayAbility> AbilityClass);
-	UFUNCTION(BlueprintCallable, Category="Abilities")
-	void RemoveAllGrantedAbilities();
+	TArray<FGameplayAbilitySpecHandle> GrantAbility(TArray<TSubclassOf<UGameplayAbility>> AbilitiesToGrant, int32 Level = 1);
 	
-	//** Gameplay Abilities Bindings **/
-	void BindAbilityToInputID(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
-	void UnbindAbilityByInputID_Class(EHAbilityInputID InputID, TSubclassOf<UGameplayAbility> AbilityClass);
-	void UnbindAllAbilitiesFromInputID(EHAbilityInputID InputID);
-	
-	const TMap<EHAbilityInputID, TSubclassOf<UGameplayAbility>>& GetBasicAbilities() const
-	{
-		return BasicAbilities;
-	}
+	UFUNCTION(BlueprintCallable, Category="Abilities")
+	void RemoveGrantedAbility(TArray<FGameplayAbilitySpecHandle> Handle);
 
+protected:
+	
+	void OnRep_ActivateAbilities() override;
+	
 private:
 	// ---------- Attribute Change Callbacks ---------- //
 	void HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData);

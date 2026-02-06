@@ -63,6 +63,9 @@ private:
 	UAnimMontage* AttackMontage;
 
 	FName NextComboName;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	float SphereRadiusSweep = 30.f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Effect")
 	TSubclassOf<UGameplayEffect> DefaultStaminaCost;

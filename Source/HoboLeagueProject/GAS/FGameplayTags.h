@@ -52,8 +52,9 @@ public:
 	//     ****************************************************
 	//**************************************************************
 	FGameplayTag Abilities_PrimaryAttack;
+	FGameplayTag Abilities_PrimaryHoldAttack;
 	FGameplayTag Abilities_SecondaryAttack;
-	FGameplayTag Abilities_MeleeAttack;
+	FGameplayTag Abilities_SecondaryHoldAttack;
 	FGameplayTag Abilities_UseConsumable;
 	FGameplayTag Abilities_PickUp;
 	FGameplayTag Abilities_DropDown;
@@ -79,6 +80,7 @@ public:
 	//						  ITEM EQUIPPED
 	//     ****************************************************
 	//**************************************************************
+	FGameplayTag Item_Weapon_Fist;
 	FGameplayTag Item_Weapon_Knife;
 	FGameplayTag Item_Weapon_Sword;
 	FGameplayTag Item_Weapon_Crowbar;

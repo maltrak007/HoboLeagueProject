@@ -30,6 +30,8 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		K2_EndAbility();
 		return;
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Ability Activated = %s"), *GetCurrentAbilitySpec()->Ability->GetName());
 	
 	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
@@ -67,7 +69,8 @@ void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 }
 
 void UGA_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+                            const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
+                            bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -221,11 +224,10 @@ void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
 	{
 		NextComboName = TagNames.Last();
 
-		// ✅ Check stamina before accepting this combo
+		//Check stamina before accepting this combo
 		if (!CanPayStaminaForSection(NextComboName))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for combo section: %s"), *NextComboName.ToString());
-			// Optionally cancel ability or just ignore input
 			return;
 		}
 
@@ -274,26 +276,34 @@ bool UGA_Attack::CanPayStaminaForSection(FName SectionName) const
 
 void UGA_Attack::DealDamage(FGameplayEventData Data)
 {
-	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(Data.TargetData, 30.f, true, true);
+	if (!HasAuthority(&CurrentActivationInfo))
+	{
+		return;
+	}
+
+	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(
+		Data.TargetData, SphereRadiusSweep, true, true);
+
+	FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(
+		GetDamageEffectForCurrentCombo(), GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo()));
+
+	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
+	if (!ActorInfo) return;
+	
+	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
+	if (!PC) return;
+	
+	AHWeapon* Weapon = Cast<AHWeapon>(PC->GetInventoryComponent()->GetActiveWeapon());
+	
 	for (const FHitResult& HitResult : HitResults)
 	{
-		TSubclassOf<UGameplayEffect> DamageEffect = GetDamageEffectForCurrentCombo();
-
-		FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(
-			DamageEffect, GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo()));
 		ApplyGameplayEffectSpecToTarget(GetCurrentAbilitySpecHandle(), CurrentActorInfo, CurrentActivationInfo,
 		                                EffectSpecHandle,
 		                                UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(
 			                                HitResult.GetActor()));
-
-		const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
-		
-		APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
-		
-		if (AHWeapon* Weapon = Cast<AHWeapon>(PC->GetInventoryComponent()->GetActiveWeapon()))
+		if (Weapon)
 		{
 			Weapon->ReduceWeaponDurability();
-			Weapon->OnWeaponHit.Broadcast();
 		}
 	}
 }

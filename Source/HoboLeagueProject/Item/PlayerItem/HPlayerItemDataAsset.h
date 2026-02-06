@@ -31,15 +31,12 @@ public:
 	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
 	UTexture2D* ItemIcon;
-
+	
 	// ======================
 	//   Abilities
 	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TSubclassOf<UGameplayAbility> ItemPrimaryAbility;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
-	TSubclassOf<UGameplayAbility> ItemSecondaryAbility;
+	TArray<TSubclassOf<UGameplayAbility>> ItemAbilities;
 	
 	// ======== GETTERS ========
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
@@ -55,8 +52,5 @@ public:
 	UTexture2D* GetItemIcon() const { return ItemIcon; }
 	
 	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
-	TSubclassOf<UGameplayAbility> GetItemPrimaryAbility() const { return ItemPrimaryAbility; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
-	TSubclassOf<UGameplayAbility> GetItemSecondaryAbility() const { return ItemSecondaryAbility; }
+	TArray<TSubclassOf<UGameplayAbility>> GetItemAbilities() const { return ItemAbilities; }
 };

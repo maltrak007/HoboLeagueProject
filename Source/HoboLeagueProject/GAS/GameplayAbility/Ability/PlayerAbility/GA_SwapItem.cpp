@@ -38,6 +38,7 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
+
 	// Look at the Type to retrieve the correct item
 	if (ItemTypeToSwap == EItemType::Weapon)
 	{
@@ -60,12 +61,6 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 				break;
 			}
 		}
-	}
-	else if (ItemTypeToSwap == EItemType::Melee)
-	{
-		Inventory->EquipItem(nullptr);
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
-		return;
 	}
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);

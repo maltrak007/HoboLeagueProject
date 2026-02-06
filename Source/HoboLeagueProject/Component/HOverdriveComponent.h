@@ -16,15 +16,21 @@ class HOBOLEAGUEPROJECT_API UHOverdriveComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	
 	UHOverdriveComponent();
 
 	void LinkASC(UAbilitySystemComponent* _ASC);
 	
-	void CheckOverdriveCombination();
+	void CheckOverdriveCombination() const;
 
-	void OnItemConsumableTagChanged(FGameplayTag Tag, int32 NewCount);
+	void OnItemConsumableTagChanged(FGameplayTag Tag, int32 NewCount) const;
 	
 protected:
+
+	virtual void BeginPlay() override;
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Overdrive")
 	TObjectPtr<UHOverdriveCombinationDataAsset> OverdriveCombinationDataAsset;
 

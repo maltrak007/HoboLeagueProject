@@ -15,37 +15,37 @@ struct FOverdriveDataStruct
 {
 	GENERATED_BODY()
 	
-	FName GetCombinationName() const
+	const FName& GetCombinationName() const
 	{
 		return CombinationName;
 	}
-	
-	int GetRequiredNumTags() const
+
+	int32 GetRequiredNumTags() const
 	{
 		return NumTagRequired;
 	}
 
-	FGameplayTagContainer GetRequiredTags() const
+	const FGameplayTagContainer& GetRequiredTags() const
 	{
 		return RequiredTags;
 	}
 
-	TArray<TSubclassOf<UGameplayEffect>> GetGameplayEffects() const
+	const TArray<TSubclassOf<UGameplayEffect>>& GetGameplayEffects() const
 	{
 		return GameplayEffects;
 	}
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess="true"))
 	FName CombinationName;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
-	int NumTagRequired = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess="true"))
+	int32 NumTagRequired = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess="true"))
 	FGameplayTagContainer RequiredTags;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess="true"))
 	TArray<TSubclassOf<UGameplayEffect>> GameplayEffects;
 };
 
@@ -58,12 +58,12 @@ class HOBOLEAGUEPROJECT_API UHOverdriveCombinationDataAsset : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	TArray<FOverdriveDataStruct> GetDataCombinations() const
+	const TArray<FOverdriveDataStruct>& GetDataCombinations() const
 	{
 		return Combinations;
 	}
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Overdrive Combination", meta=(AllowPrivateAccess="true"))
 	TArray<FOverdriveDataStruct> Combinations;
 };

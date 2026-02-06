@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HPlayerItem.generated.h"
 
@@ -16,6 +17,9 @@ class HOBOLEAGUEPROJECT_API AHPlayerItem : public AHBaseItem
 public:
 	// Sets default values for this actor's properties
 	AHPlayerItem();
+
+	UPROPERTY()
+	TArray<FGameplayAbilitySpecHandle> GrantedAbilityHandles;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item", meta = (AllowPrivateAccess = "true"))
 	UHPlayerItemDataAsset* ItemData;
