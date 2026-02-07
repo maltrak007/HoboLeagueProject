@@ -14,10 +14,6 @@ UGA_RegenerateStamina::UGA_RegenerateStamina()
 	SetAssetTags(FGameplayTagContainer(FHGameplayTags::Get().Abilities_RegenerateStamina));
 	ActivationBlockedTags.AddTag(FHGameplayTags::Get().Status_Dead);
 	ActivationBlockedTags.AddTag(FHGameplayTags::Get().Status_Overdosing);
-	FAbilityTriggerData TriggerData;
-	TriggerData.TriggerTag = FHGameplayTags::Get().Status_StaminaDepletion;
-	TriggerData.TriggerSource = EGameplayAbilityTriggerSource::OwnedTagPresent;
-	AbilityTriggers.Add(TriggerData);
 }
 
 void UGA_RegenerateStamina::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
@@ -35,8 +31,8 @@ void UGA_RegenerateStamina::ActivateAbility(const FGameplayAbilitySpecHandle Han
 	if (ActorInfo->AbilitySystemComponent.IsValid() && ActorInfo->OwnerActor->HasAuthority())
 	{
 		FGameplayEffectSpecHandle RegenSpec = ActorInfo->AbilitySystemComponent->MakeOutgoingSpec(
-	UGE_StaminaRegeneration::StaticClass(), 1.f, ActorInfo->AbilitySystemComponent->MakeEffectContext());
-
+		StaminaRegenEffectClass, 1.f, ActorInfo->AbilitySystemComponent->MakeEffectContext());
+		
 		if (RegenSpec.IsValid())
 		{
 			ActorInfo->AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*RegenSpec.Data.Get());
@@ -48,11 +44,7 @@ void UGA_RegenerateStamina::EndAbility(const FGameplayAbilitySpecHandle Handle,
 	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
-	if (ActorInfo->AbilitySystemComponent.IsValid() && ActiveStaminaRegeneration.IsValid())
-	{
-		ActorInfo->AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveStaminaRegeneration);
-		ActiveStaminaRegeneration.Invalidate();
-	}
-
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
+
+

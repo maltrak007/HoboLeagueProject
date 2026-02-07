@@ -107,23 +107,16 @@ void UHStatusHandlerComponent::HandlePlayerRespawn() const
 void UHStatusHandlerComponent::OnStaminaDepletionTagChanged(FGameplayTag Tag, int32 NewCount)
 {
 	if (!AbilitySystemComp || !GetOwner()) return;
-
+	
+	static const FGameplayTagContainer AbilityTags(FHGameplayTags::Get().Abilities_RegenerateStamina);
+	
 	if (NewCount > 0)
 	{
-		FGameplayAbilitySpec* Spec = AbilitySystemComp->FindAbilitySpecFromClass(UGA_RegenerateStamina::StaticClass());
-		if (Spec && Spec->Ability)
-		{
-			bool bActiveRegen = AbilitySystemComp->TryActivateAbility(Spec->Handle, true);
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Stamina Regeneration Ability Activated: %s"), bActiveRegen ? TEXT("True") : TEXT("False")));
-		}
+		AbilitySystemComp->TryActivateAbilitiesByTag(AbilityTags);
 	}
 	else
 	{
-		FGameplayAbilitySpec* Spec = AbilitySystemComp->FindAbilitySpecFromClass(UGA_RegenerateStamina::StaticClass());
-		if (Spec && Spec->Ability)
-		{
-			AbilitySystemComp->CancelAbility(Spec->Ability);
-		}
+		AbilitySystemComp->CancelAbilities(&AbilityTags);
 	}
 }
 

@@ -22,7 +22,6 @@ UHInventoryComponent::UHInventoryComponent()
 void UHInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -32,14 +31,10 @@ void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 {
-	// Checks if the item is valid
-	// Checks if the player HasAuthority()
 	if (!ItemToAdd || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
-
-	// Checks if the item is already in the inventory
+	
 	if (InventoryItems.Contains(ItemToAdd)) return;
 
-	// Checks if this item type can be added to the inventory (max number of items)
 	EItemType ItemType = ItemToAdd->ItemData->GetItemType();
 
 	// If it surpasses the limit remove the oldest item of his type
@@ -102,7 +97,6 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* ItemToRemove)
 void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 {
 	// Checks if the player HasAuthority()
-	//if (!ItemToEquip || !GetOwner() || !GetOwner()->HasAuthority() || !ASC) return;
 	if (!GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
 	// If there is another item of the same type unequip it -> UnequipItem ()

@@ -4,6 +4,9 @@
 #include "HoboLeagueGamemode.h"
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
+#include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeapon.h"
+
 
 AHoboLeagueGamemode::AHoboLeagueGamemode()
 {
@@ -31,17 +34,17 @@ void AHoboLeagueGamemode::PostLogin(APlayerController* NewPlayer)
 			{
 				FString PlayerName = PlayerState->GetPlayerName();
 				GEngine->AddOnScreenDebugMessage(
-				-1,
-				10.f,
-				FColor::Cyan,
-				FString::Printf(TEXT("%s has joined the game"), *PlayerName)
-			);
+					-1,
+					10.f,
+					FColor::Cyan,
+					FString::Printf(TEXT("%s has joined the game"), *PlayerName)
+				);
 			}
 		}
 		UWorld* World = GetWorld();
 		FName CurrentMapName = *World->GetMapName(); // Note: May include prefix like "UEDPIE_0_"
 		CurrentMapName = FPackageName::GetShortFName(CurrentMapName); // Remove PIE or persistent level prefix
-		
+
 		if (NumberOfPlayers == 3 && CurrentMapName == "MultiplayerLobbyGym")
 		{
 			UWorld* World2 = GameState->GetWorld();
@@ -63,18 +66,53 @@ void AHoboLeagueGamemode::Logout(AController* Exiting)
 	{
 		int32 NumberOfPlayers = GameState.Get()->PlayerArray.Num();
 		GEngine->AddOnScreenDebugMessage(
-				1,
-				60.f,
-				FColor::Yellow,
-				FString::Printf(TEXT("Players in game %d"), NumberOfPlayers - 1)
-			);
-		
+			1,
+			60.f,
+			FColor::Yellow,
+			FString::Printf(TEXT("Players in game %d"), NumberOfPlayers - 1)
+		);
+
 		FString PlayerName = PlayerState->GetPlayerName();
 		GEngine->AddOnScreenDebugMessage(
-		-1,
-		10.f,
-		FColor::Cyan,
-		FString::Printf(TEXT("%s has exited the game"), *PlayerName)
-	);
+			-1,
+			10.f,
+			FColor::Cyan,
+			FString::Printf(TEXT("%s has exited the game"), *PlayerName)
+		);
+	}
+}
+
+void AHoboLeagueGamemode::RestartPlayer(AController* NewPlayer)
+{
+	// Always call Super first so the Pawn actually gets spawned
+	Super::RestartPlayer(NewPlayer);
+
+	if (!NewPlayer) return;
+
+	APawn* PlayerPawn = NewPlayer->GetPawn();
+	if (PlayerPawn)
+	{
+		UHInventoryComponent* Inv = PlayerPawn->FindComponentByClass<UHInventoryComponent>();
+		if (Inv)
+		{
+			// Use our optimized const reference getter
+			const TArray<TSubclassOf<AHPlayerItem>>& ItemsToSpawn = Inv->GetInitialInventoryItems();
+
+			for (const TSubclassOf<AHPlayerItem>& ItemClass : ItemsToSpawn)
+			{
+				if (ItemClass)
+				{
+					FActorSpawnParameters Params;
+					Params.Owner = PlayerPawn;
+					Params.Instigator = PlayerPawn;
+
+					AHPlayerItem* NewItem = GetWorld()->SpawnActor<AHPlayerItem>(ItemClass, Params);
+					if (NewItem)
+					{
+						Inv->AddItem(NewItem);
+					}
+				}
+			}
+		}
 	}
 }

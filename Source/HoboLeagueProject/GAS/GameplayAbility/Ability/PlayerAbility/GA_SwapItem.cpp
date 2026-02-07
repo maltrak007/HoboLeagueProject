@@ -39,26 +39,28 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		return;
 	}
 
-	// Look at the Type to retrieve the correct item
-	if (ItemTypeToSwap == EItemType::Weapon)
+	const TArray<AHPlayerItem*>& Items = Inventory->GetInventoryItems();
+	AHPlayerItem* CurrentlyActive = (ItemTypeToSwap == EItemType::Weapon) ? 
+									 Cast<AHPlayerItem>(Inventory->GetActiveWeapon()) : 
+									 Cast<AHPlayerItem>(Inventory->GetActiveConsumable());
+
+	// 1. Find the index of the currently equipped item
+	int32 CurrentIndex = Items.IndexOfByKey(CurrentlyActive);
+
+	// 2. Loop through the array starting from the NEXT index
+	for (int32 i = 1; i <= Items.Num(); ++i)
 	{
-		for (auto Element : Inventory->GetInventoryItems())
+		// Use modulo (%) to wrap back to 0 when we hit the end of the array
+		int32 NextIndex = (CurrentIndex + i) % Items.Num();
+		AHPlayerItem* PotentialItem = Items[NextIndex];
+
+		if (PotentialItem && PotentialItem->ItemData->GetItemType() == ItemTypeToSwap)
 		{
-			if (Element && Element->ItemData->GetItemType() == EItemType::Weapon && Cast<AHWeapon>(Element) != Inventory->GetActiveWeapon())
+			// Found the next one of the same type!
+			if (PotentialItem != CurrentlyActive)
 			{
-				Inventory->EquipItem(Element);
-				break;
-			}
-		}
-	}
-	else if (ItemTypeToSwap == EItemType::Consumable)
-	{
-		for (auto Element : Inventory->GetInventoryItems())
-		{
-			if (Element && Element->ItemData->GetItemType() == EItemType::Consumable && Cast<AHConsumable>(Element) != Inventory->GetActiveConsumable())
-			{
-				Inventory->EquipItem(Element);
-				break;
+				Inventory->EquipItem(PotentialItem);
+				break; 
 			}
 		}
 	}

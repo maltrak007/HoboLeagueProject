@@ -41,6 +41,9 @@ public:
 	TArray<AHPlayerItem*> GetInventoryItems() { return InventoryItems; }
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	const TArray<TSubclassOf<AHPlayerItem>>& GetInitialInventoryItems() const { return InitialInventory; } 
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AHWeapon* GetActiveWeapon() const { return ActiveWeapon; }
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -50,6 +53,9 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<UHAbilitySystemComponent> AbilitySystemComp;
 
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TArray<TSubclassOf<AHPlayerItem>> InitialInventory;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Inventory|Limits", meta=(ClampMin="1",ClampMax="10"))
 	int32 MaxWeapons = 2;
 

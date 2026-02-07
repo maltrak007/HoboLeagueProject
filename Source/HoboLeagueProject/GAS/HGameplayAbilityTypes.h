@@ -14,7 +14,6 @@ enum class EHAbilityInputID : uint8
 	SecondaryAbility				UMETA(DisplayName = "Secondary Ability"),
 	SecondaryHoldAbility			UMETA(DisplayName = "Secondary Hold Ability"),
 	AimAbility						UMETA(DisplayName = "Aim Ability"),
-	MeleeSlot						UMETA(DisplayName = "Melee Slot"),
 	WeaponSlot						UMETA(DisplayName = "Weapon Slot"),
 	ConsumableSlot					UMETA(DisplayName = "Consumable Slot"),
 	Interact						UMETA(DisplayName = "Interact"),
