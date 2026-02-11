@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "HoboLeagueProject/GAS/GameplayAbility/Ability/PlayerAbility/GA_SwapItem.h"
 #include "HInventoryComponent.generated.h"
 
 
@@ -24,13 +25,16 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void AddItem(AHPlayerItem* ItemToAdd);
-	
+	void HandleInventoryLimits(EItemType ItemType);
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void RemoveItem(AHPlayerItem* ItemToRemove);
-	
+	bool IsItemEquipped(const AHPlayerItem* Item) const;
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void EquipItem(AHPlayerItem* ItemToEquip);
-	
+	void AutoEquipReplacement(EItemType ItemType);
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void UnequipItem(AHPlayerItem* ItemToEquip);
 

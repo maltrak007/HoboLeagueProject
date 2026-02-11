@@ -22,6 +22,12 @@ void ABaseCharacterController::BeginPlay()
 		// Delay initialization to wait for LocalPlayer to be fully available 
 		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ABaseCharacterController::InitInputMapping);
 	}
+	
+	SetupInputModeForMap();
+}
+
+void ABaseCharacterController::SetupInputModeForMap()
+{
 	UWorld* World = GetWorld();
 	FName CurrentMapName = *World->GetMapName(); // Note: May include prefix like "UEDPIE_0_"
 	CurrentMapName = FPackageName::GetShortFName(CurrentMapName); // Remove PIE or persistent level prefix
@@ -29,11 +35,11 @@ void ABaseCharacterController::BeginPlay()
 	if (CurrentMapName == "MultiplayerNetworkGym") 
 	{
 		// Game + UI (e.g. in Lobby)
-    	FInputModeGameAndUI InputModeData;
-    	InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-    	InputModeData.SetHideCursorDuringCapture(false);
-    	SetInputMode(InputModeData);
-    	bShowMouseCursor = true;
+		FInputModeGameAndUI InputModeData;
+		InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		InputModeData.SetHideCursorDuringCapture(false);
+		SetInputMode(InputModeData);
+		bShowMouseCursor = true;
 
 	}
 	else
@@ -50,7 +56,12 @@ void ABaseCharacterController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
-
+	if (!EnhancedInputComponent)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get EnhancedInputComponent!"));
+		return;
+	}
+	
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Move);
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Look);
 	EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ABaseCharacterController::Jump);
@@ -58,30 +69,51 @@ void ABaseCharacterController::SetupInputComponent()
 
 	for (const TPair<EHAbilityInputID, UInputAction*>& InputActionPair : GameplayAbilityInputActions)
 	{
-		EnhancedInputComponent->BindAction(InputActionPair.Value, ETriggerEvent::Completed, this, &ABaseCharacterController::HandleAbilityInput,InputActionPair.Key);
+		if (!InputActionPair.Value)
+		{
+			continue;
+		}
+
+		// Bind Started event (when key is pressed)
+		EnhancedInputComponent->BindAction(
+			InputActionPair.Value,
+			ETriggerEvent::Started,
+			this,
+			&ABaseCharacterController::HandleAbilityInputPressed,
+			InputActionPair.Key
+		);
+
+		// Bind Completed event (when key is released)
+		EnhancedInputComponent->BindAction(
+			InputActionPair.Value,
+			ETriggerEvent::Completed,
+			this,
+			&ABaseCharacterController::HandleAbilityInputReleased,
+			InputActionPair.Key
+		);
 	}
 }
 
 void ABaseCharacterController::InitInputMapping()
 {
-	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer))
-		{
-			Subsystem->ClearAllMappings();
-			Subsystem->AddMappingContext(DefaultPlayerInputMappingContext, 0);
-			UE_LOG(LogTemp, Log, TEXT("Enhanced Input initialized successfully."));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Subsystem is null in InitInputMapping"));
-		}
-	}
-	else
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if (!LocalPlayer)
 	{
 		// Retry on next tick if LocalPlayer is not yet ready
 		GetWorld()->GetTimerManager().SetTimerForNextTick(this, &ABaseCharacterController::InitInputMapping);
+		return;
 	}
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(LocalPlayer);
+	if (!Subsystem)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("EnhancedInputLocalPlayerSubsystem is null in InitInputMapping"));
+		return;
+	}
+
+	Subsystem->ClearAllMappings();
+	Subsystem->AddMappingContext(DefaultPlayerInputMappingContext, 0);
+	UE_LOG(LogTemp, Log, TEXT("Enhanced Input initialized successfully."));
 }
 
 void ABaseCharacterController::Move(const FInputActionValue& Value)
@@ -135,17 +167,42 @@ void ABaseCharacterController::Jump(const FInputActionValue& Value)
 	}
 }
 
-void ABaseCharacterController::HandleAbilityInput(const FInputActionValue& Value, EHAbilityInputID AbilityInputID)
+void ABaseCharacterController::HandleAbilityInputPressed(const FInputActionValue& Value, EHAbilityInputID AbilityInputID)
 {
-	bool bPressed = Value.Get<bool>();
-	ABasePlayerCharacterState* PS = Cast<ABasePlayerCharacterState>(GetPlayerState<ABasePlayerCharacterState>());
-	if (!PS) return;
-	if (bPressed)
+	ABasePlayerCharacterState* PS = GetPlayerState<ABasePlayerCharacterState>();
+	if (!PS)
 	{
-		PS->GetAbilitySystemComponent()->AbilityLocalInputPressed((int32)AbilityInputID);
+		return;
 	}
-	else
+
+	UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+	if (!ASC)
 	{
-		PS->GetAbilitySystemComponent()->AbilityLocalInputReleased((int32)AbilityInputID);
+		return;
 	}
+
+	// Notify ASC that input was pressed
+	ASC->AbilityLocalInputPressed(static_cast<int32>(AbilityInputID));
+	
+	UE_LOG(LogTemp, Log, TEXT("Ability Input Pressed - ID: %d"), static_cast<int32>(AbilityInputID));
+}
+
+void ABaseCharacterController::HandleAbilityInputReleased(const FInputActionValue& Value, EHAbilityInputID AbilityInputID)
+{
+	ABasePlayerCharacterState* PS = GetPlayerState<ABasePlayerCharacterState>();
+	if (!PS)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* ASC = PS->GetAbilitySystemComponent();
+	if (!ASC)
+	{
+		return;
+	}
+
+	// Notify ASC that input was released
+	ASC->AbilityLocalInputReleased(static_cast<int32>(AbilityInputID));
+	
+	UE_LOG(LogTemp, Log, TEXT("Ability Input Released - ID: %d"), static_cast<int32>(AbilityInputID));
 }

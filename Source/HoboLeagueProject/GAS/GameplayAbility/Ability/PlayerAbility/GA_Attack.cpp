@@ -1,309 +1,540 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "GA_Attack.h"
-
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#include "AbilitySystemInterface.h"
 #include "GameplayTagsManager.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputPress.h"
-#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
-#include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
-#include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeapon.h"
 
-
-UGA_Attack::UGA_Attack() : AttackMontage(nullptr)
+UGA_Attack::UGA_Attack()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+
+	// Configure blocking/canceling tags as needed
+	// ActivationBlockedTags.AddTag(...);
+	// CancelAbilitiesWithTag.AddTag(...);
 }
 
-void UGA_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
-                                 const FGameplayAbilityActorInfo* ActorInfo,
-                                 const FGameplayAbilityActivationInfo ActivationInfo,
-                                 const FGameplayEventData* TriggerEventData)
+void UGA_Attack::ActivateAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData)
 {
-	if (!K2_CommitAbility())
+	// Commit ability (check costs, cooldowns, etc.)
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
-		K2_EndAbility();
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Ability Activated = %s"), *GetCurrentAbilitySpec()->Ability->GetName());
-	
-	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
+	// Validate montage
+	if (!AttackMontage)
 	{
-		UAbilityTask_PlayMontageAndWait* PlayMontageTask =
-			UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
-				this, NAME_None, AttackMontage);
-		PlayMontageTask->OnCompleted.AddDynamic(this, &UGA_Attack::K2_EndAbility);
-		PlayMontageTask->OnCancelled.AddDynamic(this, &UGA_Attack::K2_EndAbility);
-		PlayMontageTask->OnInterrupted.AddDynamic(this, &UGA_Attack::K2_EndAbility);
-		PlayMontageTask->OnBlendOut.AddDynamic(this, &UGA_Attack::K2_EndAbility);
-		PlayMontageTask->ReadyForActivation();
-
-		UAbilityTask_WaitGameplayEvent* WaitComboChangeEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
-			this,
-			GetComboChangedEventTag(), nullptr, false, false);
-
-		WaitComboChangeEventTask->EventReceived.AddDynamic(this, &UGA_Attack::GetComboChangedEventReceived);
-		WaitComboChangeEventTask->ReadyForActivation();
+		UE_LOG(LogTemp, Error, TEXT("GA_Attack: No attack montage assigned!"));
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
 	}
 
-	if (K2_HasAuthority())
-	{
-		UAbilityTask_WaitGameplayEvent* WaitTargetingEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this,
-			GetComboTargetEventTag());
-		WaitTargetingEventTask->EventReceived.AddDynamic(this, &UGA_Attack::DealDamage);
-		WaitTargetingEventTask->ReadyForActivation();
+	// Reset combo state
+	NextComboName = NAME_None;
+	bIsWaitingForComboInput = false;
 
-		UAbilityTask_WaitGameplayEvent* WaitStaminaEventTask =
-			UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, GetComboUseStaminaEventTag());
-		WaitStaminaEventTask->EventReceived.AddDynamic(this, &UGA_Attack::ConsumeStamina);
-		WaitStaminaEventTask->ReadyForActivation();
-	}
+	// Setup tasks based on authority
+	SetupMontageTask();
+	SetupEventTasks();
+	SetupInputTask();
 
-	SetupWaitComboInputPress();
+	UE_LOG(LogTemp, Log, TEXT("[%s] Attack ability activated"),
+		HasAuthority(&ActivationInfo) ? TEXT("SERVER") : TEXT("CLIENT"));
 }
 
-void UGA_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
-                            const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-                            bool bWasCancelled)
+void UGA_Attack::EndAbility(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo,
+	bool bReplicateEndAbility,
+	bool bWasCancelled)
 {
+	// Clear combo state
+	NextComboName = NAME_None;
+	bIsWaitingForComboInput = false;
+
+	// Clear task references (base class handles cancellation)
+	MontageTask = nullptr;
+	InputTask = nullptr;
+	ComboChangeTask = nullptr;
+	DamageTask = nullptr;
+	StaminaTask = nullptr;
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+
+	UE_LOG(LogTemp, Log, TEXT("[%s] Attack ability ended (Cancelled: %s)"),
+		HasAuthority(&ActivationInfo) ? TEXT("SERVER") : TEXT("CLIENT"),
+		bWasCancelled ? TEXT("YES") : TEXT("NO"));
 }
 
-// Do not substitue this because is aiming to get only the prefix "Event.Combo.Change"
-// and not the full tag "Event.Combo.Change.X" where X is the combo name
-FGameplayTag UGA_Attack::GetComboChangedEventTag()
+// ============ Setup Functions ============
+
+void UGA_Attack::SetupMontageTask()
 {
-	return FGameplayTag::RequestGameplayTag("Event.Combo.Change");
+	// Create montage task (runs on both client and server for prediction)
+	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
+		this,
+		NAME_None,
+		AttackMontage,
+		1.0f // Play rate
+	);
+
+	if (MontageTask)
+	{
+		// Bind all montage events
+		MontageTask->OnCompleted.AddDynamic(this, &UGA_Attack::OnMontageCompleted);
+		MontageTask->OnCancelled.AddDynamic(this, &UGA_Attack::OnMontageCancelled);
+		MontageTask->OnInterrupted.AddDynamic(this, &UGA_Attack::OnMontageInterrupted);
+		MontageTask->OnBlendOut.AddDynamic(this, &UGA_Attack::OnMontageBlendOut);
+
+		RegisterTask(MontageTask);
+		MontageTask->ReadyForActivation();
+	}
 }
 
-FGameplayTag UGA_Attack::GetComboChangedEventEndTag()
+void UGA_Attack::SetupEventTasks()
 {
-	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_Change_End));
+	// Combo change event (client and server)
+	ComboChangeTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		GetComboChangeEventTag(),
+		nullptr, // Any source
+		false, // OnlyTriggerOnce
+		false  // OnlyMatchExact (allows child tags)
+	);
+
+	if (ComboChangeTask)
+	{
+		ComboChangeTask->EventReceived.AddDynamic(this, &UGA_Attack::OnComboChangeEvent);
+		RegisterTask(ComboChangeTask);
+		ComboChangeTask->ReadyForActivation();
+	}
+
+	// Server-only tasks
+	if (HasAuthority(&CurrentActivationInfo))
+	{
+		// Damage event
+		DamageTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+			this,
+			GetDamageEventTag()
+		);
+
+		if (DamageTask)
+		{
+			DamageTask->EventReceived.AddDynamic(this, &UGA_Attack::OnDamageEvent);
+			RegisterTask(DamageTask);
+			DamageTask->ReadyForActivation();
+		}
+
+		// Stamina cost event
+		StaminaTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+			this,
+			GetStaminaEventTag()
+		);
+
+		if (StaminaTask)
+		{
+			StaminaTask->EventReceived.AddDynamic(this, &UGA_Attack::OnStaminaEvent);
+			RegisterTask(StaminaTask);
+			StaminaTask->ReadyForActivation();
+		}
+	}
 }
 
-FGameplayTag UGA_Attack::GetComboTargetEventTag()
+void UGA_Attack::SetupInputTask()
 {
-	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_Damage));
+	// Cancel existing input task if any
+	if (InputTask && InputTask->IsActive())
+	{
+		InputTask->ExternalCancel();
+	}
+
+	// Create new input task
+	InputTask = UAbilityTask_WaitInputPress::WaitInputPress(this, false);
+
+	if (InputTask)
+	{
+		InputTask->OnPress.AddDynamic(this, &UGA_Attack::OnComboInputPressed);
+		RegisterTask(InputTask);
+		InputTask->ReadyForActivation();
+		
+		bIsWaitingForComboInput = true;
+	}
 }
 
-FGameplayTag UGA_Attack::GetComboUseStaminaEventTag()
+// ============ Montage Callbacks ============
+
+void UGA_Attack::OnMontageCompleted()
 {
-	return FGameplayTag::RequestGameplayTag(FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_UseStamina));
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
-void UGA_Attack::SetupWaitComboInputPress()
+void UGA_Attack::OnMontageCancelled()
 {
-	UAbilityTask_WaitInputPress* WaitInputPress = UAbilityTask_WaitInputPress::WaitInputPress(this);
-	WaitInputPress->OnPress.AddDynamic(this, &UGA_Attack::HandleInputPress);
-	WaitInputPress->ReadyForActivation();
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 }
 
-void UGA_Attack::HandleInputPress(float TimeWaited)
+void UGA_Attack::OnMontageInterrupted()
 {
-	SetupWaitComboInputPress();
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+}
+
+void UGA_Attack::OnMontageBlendOut()
+{
+	// Optional: Could end here or wait for OnCompleted
+	// EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+}
+
+// ============ Input & Combo Logic ============
+
+void UGA_Attack::OnComboInputPressed(float TimeWaited)
+{
+	UE_LOG(LogTemp, Log, TEXT("Combo input pressed (Time: %.2f)"), TimeWaited);
+
+	// Try to commit the queued combo
 	TryCommitCombo();
+
+	// Setup new input task for next combo window
+	SetupInputTask();
+}
+
+void UGA_Attack::OnComboChangeEvent(FGameplayEventData Data)
+{
+	const FGameplayTag EventTag = Data.EventTag;
+
+	// Check if this is the end combo event
+	if (EventTag.MatchesTagExact(GetComboEndEventTag()))
+	{
+		NextComboName = NAME_None;
+		bIsWaitingForComboInput = false;
+		
+		UE_LOG(LogTemp, Log, TEXT("Combo chain ended"));
+		return;
+	}
+
+	// Extract combo section name from tag
+	// Example: "Event.Combo.Change.Attack2" -> "Attack2"
+	TArray<FName> TagNames;
+	UGameplayTagsManager::Get().SplitGameplayTagFName(EventTag, TagNames);
+
+	if (TagNames.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to extract combo name from tag: %s"), 
+			*EventTag.ToString());
+		return;
+	}
+
+	const FName PotentialComboName = TagNames.Last();
+
+	// Validate that this combo section exists in montage
+	if (!AttackMontage->IsValidSectionName(PotentialComboName))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid combo section: %s"), *PotentialComboName.ToString());
+		return;
+	}
+
+	// Check stamina before accepting combo
+	if (!CanPayStaminaForSection(PotentialComboName))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for combo: %s"), 
+			*PotentialComboName.ToString());
+		
+		// Optional: Play "out of stamina" feedback here
+		return;
+	}
+
+	// Accept the combo
+	NextComboName = PotentialComboName;
+	
+	UE_LOG(LogTemp, Log, TEXT("Next combo queued: %s"), *NextComboName.ToString());
 }
 
 void UGA_Attack::TryCommitCombo()
 {
 	if (NextComboName == NAME_None)
 	{
+		UE_LOG(LogTemp, Log, TEXT("No combo queued"));
 		return;
 	}
 
-	UAnimInstance* OwnerAnimInstance = GetOwnerAnimInstance();
-
-	if (!OwnerAnimInstance)
+	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
+	if (!AnimInstance || !AttackMontage)
 	{
+		UE_LOG(LogTemp, Error, TEXT("Cannot commit combo - invalid anim instance or montage"));
 		return;
 	}
 
-
-	OwnerAnimInstance->Montage_SetNextSection(OwnerAnimInstance->Montage_GetCurrentSection(AttackMontage),
-	                                          NextComboName, AttackMontage);
-}
-
-TSubclassOf<UGameplayEffect> UGA_Attack::GetDamageEffectForCurrentCombo() const
-{
-	UAnimInstance* OwnerAnimInstance = GetOwnerAnimInstance();
-	if (OwnerAnimInstance)
+	// Double-check montage is playing
+	if (!AnimInstance->Montage_IsPlaying(AttackMontage))
 	{
-		FName CurrentSectionName = OwnerAnimInstance->Montage_GetCurrentSection(AttackMontage);
-		const TSubclassOf<UGameplayEffect>* FoundEffect = DamageEffectMap.Find(CurrentSectionName);
-		if (FoundEffect) return *FoundEffect;
-	}
-	return DefaultDamageEffect;
-}
-
-TSubclassOf<UGameplayEffect> UGA_Attack::GetStaminaEffectCostForCurrentCombo() const
-{
-	UAnimInstance* OwnerAnimInstance = GetOwnerAnimInstance();
-	if (OwnerAnimInstance)
-	{
-		FName CurrentSectionName = OwnerAnimInstance->Montage_GetCurrentSection(AttackMontage);
-		const TSubclassOf<UGameplayEffect>* FoundEffect = StaminaCostMap.Find(CurrentSectionName);
-		if (FoundEffect) return *FoundEffect;
-	}
-	return DefaultStaminaCost;
-}
-
-void UGA_Attack::ConsumeStamina(FGameplayEventData Data)
-{
-	// Authority only — apply authoritative cost changes on the server.
-	if (!K2_HasAuthority())
-	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot commit combo - montage not playing"));
 		return;
 	}
 
-	TSubclassOf<UGameplayEffect> StaminaCostEffect = GetStaminaEffectCostForCurrentCombo();
-	if (!StaminaCostEffect) return;
+	// Get current section
+	const FName CurrentSection = AnimInstance->Montage_GetCurrentSection(AttackMontage);
 
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
-	{
-		// --- Build the outgoing spec (we'll apply this later if allowed) ---
-		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-		FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(StaminaCostEffect, AbilityLevel);
+	// Commit combo by setting next section
+	AnimInstance->Montage_SetNextSection(CurrentSection, NextComboName, AttackMontage);
 
-		if (!CostSpecHandle.IsValid())
-		{
-			return;
-		}
+	UE_LOG(LogTemp, Log, TEXT("Combo committed: %s -> %s"), 
+		*CurrentSection.ToString(), *NextComboName.ToString());
 
-		// --- IMPORTANT: Use CheckCost on the ability instance, but CheckCost inspects the ability's
-		// CostGameplayEffectClass. Temporarily override it so CheckCost checks the section GE. ---
-		TSubclassOf<UGameplayEffect> SavedCostGE = CostGameplayEffectClass; // store original
-
-		CostGameplayEffectClass = StaminaCostEffect; // temporarily point ability's cost to section GE
-
-		// Optional: collect tags that CheckCost returns (not required)
-		FGameplayTagContainer OutRelevantTags;
-		const bool bCanPay = CheckCost(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), &OutRelevantTags);
-
-		// restore original cost GE immediately
-		CostGameplayEffectClass = SavedCostGE;
-
-		// CheckCost returns true when the cost CAN be paid
-		if (!bCanPay)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for section (NextComboName = %s)"),
-			       *NextComboName.ToString());
-			// handle failure: cancel combo / end ability / play feedback, etc.
-			K2_EndAbility();
-			return;
-		}
-
-		// --- Apply the cost effect to self (server authoritative) ---
-		// If your cost GE uses SetByCaller, set magnitudes on CostSpecHandle.Data here before applying.
-		if (CostSpecHandle.IsValid() && CostSpecHandle.Data.IsValid())
-		{
-			ASC->ApplyGameplayEffectSpecToSelf(*CostSpecHandle.Data.Get());
-		}
-	}
+	// Clear queued combo
+	NextComboName = NAME_None;
 }
 
-
-void UGA_Attack::GetComboChangedEventReceived(FGameplayEventData Data)
-{
-	FGameplayTag EventTag = Data.EventTag;
-	if (EventTag == GetComboChangedEventEndTag())
-	{
-		NextComboName = NAME_None;
-		UE_LOG(LogTemp, Warning, TEXT("Next combo is cleared"));
-		return;
-	}
-
-	TArray<FName> TagNames;
-	UGameplayTagsManager::Get().SplitGameplayTagFName(EventTag, TagNames);
-	if (TagNames.Num() > 0)
-	{
-		NextComboName = TagNames.Last();
-
-		//Check stamina before accepting this combo
-		if (!CanPayStaminaForSection(NextComboName))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for combo section: %s"), *NextComboName.ToString());
-			return;
-		}
-
-		UE_LOG(LogTemp, Warning, TEXT("Next Combo is now :: %s"), *NextComboName.ToString());
-
-		SetupWaitComboInputPress();
-	}
-}
+// ============ Stamina Management ============
 
 bool UGA_Attack::CanPayStaminaForSection(FName SectionName) const
 {
-	TSubclassOf<UGameplayEffect> StaminaCostEffect = DefaultStaminaCost;
+	// Get stamina cost for this section
+	TSubclassOf<UGameplayEffect> StaminaCost = DefaultStaminaCost;
 
-	if (const TSubclassOf<UGameplayEffect>* FoundEffect = StaminaCostMap.Find(SectionName))
+	if (const TSubclassOf<UGameplayEffect>* FoundCost = StaminaCostMap.Find(SectionName))
 	{
-		StaminaCostEffect = *FoundEffect;
+		StaminaCost = *FoundCost;
 	}
 
-	if (!StaminaCostEffect) return true; // no GE means no cost
-
-	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
+	// No cost = always can afford
+	if (!StaminaCost)
 	{
-		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-		FGameplayEffectSpecHandle CostSpecHandle = MakeOutgoingGameplayEffectSpec(StaminaCostEffect, AbilityLevel);
-
-		if (!CostSpecHandle.IsValid())
-		{
-			return false;
-		}
-
-		// Temporarily override ability's cost GE for CheckCost
-		TSubclassOf<UGameplayEffect> SavedCostGE = CostGameplayEffectClass;
-		const_cast<UGA_Attack*>(this)->CostGameplayEffectClass = StaminaCostEffect;
-
-		FGameplayTagContainer OutTags;
-		const bool bCanPay = CheckCost(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo(), &OutTags);
-
-		const_cast<UGA_Attack*>(this)->CostGameplayEffectClass = SavedCostGE;
-
-		return bCanPay;
+		return true;
 	}
 
-	return false;
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC)
+	{
+		return false;
+	}
+
+	// Create a temporary spec to check cost
+	const FGameplayEffectSpecHandle SpecHandle = 
+		ASC->MakeOutgoingSpec(StaminaCost, GetCurrentAbilityLevel(), ASC->MakeEffectContext());
+
+	if (!SpecHandle.IsValid())
+	{
+		return false;
+	}
+
+	// Check if we can afford it
+	return ASC->CanApplyAttributeModifiers(
+		StaminaCost.GetDefaultObject(),
+		GetCurrentAbilityLevel(),
+		ASC->MakeEffectContext()
+	);
 }
 
-
-void UGA_Attack::DealDamage(FGameplayEventData Data)
+void UGA_Attack::OnStaminaEvent(FGameplayEventData Data)
 {
+	// Server only
 	if (!HasAuthority(&CurrentActivationInfo))
 	{
 		return;
 	}
 
-	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(
-		Data.TargetData, SphereRadiusSweep, true, true);
+	ConsumeStamina();
+}
 
-	FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingGameplayEffectSpec(
-		GetDamageEffectForCurrentCombo(), GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo()));
-
-	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
-	if (!ActorInfo) return;
+void UGA_Attack::ConsumeStamina()
+{
+	TSubclassOf<UGameplayEffect> StaminaCost = GetStaminaCostForCurrentCombo();
 	
-	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
-	if (!PC) return;
-	
-	AHWeapon* Weapon = Cast<AHWeapon>(PC->GetInventoryComponent()->GetActiveWeapon());
-	
-	for (const FHitResult& HitResult : HitResults)
+	if (!StaminaCost)
 	{
-		ApplyGameplayEffectSpecToTarget(GetCurrentAbilitySpecHandle(), CurrentActorInfo, CurrentActivationInfo,
-		                                EffectSpecHandle,
-		                                UAbilitySystemBlueprintLibrary::AbilityTargetDataFromActor(
-			                                HitResult.GetActor()));
-		if (Weapon)
-		{
-			Weapon->ReduceWeaponDurability();
-		}
+		return; // No cost for this section
 	}
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
+	if (!ASC)
+	{
+		return;
+	}
+
+	// Create and apply stamina cost effect
+	FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+		StaminaCost,
+		GetCurrentAbilityLevel()
+	);
+
+	if (SpecHandle.IsValid())
+	{
+		// Apply to self
+		ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+
+		UE_LOG(LogTemp, Log, TEXT("Stamina consumed for current combo section"));
+	}
+}
+
+TSubclassOf<UGameplayEffect> UGA_Attack::GetStaminaCostForCurrentCombo() const
+{
+	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
+	if (!AnimInstance || !AttackMontage)
+	{
+		return DefaultStaminaCost;
+	}
+
+	const FName CurrentSection = AnimInstance->Montage_GetCurrentSection(AttackMontage);
+	
+	if (const TSubclassOf<UGameplayEffect>* FoundCost = StaminaCostMap.Find(CurrentSection))
+	{
+		return *FoundCost;
+	}
+
+	return DefaultStaminaCost;
+}
+
+// ============ Damage Dealing ============
+
+void UGA_Attack::OnDamageEvent(FGameplayEventData Data)
+{
+	// Server only
+	if (!HasAuthority(&CurrentActivationInfo))
+	{
+		return;
+	}
+
+	// Validate target data
+	if (!Data.TargetData.IsValid(0))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Damage event received with invalid target data"));
+		return;
+	}
+
+	DealDamage(Data.TargetData);
+}
+
+void UGA_Attack::DealDamage(const FGameplayAbilityTargetDataHandle& TargetData)
+{
+	// Get damage effect for current combo section
+	TSubclassOf<UGameplayEffect> DamageEffect = GetDamageEffectForCurrentCombo();
+	
+	if (!DamageEffect)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No damage effect configured for current combo"));
+		return;
+	}
+
+	// Perform sweep to find hit targets
+	TArray<FHitResult> HitResults = GetHitResultFromSweepLocationTargetData(
+		TargetData,
+		SphereRadiusSweep,
+		bDebugDrawHits,
+		true // Ignore self
+	);
+
+	if (HitResults.Num() == 0)
+	{
+		UE_LOG(LogTemp, Log, TEXT("No targets hit"));
+		return;
+	}
+
+	// Create damage effect spec
+	FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+		DamageEffect,
+		GetCurrentAbilityLevel()
+	);
+
+	if (!SpecHandle.IsValid())
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* SourceASC = GetAbilitySystemComponentFromActorInfo();
+	if (!SourceASC)
+	{
+		return;
+	}
+
+	// Apply damage to each hit target
+	for (const FHitResult& Hit : HitResults)
+	{
+		AActor* HitActor = Hit.GetActor();
+		if (!IsValid(HitActor))
+		{
+			continue;
+		}
+		UAbilitySystemComponent* TargetASC = nullptr;
+		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(HitActor))
+		{
+			TargetASC = ASCInterface->GetAbilitySystemComponent();
+		}
+
+		if (!TargetASC)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Hit actor has no ASC: %s"), *GetNameSafe(HitActor));
+			continue;
+		}
+
+		// Apply damage
+		SourceASC->ApplyGameplayEffectSpecToTarget(
+			*SpecHandle.Data.Get(),
+			TargetASC
+		);
+
+		UE_LOG(LogTemp, Log, TEXT("Damage applied to: %s"), *GetNameSafe(HitActor));
+	}
+
+	// Optional: Reduce weapon durability
+	// This should be done through a separate system, not hardcoded here
+	// See improved architecture in the analysis document
+}
+
+TSubclassOf<UGameplayEffect> UGA_Attack::GetDamageEffectForCurrentCombo() const
+{
+	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
+	if (!AnimInstance || !AttackMontage)
+	{
+		return DefaultDamageEffect;
+	}
+
+	const FName CurrentSection = AnimInstance->Montage_GetCurrentSection(AttackMontage);
+	
+	if (const TSubclassOf<UGameplayEffect>* FoundEffect = DamageEffectMap.Find(CurrentSection))
+	{
+		return *FoundEffect;
+	}
+
+	return DefaultDamageEffect;
+}
+
+// ============ Gameplay Tag Helpers ============
+
+FGameplayTag UGA_Attack::GetComboChangeEventTag() const
+{
+	// Use prefix so we catch all combo change events
+	return FGameplayTag::RequestGameplayTag("Event.Combo.Change");
+}
+
+FGameplayTag UGA_Attack::GetComboEndEventTag() const
+{
+	return FGameplayTag::RequestGameplayTag(
+		FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_Change_End)
+	);
+}
+
+FGameplayTag UGA_Attack::GetDamageEventTag() const
+{
+	return FGameplayTag::RequestGameplayTag(
+		FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_Damage)
+	);
+}
+
+FGameplayTag UGA_Attack::GetStaminaEventTag() const
+{
+	return FGameplayTag::RequestGameplayTag(
+		FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_UseStamina)
+	);
 }

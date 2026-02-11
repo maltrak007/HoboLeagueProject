@@ -31,35 +31,13 @@ void UHInventoryComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 {
-	if (!ItemToAdd || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
+	if (!IsValid(ItemToAdd) || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
 	if (InventoryItems.Contains(ItemToAdd)) return;
 
-	EItemType ItemType = ItemToAdd->ItemData->GetItemType();
+	const EItemType ItemType = ItemToAdd->ItemData->GetItemType();
 
-	// If it surpasses the limit remove the oldest item of his type
-	int32 TypeCount = 0;
-	for (AHPlayerItem* Item : InventoryItems)
-	{
-		if (Item && Item->ItemData->GetItemType() == ItemType)
-		{
-			TypeCount++;
-		}
-	}
-
-	if ((ItemType == EItemType::Weapon && TypeCount >= MaxWeapons) ||
-		(ItemType == EItemType::Consumable && TypeCount >= MaxConsumables))
-	{
-		for (int32 i = InventoryItems.Num() - 1; i >= 0; i--)
-		{
-			AHPlayerItem* Existing = InventoryItems[i];
-			if (Existing && Existing->ItemData->GetItemType() == ItemType)
-			{
-				RemoveItem(Existing);
-				break;
-			}
-		}
-	}
+	HandleInventoryLimits(ItemType);
 
 	// Add the item to the inventory
 	InventoryItems.Add(ItemToAdd);
@@ -72,7 +50,52 @@ void UHInventoryComponent::AddItem(AHPlayerItem* ItemToAdd)
 	}
 	else
 	{
-		ItemToAdd->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
+		if (APlayerCharacter* PlayerOwner = Cast<APlayerCharacter>(GetOwner()))
+		{
+			ItemToAdd->AttachToHolsterSocket(PlayerOwner);
+		}
+	}
+}
+
+void UHInventoryComponent::HandleInventoryLimits(EItemType ItemType)
+{
+	// Determine max count based on type
+	int32 MaxCount = 0;
+	switch (ItemType)
+	{
+	case EItemType::Weapon:
+		MaxCount = MaxWeapons;
+		break;
+	case EItemType::Consumable:
+		MaxCount = MaxConsumables;
+		break;
+	default:
+		return; // No limit for other types
+	}
+
+	// Count items of this type
+	int32 TypeCount = 0;
+	for (const AHPlayerItem* Item : InventoryItems)
+	{
+		if (IsValid(Item) && Item->ItemData->GetItemType() == ItemType)
+		{
+			TypeCount++;
+		}
+	}
+
+	// Remove oldest if limit exceeded
+	if (TypeCount >= MaxCount)
+	{
+		// Iterate forward to find the oldest (first added) item
+		for (int32 i = 0; i < InventoryItems.Num(); ++i)
+		{
+			AHPlayerItem* Existing = InventoryItems[i];
+			if (IsValid(Existing) && Existing->ItemData->GetItemType() == ItemType)
+			{
+				RemoveItem(Existing);
+				break;
+			}
+		}
 	}
 }
 
@@ -80,24 +103,49 @@ void UHInventoryComponent::RemoveItem(AHPlayerItem* ItemToRemove)
 {
 	// Checks if the item is valid
 	// Checks if the player HasAuthority()
-	if (!ItemToRemove || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
-
-	// If the item to remove is the current item equipped unequip it
-	if (Cast<AHWeapon>(ItemToRemove) == ActiveWeapon || Cast<AHConsumable>(ItemToRemove) == ActiveConsumable)
+	if (!IsValid(ItemToRemove) || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
+	
+	const EItemType RemovedType = ItemToRemove->ItemData ? ItemToRemove->ItemData->GetItemType() : EItemType::Other;
+	const bool bWasEquipped = IsItemEquipped(ItemToRemove);
+	
+	if (bWasEquipped)
 	{
 		UnequipItem(ItemToRemove);
 	}
-	
-	// Deattach it from the player
+    
 	ItemToRemove->DetachFromPlayer();
-
 	InventoryItems.RemoveSwap(ItemToRemove);
+
+	if (bWasEquipped)
+	{
+		AutoEquipReplacement(RemovedType);
+	}
+}
+bool UHInventoryComponent::IsItemEquipped(const AHPlayerItem* Item) const
+{
+	if (!IsValid(Item))
+	{
+		return false;
+	}
+
+	// Use type-based checking instead of multiple casts
+	const EItemType ItemType = Item->ItemData ? Item->ItemData->GetItemType() : EItemType::Other;
+	
+	switch (ItemType)
+	{
+	case EItemType::Weapon:
+		return Item == ActiveWeapon;
+	case EItemType::Consumable:
+		return Item == ActiveConsumable;
+	default:
+		return false;
+	}
 }
 
 void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 {
 	// Checks if the player HasAuthority()
-	if (!GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
+	if (!IsValid(ItemToEquip)||!GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
 	// If there is another item of the same type unequip it -> UnequipItem ()
 	// Set the new item as active
@@ -112,7 +160,6 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 
 			if (ActiveWeapon)
 			{
-				AbilitySystemComp->RemoveReplicatedLooseGameplayTag(ItemToEquip->ItemData->GetItemTag());
 				UnequipItem(ActiveWeapon);
 			}
 
@@ -146,37 +193,66 @@ void UHInventoryComponent::EquipItem(AHPlayerItem* ItemToEquip)
 	}
 }
 
+void UHInventoryComponent::AutoEquipReplacement(EItemType ItemType)
+{
+	// Find first available item of same type
+	for (AHPlayerItem* PotentialItem : InventoryItems)
+	{
+		if (IsValid(PotentialItem) && 
+			PotentialItem->ItemData && 
+			PotentialItem->ItemData->GetItemType() == ItemType)
+		{
+			EquipItem(PotentialItem);
+			return;
+		}
+	}
+}
+
 void UHInventoryComponent::UnequipItem(AHPlayerItem* ItemToUnequip)
 {
-	// Checks if the item is valid
-	// Checks if the player HasAuthority()
-	if (!ItemToUnequip || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
+	if (!IsValid(ItemToUnequip) || !GetOwner() || !GetOwner()->HasAuthority() || !AbilitySystemComp) return;
 	
 	AbilitySystemComp->RemoveGrantedAbility(ItemToUnequip->GrantedAbilityHandles);
 	
-	ItemToUnequip->AttachToHolsterSocket(Cast<APlayerCharacter>(GetOwner()));
-
-	EItemType ItemType = ItemToUnequip->ItemData ? ItemToUnequip->ItemData->GetItemType() : EItemType::Other;
-
-	if (ItemType == EItemType::Weapon)
+	if (APlayerCharacter* PlayerOwner = Cast<APlayerCharacter>(GetOwner()))
+	{
+		ItemToUnequip->AttachToHolsterSocket(PlayerOwner);
+	}
+	
+	const EItemType ItemType = ItemToUnequip->ItemData ? ItemToUnequip->ItemData->GetItemType() : EItemType::Other;
+	
+	switch (ItemType)
+	{
+	case EItemType::Weapon:
 		SetActiveWeapon(nullptr);
-	else if (ItemType == EItemType::Consumable)
+		break;
+	case EItemType::Consumable:
 		SetActiveConsumable(nullptr);
+		break;
+	default:
+		break;
+	}
 }
 
 void UHInventoryComponent::OnRep_ActiveWeapon()
 {
-	if (ActiveWeapon)
+	if (IsValid(ActiveWeapon))
 	{
-		ActiveWeapon->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
+		if (APlayerCharacter* PlayerOwner = Cast<APlayerCharacter>(GetOwner()))
+		{
+			ActiveWeapon->AttachToActiveSocket(PlayerOwner);
+		}
 	}
 }
 
 void UHInventoryComponent::OnRep_ActiveConsumable()
 {
-	if (ActiveConsumable)
+	if (IsValid(ActiveConsumable))
 	{
-		ActiveConsumable->AttachToActiveSocket(Cast<APlayerCharacter>(GetOwner()));
+		if (APlayerCharacter* PlayerOwner = Cast<APlayerCharacter>(GetOwner()))
+		{
+			ActiveConsumable->AttachToActiveSocket(PlayerOwner);
+		}
 	}
 }
 

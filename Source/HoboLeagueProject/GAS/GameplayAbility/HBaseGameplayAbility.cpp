@@ -4,7 +4,32 @@
 #include "HBaseGameplayAbility.h"
 
 #include "AbilitySystemComponent.h"
+#include "Abilities/Tasks/AbilityTask.h"
 #include "Kismet/KismetSystemLibrary.h"
+
+UHBaseGameplayAbility::UHBaseGameplayAbility()
+{
+	// Set reasonable defaults
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
+	
+	IsPassiveAbility = false;
+}
+
+int32 UHBaseGameplayAbility::GetCurrentAbilityLevel() const
+{
+	return GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+}
+
+void UHBaseGameplayAbility::OnGameplayTaskDeactivated(UGameplayTask& Task)
+{
+	if (UAbilityTask* AbilityTask = Cast<UAbilityTask>(&Task))
+	{
+		AbilityActiveTasks.Remove(AbilityTask);
+	}
+	
+	Super::OnGameplayTaskDeactivated(Task);
+}
 
 UAnimInstance* UHBaseGameplayAbility::GetOwnerAnimInstance() const
 {
@@ -71,4 +96,12 @@ void UHBaseGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorIn
 		//TODO Maybe this should be called by event
 		ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, false);
 	}
+}
+
+void UHBaseGameplayAbility::RegisterTask(UAbilityTask* Task)
+{
+	if (!Task) return;
+
+	// Use the renamed array
+	AbilityActiveTasks.AddUnique(Task);
 }

@@ -27,11 +27,10 @@ protected:
 
 	virtual void SetupInputComponent() override;
 
-
+	void SetupInputModeForMap();
 	/*********************************************************************/
 	/*                            INPUT									 */
 	/*********************************************************************/
-private:
 	
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UInputMappingContext> DefaultPlayerInputMappingContext;
@@ -53,5 +52,9 @@ private:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
-	void HandleAbilityInput(const FInputActionValue& Value, EHAbilityInputID AbilityInputID);
+
+	//void HandleAbilityInput(const FInputActionValue& Value, EHAbilityInputID AbilityInputID);
+
+	void HandleAbilityInputPressed(const FInputActionValue& Value, EHAbilityInputID AbilityInputID);
+	void HandleAbilityInputReleased(const FInputActionValue& Value, EHAbilityInputID AbilityInputID);
 };
