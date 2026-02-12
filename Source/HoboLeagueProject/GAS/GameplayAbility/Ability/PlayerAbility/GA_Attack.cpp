@@ -15,9 +15,11 @@ UGA_Attack::UGA_Attack()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 
-	// Configure blocking/canceling tags as needed
-	// ActivationBlockedTags.AddTag(...);
-	// CancelAbilitiesWithTag.AddTag(...);
+	// Default to hybrid mode (both hold and press work)
+	bAllowAutoCombo = true;
+	bAllowManualCombo = true;
+	bManualPressTakesPriority = false;
+	ComboWindowDuration = 0.5f;
 }
 
 void UGA_Attack::ActivateAbility(
@@ -26,7 +28,7 @@ void UGA_Attack::ActivateAbility(
 	const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
-	// Commit ability (check costs, cooldowns, etc.)
+	// Commit ability (check costs, cooldowns)
 	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
@@ -41,17 +43,46 @@ void UGA_Attack::ActivateAbility(
 		return;
 	}
 
-	// Reset combo state
+	// Reset state
 	NextComboName = NAME_None;
-	bIsWaitingForComboInput = false;
+	bIsInputHeld = true; // Input is held when ability activates
+	bManualPressReceived = false;
+	bInComboWindow = false;
 
-	// Setup tasks based on authority
+	// Clear any existing timer
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(ComboWindowTimer);
+	}
+
+	// Setup tasks
 	SetupMontageTask();
 	SetupEventTasks();
-	SetupInputTask();
+	
+	// Only setup input task if manual combo is allowed
+	if (bAllowManualCombo)
+	{
+		SetupInputTask();
+	}
 
-	UE_LOG(LogTemp, Log, TEXT("[%s] Attack ability activated"),
-		HasAuthority(&ActivationInfo) ? TEXT("SERVER") : TEXT("CLIENT"));
+	UE_LOG(LogTemp, Log, TEXT("[%s] Attack activated - AutoCombo: %s, ManualCombo: %s"),
+		HasAuthority(&ActivationInfo) ? TEXT("SERVER") : TEXT("CLIENT"),
+		bAllowAutoCombo ? TEXT("ON") : TEXT("OFF"),
+		bAllowManualCombo ? TEXT("ON") : TEXT("OFF"));
+}
+
+void UGA_Attack::InputReleased(
+	const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	// Player released attack button
+	bIsInputHeld = false;
+
+	UE_LOG(LogTemp, Log, TEXT("Attack input released - auto-combo disabled"));
+
+	// Don't end ability here - let animation finish
+	// If manual combo is enabled, player can still press to continue
 }
 
 void UGA_Attack::EndAbility(
@@ -61,9 +92,19 @@ void UGA_Attack::EndAbility(
 	bool bReplicateEndAbility,
 	bool bWasCancelled)
 {
-	// Clear combo state
+	// Clear combo window timer
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(ComboWindowTimer);
+	}
+	
+	const bool bShouldChainAttack = ShouldChainAttack();
+	
+	// Clear state
 	NextComboName = NAME_None;
-	bIsWaitingForComboInput = false;
+	bIsInputHeld = false;
+	bManualPressReceived = false;
+	bInComboWindow = false;
 
 	// Clear task references (base class handles cancellation)
 	MontageTask = nullptr;
@@ -71,19 +112,37 @@ void UGA_Attack::EndAbility(
 	ComboChangeTask = nullptr;
 	DamageTask = nullptr;
 	StaminaTask = nullptr;
-
+	
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
-	UE_LOG(LogTemp, Log, TEXT("[%s] Attack ability ended (Cancelled: %s)"),
+	UE_LOG(LogTemp, Log, TEXT("[%s] Attack ended (Cancelled: %s)"),
 		HasAuthority(&ActivationInfo) ? TEXT("SERVER") : TEXT("CLIENT"),
 		bWasCancelled ? TEXT("YES") : TEXT("NO"));
+	
+	if (bShouldChainAttack && !bWasCancelled)
+	{
+		// Use ASC to try activating the ability again
+		if (UAbilitySystemComponent* ASC = ActorInfo->AbilitySystemComponent.Get())
+		{
+			// Try to activate by spec handle
+			bool bActivated = ASC->TryActivateAbility(Handle, true);
+			
+			if (bActivated)
+			{
+				UE_LOG(LogTemp, Log, TEXT("✓ Successfully chained to new attack!"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to chain attack - ability activation failed"));
+			}
+		}
+	}
 }
 
 // ============ Setup Functions ============
 
 void UGA_Attack::SetupMontageTask()
 {
-	// Create montage task (runs on both client and server for prediction)
 	MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this,
 		NAME_None,
@@ -106,13 +165,13 @@ void UGA_Attack::SetupMontageTask()
 
 void UGA_Attack::SetupEventTasks()
 {
-	// Combo change event (client and server)
+	// Combo change event (both client and server need this for animations)
 	ComboChangeTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this,
 		GetComboChangeEventTag(),
 		nullptr, // Any source
-		false, // OnlyTriggerOnce
-		false  // OnlyMatchExact (allows child tags)
+		false,   // OnlyTriggerOnce
+		false    // OnlyMatchExact (allows child tags like Event.Combo.Change.Attack2)
 	);
 
 	if (ComboChangeTask)
@@ -122,7 +181,7 @@ void UGA_Attack::SetupEventTasks()
 		ComboChangeTask->ReadyForActivation();
 	}
 
-	// Server-only tasks
+	// Server-only events
 	if (HasAuthority(&CurrentActivationInfo))
 	{
 		// Damage event
@@ -161,16 +220,14 @@ void UGA_Attack::SetupInputTask()
 		InputTask->ExternalCancel();
 	}
 
-	// Create new input task
+	// Create new input task to wait for manual presses
 	InputTask = UAbilityTask_WaitInputPress::WaitInputPress(this, false);
 
 	if (InputTask)
 	{
-		InputTask->OnPress.AddDynamic(this, &UGA_Attack::OnComboInputPressed);
+		InputTask->OnPress.AddDynamic(this, &UGA_Attack::OnManualComboInput);
 		RegisterTask(InputTask);
 		InputTask->ReadyForActivation();
-		
-		bIsWaitingForComboInput = true;
 	}
 }
 
@@ -194,32 +251,49 @@ void UGA_Attack::OnMontageInterrupted()
 void UGA_Attack::OnMontageBlendOut()
 {
 	// Optional: Could end here or wait for OnCompleted
-	// EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+	// Keeping it to complete naturally
 }
 
-// ============ Input & Combo Logic ============
+// ============ Input Callbacks ============
 
-void UGA_Attack::OnComboInputPressed(float TimeWaited)
+void UGA_Attack::OnManualComboInput(float TimeWaited)
 {
-	UE_LOG(LogTemp, Log, TEXT("Combo input pressed (Time: %.2f)"), TimeWaited);
+	UE_LOG(LogTemp, Log, TEXT("Manual combo input pressed (Time waited: %.2f)"), TimeWaited);
 
-	// Try to commit the queued combo
-	TryCommitCombo();
+	// Mark that player manually pressed
+	bManualPressReceived = true;
 
-	// Setup new input task for next combo window
-	SetupInputTask();
+	// If we're in a combo window, try to commit the combo
+	if (bInComboWindow && NextComboName != NAME_None)
+	{
+		TryCommitCombo();
+	}
+
+	// Setup new input task for next press
+	if (bAllowManualCombo)
+	{
+		SetupInputTask();
+	}
 }
+
+// ============ Event Callbacks ============
 
 void UGA_Attack::OnComboChangeEvent(FGameplayEventData Data)
 {
 	const FGameplayTag EventTag = Data.EventTag;
 
-	// Check if this is the end combo event
+	// Check if this is the combo end event
 	if (EventTag.MatchesTagExact(GetComboEndEventTag()))
 	{
 		NextComboName = NAME_None;
-		bIsWaitingForComboInput = false;
+		bInComboWindow = false;
 		
+		// Clear combo window timer
+		if (UWorld* World = GetWorld())
+		{
+			World->GetTimerManager().ClearTimer(ComboWindowTimer);
+		}
+
 		UE_LOG(LogTemp, Log, TEXT("Combo chain ended"));
 		return;
 	}
@@ -238,34 +312,112 @@ void UGA_Attack::OnComboChangeEvent(FGameplayEventData Data)
 
 	const FName PotentialComboName = TagNames.Last();
 
-	// Validate that this combo section exists in montage
+	// Validate section exists in montage
 	if (!AttackMontage->IsValidSectionName(PotentialComboName))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid combo section: %s"), *PotentialComboName.ToString());
 		return;
 	}
 
-	// Check stamina before accepting combo
+	// Check stamina cost
 	if (!CanPayStaminaForSection(PotentialComboName))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not enough stamina for combo: %s"), 
 			*PotentialComboName.ToString());
 		
-		// Optional: Play "out of stamina" feedback here
+		// Force end combo if can't afford it
+		NextComboName = NAME_None;
+		bInComboWindow = false;
+		bIsInputHeld = false; // Stop auto-combo
 		return;
 	}
 
 	// Accept the combo
 	NextComboName = PotentialComboName;
+	bInComboWindow = true;
+	bManualPressReceived = false; // Reset manual press flag for this window
+
+	UE_LOG(LogTemp, Log, TEXT("Combo window opened: %s (Input held: %s)"),
+		*NextComboName.ToString(),
+		bIsInputHeld ? TEXT("YES") : TEXT("NO"));
+
+	// Start combo window timer
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			ComboWindowTimer,
+			this,
+			&UGA_Attack::OnComboWindowExpired,
+			ComboWindowDuration,
+			false
+		);
+	}
+
+	// HYBRID LOGIC: Decide how to proceed
 	
-	UE_LOG(LogTemp, Log, TEXT("Next combo queued: %s"), *NextComboName.ToString());
+	// Priority 1: Manual press (if enabled and configured to take priority)
+	if (bManualPressTakesPriority && bAllowManualCombo)
+	{
+		// Wait for manual press - do nothing here
+		UE_LOG(LogTemp, Log, TEXT("Waiting for manual press (priority mode)"));
+		return;
+	}
+
+	// Priority 2: Auto-combo (if enabled and input is held)
+	if (bAllowAutoCombo && bIsInputHeld)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Auto-combo triggered (input held)"));
+		TryCommitCombo();
+		return;
+	}
+
+	// Priority 3: Wait for manual press (if enabled)
+	if (bAllowManualCombo)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Waiting for manual press"));
+		return;
+	}
+
+	// No valid combo method - window will expire
+	UE_LOG(LogTemp, Warning, TEXT("No valid combo method available"));
 }
+
+void UGA_Attack::OnDamageEvent(FGameplayEventData Data)
+{
+	// Server only
+	if (!HasAuthority(&CurrentActivationInfo))
+	{
+		return;
+	}
+
+	// Validate target data
+	if (!Data.TargetData.IsValid(0))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Damage event received with invalid target data"));
+		return;
+	}
+
+	DealDamage(Data.TargetData);
+}
+
+void UGA_Attack::OnStaminaEvent(FGameplayEventData Data)
+{
+	// Server only
+	if (!HasAuthority(&CurrentActivationInfo))
+	{
+		return;
+	}
+
+	ConsumeStamina();
+}
+
+// ============ Combo Logic ============
 
 void UGA_Attack::TryCommitCombo()
 {
 	if (NextComboName == NAME_None)
 	{
-		UE_LOG(LogTemp, Log, TEXT("No combo queued"));
+		UE_LOG(LogTemp, Log, TEXT("No combo queued to commit"));
 		return;
 	}
 
@@ -276,7 +428,7 @@ void UGA_Attack::TryCommitCombo()
 		return;
 	}
 
-	// Double-check montage is playing
+	// Verify montage is still playing
 	if (!AnimInstance->Montage_IsPlaying(AttackMontage))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Cannot commit combo - montage not playing"));
@@ -286,17 +438,37 @@ void UGA_Attack::TryCommitCombo()
 	// Get current section
 	const FName CurrentSection = AnimInstance->Montage_GetCurrentSection(AttackMontage);
 
-	// Commit combo by setting next section
+	// Commit the combo by setting next section
 	AnimInstance->Montage_SetNextSection(CurrentSection, NextComboName, AttackMontage);
 
-	UE_LOG(LogTemp, Log, TEXT("Combo committed: %s -> %s"), 
-		*CurrentSection.ToString(), *NextComboName.ToString());
+	UE_LOG(LogTemp, Log, TEXT("✓ COMBO COMMITTED: %s -> %s (Method: %s)"),
+		*CurrentSection.ToString(),
+		*NextComboName.ToString(),
+		bManualPressReceived ? TEXT("MANUAL PRESS") : TEXT("AUTO-HOLD"));
 
-	// Clear queued combo
+	// Clear combo state
 	NextComboName = NAME_None;
+	bInComboWindow = false;
+	bManualPressReceived = false;
+
+	// Clear combo window timer
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(ComboWindowTimer);
+	}
 }
 
-// ============ Stamina Management ============
+void UGA_Attack::OnComboWindowExpired()
+{
+	UE_LOG(LogTemp, Log, TEXT("Combo window expired - combo chain will end"));
+
+	// Clear combo state
+	NextComboName = NAME_None;
+	bInComboWindow = false;
+	bManualPressReceived = false;
+
+	// Combo chain will naturally end after current attack completes
+}
 
 bool UGA_Attack::CanPayStaminaForSection(FName SectionName) const
 {
@@ -320,32 +492,12 @@ bool UGA_Attack::CanPayStaminaForSection(FName SectionName) const
 		return false;
 	}
 
-	// Create a temporary spec to check cost
-	const FGameplayEffectSpecHandle SpecHandle = 
-		ASC->MakeOutgoingSpec(StaminaCost, GetCurrentAbilityLevel(), ASC->MakeEffectContext());
-
-	if (!SpecHandle.IsValid())
-	{
-		return false;
-	}
-
-	// Check if we can afford it
+	// Use ASC's direct cost checking
 	return ASC->CanApplyAttributeModifiers(
 		StaminaCost.GetDefaultObject(),
 		GetCurrentAbilityLevel(),
 		ASC->MakeEffectContext()
 	);
-}
-
-void UGA_Attack::OnStaminaEvent(FGameplayEventData Data)
-{
-	// Server only
-	if (!HasAuthority(&CurrentActivationInfo))
-	{
-		return;
-	}
-
-	ConsumeStamina();
 }
 
 void UGA_Attack::ConsumeStamina()
@@ -371,10 +523,9 @@ void UGA_Attack::ConsumeStamina()
 
 	if (SpecHandle.IsValid())
 	{
-		// Apply to self
 		ASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-
-		UE_LOG(LogTemp, Log, TEXT("Stamina consumed for current combo section"));
+		
+		UE_LOG(LogTemp, Log, TEXT("Stamina consumed for combo section"));
 	}
 }
 
@@ -394,26 +545,6 @@ TSubclassOf<UGameplayEffect> UGA_Attack::GetStaminaCostForCurrentCombo() const
 	}
 
 	return DefaultStaminaCost;
-}
-
-// ============ Damage Dealing ============
-
-void UGA_Attack::OnDamageEvent(FGameplayEventData Data)
-{
-	// Server only
-	if (!HasAuthority(&CurrentActivationInfo))
-	{
-		return;
-	}
-
-	// Validate target data
-	if (!Data.TargetData.IsValid(0))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Damage event received with invalid target data"));
-		return;
-	}
-
-	DealDamage(Data.TargetData);
 }
 
 void UGA_Attack::DealDamage(const FGameplayAbilityTargetDataHandle& TargetData)
@@ -466,11 +597,10 @@ void UGA_Attack::DealDamage(const FGameplayAbilityTargetDataHandle& TargetData)
 		{
 			continue;
 		}
-		UAbilitySystemComponent* TargetASC = nullptr;
-		if (IAbilitySystemInterface* ASCInterface = Cast<IAbilitySystemInterface>(HitActor))
-		{
-			TargetASC = ASCInterface->GetAbilitySystemComponent();
-		}
+
+		IAbilitySystemInterface* ASI = Cast<IAbilitySystemInterface>(HitActor);
+		if (!ASI) { UE_LOG(LogTemp, Log, TEXT("Hit actor does not implement IAbilitySystemInterface: %s"), *GetNameSafe(HitActor)); continue; }
+		UAbilitySystemComponent* TargetASC = ASI->GetAbilitySystemComponent();
 
 		if (!TargetASC)
 		{
@@ -484,12 +614,10 @@ void UGA_Attack::DealDamage(const FGameplayAbilityTargetDataHandle& TargetData)
 			TargetASC
 		);
 
-		UE_LOG(LogTemp, Log, TEXT("Damage applied to: %s"), *GetNameSafe(HitActor));
+		UE_LOG(LogTemp, Log, TEXT("✓ Damage applied to: %s at location: %s"), 
+			*GetNameSafe(HitActor),
+			*Hit.Location.ToString());
 	}
-
-	// Optional: Reduce weapon durability
-	// This should be done through a separate system, not hardcoded here
-	// See improved architecture in the analysis document
 }
 
 TSubclassOf<UGameplayEffect> UGA_Attack::GetDamageEffectForCurrentCombo() const
@@ -514,7 +642,7 @@ TSubclassOf<UGameplayEffect> UGA_Attack::GetDamageEffectForCurrentCombo() const
 
 FGameplayTag UGA_Attack::GetComboChangeEventTag() const
 {
-	// Use prefix so we catch all combo change events
+	// Use prefix to catch all combo change events
 	return FGameplayTag::RequestGameplayTag("Event.Combo.Change");
 }
 
@@ -537,4 +665,36 @@ FGameplayTag UGA_Attack::GetStaminaEventTag() const
 	return FGameplayTag::RequestGameplayTag(
 		FHGameplayTags::GetTagName(FHGameplayTags::Get().Event_Combo_UseStamina)
 	);
+}
+
+bool UGA_Attack::ShouldChainAttack() const
+{
+	// Only chain if:
+	// 1. Input is still held (player hasn't released)
+	// 2. Auto-combo is enabled
+	// 3. We're not in a combo window (finished the combo chain)
+	
+	if (!bIsInputHeld)
+	{
+		return false; // Player released, no chain
+	}
+
+	if (!bAllowAutoCombo)
+	{
+		return false; // Auto-combo disabled
+	}
+
+	if (bInComboWindow)
+	{
+		return false; // Still in combo, don't chain
+	}
+	
+	// Optionally: Check if we have stamina for another attack
+	if (!CanPayStaminaForSection(FirstComboSection)) // Or get first section name
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot chain - not enough stamina"));
+		return false;
+	}
+
+	return true;
 }
