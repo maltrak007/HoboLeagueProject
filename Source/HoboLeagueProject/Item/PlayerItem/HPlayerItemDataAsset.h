@@ -7,6 +7,7 @@
 #include "HoboLeagueProject/Item/HBaseItemDataAsset.h"
 #include "HPlayerItemDataAsset.generated.h"
 
+class UHPlayerItemCollisionDataAsset;
 /**
  * 
  */
@@ -26,6 +27,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	FGameplayTag ItemTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	TObjectPtr<UHPlayerItemCollisionDataAsset> ItemCollisionData;
 	// ======================
 	//   Visuals
 	// ======================
@@ -48,6 +52,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const EItemSize& GetItemSize() const { return ItemSize; }
 
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const UHPlayerItemCollisionDataAsset* GetItemCollisionData() const { return ItemCollisionData; }
+	
 	UFUNCTION(BlueprintPure, Category = "Item|Visual")
 	UTexture2D* GetItemIcon() const { return ItemIcon; }
 	
