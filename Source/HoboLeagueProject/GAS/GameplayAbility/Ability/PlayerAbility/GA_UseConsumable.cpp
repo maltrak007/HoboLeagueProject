@@ -80,23 +80,23 @@ void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 	if (!ItemConsumableDataAsset)
 		return;
 
-	if (ItemConsumableDataAsset->GetHasManyGameplayEffects())
-	{
-		for (auto Element : ItemConsumableDataAsset->GetGameplayEffects())
-		{
-			const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-			FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(Element, AbilityLevel);
-
-			if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
-			{
-				PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-			}
-		}
-		ConsumableItem->ReduceConsumableCharges();
-		ConsumableItem->OnConsumableUsed.Broadcast();
-	}
-	else
-	{
+	// if (ItemConsumableDataAsset->GetHasManyGameplayEffects())
+	// {
+	// 	for (auto Element : ItemConsumableDataAsset->GetGameplayEffects())
+	// 	{
+	// 		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
+	// 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(Element, AbilityLevel);
+	//
+	// 		if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
+	// 		{
+	// 			PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	// 		}
+	// 	}
+	// 	ConsumableItem->ReduceConsumableCharges(1);
+	// 	ConsumableItem->OnConsumableUsed.Broadcast();
+	// }
+	// else
+	// {
 		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
 			ItemConsumableDataAsset->GetGameplayEffect(), AbilityLevel);
@@ -105,7 +105,7 @@ void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 		{
 			PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 		}
-		ConsumableItem->ReduceConsumableCharges();
+		ConsumableItem->ReduceConsumableCharges(1);
 		ConsumableItem->OnConsumableUsed.Broadcast();
-	}
+	//}
 }

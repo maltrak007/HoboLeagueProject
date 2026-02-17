@@ -22,7 +22,7 @@ public:
 	FOnConsumableUsed OnConsumableUsed;
 	
 	UFUNCTION()
-	void ReduceConsumableCharges();
+	void ReduceConsumableCharges(float _amountToReduce);
 
 	UHConsumableDataAsset* GetItemConsumableDataAsset(){return ConsumableData;}
 	
@@ -37,5 +37,5 @@ private:
 	UPROPERTY()
 	TObjectPtr<UHConsumableDataAsset> ConsumableData;
 	
-	int RemainingCharges;
+	float RemainingCharges;
 };

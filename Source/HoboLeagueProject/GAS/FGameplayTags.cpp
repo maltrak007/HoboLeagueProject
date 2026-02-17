@@ -79,8 +79,7 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Event_Consume = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Event.Consume"),
 		FString("Notify to consume item"));
-
-
+	
 	/*************************************************************************************/
 	/*	 								ABILITIES										 */
 	/*************************************************************************************/
@@ -217,10 +216,17 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Overdrive_Status_PimPumTakeLacasitos = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Overdrive.Status.PimPumTakeLacasitos"),
 		FString("PimPumTakeLacasitos Overdrive Status"));
-
+	
+	/*************************************************************************************/
+	/*	 								DATA TAGS									     */
+	/*************************************************************************************/
+	GameplayTags.Data_Sprint_Speed = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Data.Sprint.Speed"),
+		FString("Sprint Data Tag"));
+	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */
-	/*************************************************************************************/
+	/*************************************************************************************/	
 	GameplayTags.Activation_Fail_BlockedByTags = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Activation.Fail.BlockedByTags"),
 		FString("Activation Fail Blocked By Tags"));

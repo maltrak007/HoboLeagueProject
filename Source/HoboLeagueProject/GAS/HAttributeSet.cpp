@@ -3,6 +3,8 @@
 #include "HAttributeSet.h"
 #include "Net/UnrealNetwork.h"
 #include "GameplayEffectExtension.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 void UHAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -15,6 +17,8 @@ void UHAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MaxOverdose, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, ChargeBar, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MaxChargeBar, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MovementSpeed, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UHAttributeSet, MaxMovementSpeed, COND_None, REPNOTIFY_Always);
 }
 
 void UHAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -35,6 +39,20 @@ void UHAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, flo
 	{
 		NewValue = FMath::Clamp(NewValue,0.f, GetMaxChargeBar());
 	}
+	if (Attribute == GetMovementSpeedAttribute())
+	{
+		NewValue = FMath::Clamp(NewValue, 0.f, GetMaxMovementSpeed());
+		SyncMovementSpeed(NewValue);
+	}
+}
+
+void UHAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+	if (Attribute == GetMovementSpeedAttribute())
+	{
+		SyncMovementSpeed(NewValue);
+	}
 }
 
 void UHAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data)
@@ -54,6 +72,11 @@ void UHAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffectModCa
 	if (Data.EvaluatedData.Attribute == GetChargeBarAttribute())
 	{
 		SetChargeBar(FMath::Clamp(GetChargeBar(), 0.f, GetMaxChargeBar()));
+	}
+	if (Data.EvaluatedData.Attribute == GetMovementSpeedAttribute())
+	{
+		SetMovementSpeed(FMath::Clamp(GetMovementSpeed(), 0.f, GetMaxMovementSpeed()));
+		SyncMovementSpeed(GetMovementSpeed());
 	}
 }
 
@@ -95,4 +118,31 @@ void UHAttributeSet::OnRep_ChargeBar(const FGameplayAttributeData& OldChargeBar)
 void UHAttributeSet::OnRep_MaxChargeBar(const FGameplayAttributeData& OldMaxChargeBar) const
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxChargeBar, OldMaxChargeBar);
+}
+
+void UHAttributeSet::OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MovementSpeed, OldMovementSpeed);
+	SyncMovementSpeed(GetMovementSpeed());
+}
+
+void UHAttributeSet::OnRep_MaxMovementSpeed(const FGameplayAttributeData& OldMaxMovementSpeed) const
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UHAttributeSet, MaxMovementSpeed, OldMaxMovementSpeed);
+}
+
+void UHAttributeSet::SyncMovementSpeed(const float NewSpeed) const
+{
+	UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent();
+	if (!ASC) return;
+	
+	AActor* Avatar = ASC->GetAvatarActor();
+	
+	if (ACharacter* OwningCharacter = Cast<ACharacter>(Avatar))
+	{
+		if (UCharacterMovementComponent* MoveComp = OwningCharacter->GetCharacterMovement())
+		{
+			MoveComp->MaxWalkSpeed = NewSpeed;
+		}
+	}
 }

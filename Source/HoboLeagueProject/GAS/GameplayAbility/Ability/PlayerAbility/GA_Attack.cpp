@@ -45,7 +45,17 @@ void UGA_Attack::ActivateAbility(
 
 	// Reset state
 	NextComboName = NAME_None;
-	bIsInputHeld = true; // Input is held when ability activates
+	
+	if (const FGameplayAbilitySpec* Spec = GetCurrentAbilitySpec())
+	{
+		bIsInputHeld = Spec->InputPressed;
+	}
+	
+	if (ActorInfo->IsLocallyControlled() && !bIsInputHeld)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Client started attack but input is not held. Stopping auto-combo."));
+	}
+	
 	bManualPressReceived = false;
 	bInComboWindow = false;
 
@@ -76,8 +86,11 @@ void UGA_Attack::InputReleased(
 	const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo)
 {
+	Super::InputReleased(Handle, ActorInfo, ActivationInfo);
+	
 	// Player released attack button
 	bIsInputHeld = false;
+	
 
 	UE_LOG(LogTemp, Log, TEXT("Attack input released - auto-combo disabled"));
 
@@ -98,7 +111,7 @@ void UGA_Attack::EndAbility(
 		World->GetTimerManager().ClearTimer(ComboWindowTimer);
 	}
 	
-	const bool bShouldChainAttack = ShouldChainAttack();
+	bShouldChainAttack = ShouldChainAttack();
 	
 	// Clear state
 	NextComboName = NAME_None;
@@ -352,8 +365,6 @@ void UGA_Attack::OnComboChangeEvent(FGameplayEventData Data)
 			false
 		);
 	}
-
-	// HYBRID LOGIC: Decide how to proceed
 	
 	// Priority 1: Manual press (if enabled and configured to take priority)
 	if (bManualPressTakesPriority && bAllowManualCombo)
@@ -420,7 +431,7 @@ void UGA_Attack::TryCommitCombo()
 		UE_LOG(LogTemp, Log, TEXT("No combo queued to commit"));
 		return;
 	}
-
+	
 	UAnimInstance* AnimInstance = GetOwnerAnimInstance();
 	if (!AnimInstance || !AttackMontage)
 	{
@@ -674,23 +685,17 @@ bool UGA_Attack::ShouldChainAttack() const
 	// 2. Auto-combo is enabled
 	// 3. We're not in a combo window (finished the combo chain)
 	
-	if (!bIsInputHeld)
+	if (!IsLocallyControlled())
 	{
-		return false; // Player released, no chain
+		return false; 
 	}
 
-	if (!bAllowAutoCombo)
+	if (!bIsInputHeld || !bAllowAutoCombo || bInComboWindow)
 	{
-		return false; // Auto-combo disabled
-	}
-
-	if (bInComboWindow)
-	{
-		return false; // Still in combo, don't chain
+		return false;
 	}
 	
-	// Optionally: Check if we have stamina for another attack
-	if (!CanPayStaminaForSection(FirstComboSection)) // Or get first section name
+	if (!CanPayStaminaForSection(FirstComboSection))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Cannot chain - not enough stamina"));
 		return false;

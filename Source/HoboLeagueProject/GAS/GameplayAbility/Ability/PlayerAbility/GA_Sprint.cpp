@@ -7,17 +7,11 @@
 
 UGA_Sprint::UGA_Sprint()
 {
-	// CRITICAL: Set these for proper multiplayer behavior
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 	
 	// Set ability activation properties
 	bRetriggerInstancedAbility = false;
-	
-	// Configure tags (set these in Blueprint or here)
-	// ActivationOwnedTags.AddTag(FGameplayTag::RequestGameplayTag("Status.Sprinting"));
-	// BlockAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("Action.Attack"));
-	// CancelAbilitiesWithTag.AddTag(FGameplayTag::RequestGameplayTag("Action.Reload"));
 }
 
 void UGA_Sprint::ActivateAbility(
@@ -32,60 +26,24 @@ void UGA_Sprint::ActivateAbility(
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-
-	// Cache character and movement component
+	
 	CachedCharacter = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
 	if (!CachedCharacter)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
-
-	CachedMoveComp = CachedCharacter->GetCharacterMovement();
-	if (!CachedMoveComp)
+	
+	if (SprintGameplayEffect)
 	{
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
-	}
-
-	// Store original speed for restoration
-	OriginalMaxWalkSpeed = CachedMoveComp->MaxWalkSpeed;
-
-	// Apply sprint cost effect (stamina drain over time)
-	if (SprintCostEffect)
-	{
-		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
-			SprintCostEffect,
-			GetAbilityLevel()
-		);
+		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(SprintGameplayEffect, GetAbilityLevel());
 		
 		if (SpecHandle.IsValid())
 		{
-			SprintEffectHandle = ApplyGameplayEffectSpecToOwner(
-				Handle,
-				ActorInfo,
-				ActivationInfo,
-				SpecHandle
-			);
+			SpecHandle.Data->SetSetByCallerMagnitude(FGameplayTag::RequestGameplayTag(FName("Data.Sprint.Speed")), SprintSpeedTarget);
+            
+			SprintEffectHandle = ApplyGameplayEffectSpecToOwner(Handle, ActorInfo, ActivationInfo, SpecHandle);
 		}
-	}
-
-	// Apply speed change with proper authority/prediction
-	// HasAuthorityOrPredictionKey ensures this runs on server and predicting client
-	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
-	{
-		float NewSpeed = SprintSpeed;
-		
-		// Use multiplier if configured
-		if (bUseSpeedMultiplier)
-		{
-			NewSpeed = OriginalMaxWalkSpeed * SpeedMultiplier;
-		}
-		
-		CachedMoveComp->MaxWalkSpeed = NewSpeed;
-		
-		UE_LOG(LogTemp, Log, TEXT("Sprint Activated - Speed: %.2f (Original: %.2f)"), 
-			NewSpeed, OriginalMaxWalkSpeed);
 	}
 }
 
@@ -96,28 +54,15 @@ void UGA_Sprint::EndAbility(
 	bool bReplicateEndAbility,
 	bool bWasCancelled)
 {
-	// Remove sprint cost effect
 	if (SprintEffectHandle.IsValid())
 	{
 		BP_RemoveGameplayEffectFromOwnerWithHandle(SprintEffectHandle);
 		SprintEffectHandle.Invalidate();
 	}
-
-	// Restore original movement speed
-	if (CachedMoveComp && HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
-	{
-		// Restore to original speed (or default if we never cached it)
-		const float SpeedToRestore = (OriginalMaxWalkSpeed > 0.0f) ? OriginalMaxWalkSpeed : DefaultSpeed;
-		CachedMoveComp->MaxWalkSpeed = SpeedToRestore;
-		
-		UE_LOG(LogTemp, Log, TEXT("Sprint Ended - Speed Restored: %.2f"), SpeedToRestore);
-	}
-
+	
 	// Clear cached references
 	CachedCharacter = nullptr;
-	CachedMoveComp = nullptr;
-	OriginalMaxWalkSpeed = 0.0f;
-
+	UE_LOG(LogTemp, Warning, TEXT("Sprint Ended"));
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 

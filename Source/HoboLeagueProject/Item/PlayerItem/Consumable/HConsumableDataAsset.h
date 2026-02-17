@@ -25,30 +25,29 @@ public:
 	//   Consumable Stats
 	// ======================
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
-	int Charges;
+	float Charges;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
-	bool bHasManyGameplayEffects;
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
+	// bool bHasManyGameplayEffects;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats",
-		meta=(EditCondition="!bHasManyGameplayEffects", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
 	TSubclassOf<UGameplayEffect> GameplayEffect;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats",
-		meta=(EditCondition="bHasManyGameplayEffects", EditConditionHides))
-	TArray<TSubclassOf<UGameplayEffect>> GameplayEffects;
+	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats",
+	// 	meta=(EditCondition="bHasManyGameplayEffects", EditConditionHides))
+	// TArray<TSubclassOf<UGameplayEffect>> GameplayEffects;
 
 
 	// ======== GETTERS ========
 	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	int GetCharges() const { return Charges; }
+	float GetCharges() const { return Charges; }
 
-	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	bool GetHasManyGameplayEffects() const { return bHasManyGameplayEffects; }
+	// UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
+	// bool GetHasManyGameplayEffects() const { return bHasManyGameplayEffects; }
 	
 	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
 	TSubclassOf<UGameplayEffect> GetGameplayEffect() const { return GameplayEffect; }
 
-	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	TArray<TSubclassOf<UGameplayEffect>> GetGameplayEffects() const { return GameplayEffects; }
+	// UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
+	// TArray<TSubclassOf<UGameplayEffect>> GetGameplayEffects() const { return GameplayEffects; }
 };

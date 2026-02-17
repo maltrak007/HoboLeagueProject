@@ -19,14 +19,14 @@ public:
 	// ======================
 	//   Item Data
 	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	ERarityType ItemRarity;
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	// ERarityType ItemRarity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	EItemSize ItemSize;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	FGameplayTag ItemTag;
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	// FGameplayTag ItemTag;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	TObjectPtr<UHPlayerItemCollisionDataAsset> ItemCollisionData;
@@ -43,11 +43,11 @@ public:
 	TArray<TSubclassOf<UGameplayAbility>> ItemAbilities;
 	
 	// ======== GETTERS ========
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const ERarityType& GetItemRarity() const { return ItemRarity; }
+	// UFUNCTION(BlueprintPure, Category = "Item|Data")
+	// const ERarityType& GetItemRarity() const { return ItemRarity; }
 
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const FGameplayTag& GetItemTag() const { return ItemTag; }
+	// UFUNCTION(BlueprintPure, Category = "Item|Data")
+	// const FGameplayTag& GetItemTag() const { return ItemTag; }
 
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const EItemSize& GetItemSize() const { return ItemSize; }

@@ -30,12 +30,12 @@ void AHConsumable::EndPlay(const EEndPlayReason::Type EndPlayReason)
 }
 
 
-void AHConsumable::ReduceConsumableCharges()
+void AHConsumable::ReduceConsumableCharges(float _amountToReduce)
 {
 	if (!ConsumableData) return;
 	
 	RemainingCharges = FMath::Clamp(
-		RemainingCharges - 1,
+		RemainingCharges - _amountToReduce,
 		0,
 		ConsumableData->GetCharges()
 	);

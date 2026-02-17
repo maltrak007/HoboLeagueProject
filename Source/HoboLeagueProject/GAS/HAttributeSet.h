@@ -29,6 +29,8 @@ public:
 	ATTRIBUTE_ACCESSORS(UHAttributeSet, MaxOverdose)
 	ATTRIBUTE_ACCESSORS(UHAttributeSet, ChargeBar)
 	ATTRIBUTE_ACCESSORS(UHAttributeSet, MaxChargeBar)
+	ATTRIBUTE_ACCESSORS(UHAttributeSet, MovementSpeed)
+	ATTRIBUTE_ACCESSORS(UHAttributeSet, MaxMovementSpeed)
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -41,10 +43,12 @@ public:
 	 */
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 
+	virtual void PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue) override;
+	
 	/**
- *	Called just after a GameplayEffect is executed to modify the base value of an attribute. No more changes can be made.
- *	Note this is only called during an 'execute'. E.g., a modification to the 'base value' of an attribute. It is not called during an application of a GameplayEffect, such as a 5 second +10 movement speed buff.
- */
+	*	Called just after a GameplayEffect is executed to modify the base value of an attribute. No more changes can be made.
+	*	Note this is only called during an 'execute'. E.g., a modification to the 'base value' of an attribute. It is not called during an application of a GameplayEffect, such as a 5 second +10 movement speed buff.
+	*/
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
 private:
@@ -71,6 +75,12 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_MaxChargeBar)
 	FGameplayAttributeData MaxChargeBar;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_MovementSpeed)
+	FGameplayAttributeData MovementSpeed;
+
+	UPROPERTY(ReplicatedUsing = OnRep_MaxMovementSpeed)
+	FGameplayAttributeData MaxMovementSpeed;
 
 	UFUNCTION()
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const;
@@ -95,4 +105,13 @@ private:
 
 	UFUNCTION()
 	void OnRep_MaxChargeBar(const FGameplayAttributeData& OldMaxChargeBar) const;
+
+	UFUNCTION()
+	void OnRep_MovementSpeed(const FGameplayAttributeData& OldMovementSpeed) const;
+
+	UFUNCTION()
+	void OnRep_MaxMovementSpeed(const FGameplayAttributeData& OldMaxMovementSpeed) const;
+	
+	UFUNCTION()
+	void SyncMovementSpeed(float NewSpeed) const;
 };

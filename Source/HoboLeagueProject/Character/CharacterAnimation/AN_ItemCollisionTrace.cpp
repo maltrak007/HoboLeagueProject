@@ -10,7 +10,6 @@
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "DrawDebugHelpers.h"
-#include "Engine/StaticMeshSocket.h"
 #include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeapon.h"
 
 UAN_ItemCollisionTrace::UAN_ItemCollisionTrace()
@@ -46,11 +45,9 @@ void UAN_ItemCollisionTrace::NotifyBegin(
 	PreviousSocketLocations.Empty();
 	TraceTimeAccumulator = 0.0f;
 	bIsActive = true;
-
-	// ✅ FIXED: Store initial socket locations in WORLD SPACE
+	
 	if (CollisionData && CollisionData->bUseSweptTraces)
 	{
-		// ✅ Get the weapon's StaticMeshComponent (not the UStaticMesh asset!)
 		if (UStaticMeshComponent* WeaponMeshComp = CachedWeapon->ItemMesh)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Storing initial socket WORLD locations:"));
@@ -59,7 +56,6 @@ void UAN_ItemCollisionTrace::NotifyBegin(
 			{
 				if (TracePoint.SocketName != NAME_None)
 				{
-					// ✅ Get socket location in WORLD SPACE
 					FVector WorldLocation = WeaponMeshComp->GetSocketLocation(TracePoint.SocketName);
 					PreviousSocketLocations.Add(TracePoint.SocketName, WorldLocation);
 					
@@ -71,7 +67,7 @@ void UAN_ItemCollisionTrace::NotifyBegin(
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("❌ Weapon has no StaticMeshComponent!"));
+			UE_LOG(LogTemp, Error, TEXT("Weapon has no StaticMeshComponent!"));
 		}
 	}
 
@@ -92,8 +88,7 @@ void UAN_ItemCollisionTrace::NotifyTick(
 	{
 		return;
 	}
-
-	// Perform traces
+	
 	PerformTraces(MeshComp, FrameDeltaTime);
 }
 
@@ -125,14 +120,32 @@ bool UAN_ItemCollisionTrace::Initialize(USkeletalMeshComponent* MeshComp)
 		UE_LOG(LogTemp, Error, TEXT("AN_WeaponTargetTrace: No owning actor"));
 		return false;
 	}
+	// PERFORMANCE FIX: 
+    // Only the Server (Authority) should trace for damage to prevent cheating and sync issues.
+    // OR: Only the Owning Client (Autonomous) if you use strict prediction (harder to setup).
+    // The code below ensures Simulated Proxies (other players) DO NOT trace.
+    const ENetMode NetMode = Owner->GetNetMode();
+    
+    // Check 1: If we are a Simulated Proxy (other player), do nothing.
+    if (Owner->GetLocalRole() == ROLE_SimulatedProxy)
+    {
+        return false; 
+    }
 
+    // Check 2: Optimization - Usually only Server needs to trace for damage.
+    // If you want "Client-Side Prediction" for hits, keep AutonomousProxy.
+    // If you want "Server-Authoritative" damage (Safe), only allow Authority.
+    if (Owner->GetLocalRole() != ROLE_Authority)
+    {
+         // If you strictly want Server-only damage:
+         return false; 
+    }
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Owner);
 	if (!ASC)	{
 		UE_LOG(LogTemp, Warning, TEXT("AN_WeaponTargetTrace: Owner has no AbilitySystemComponent"));
 		return false;
 	}
 	
-	// Get active weapon
 	CachedWeapon = GetActiveItem(Owner);
 	if (!CachedWeapon)
 	{
@@ -179,12 +192,11 @@ void UAN_ItemCollisionTrace::PerformTraces(USkeletalMeshComponent* MeshComp, flo
 	}
 
 	TraceTimeAccumulator -= TraceInterval;
-
-	// Get weapon mesh
+	
 	UStaticMeshComponent* WeaponMeshComp = CachedWeapon->ItemMesh;
 	if (!WeaponMeshComp)
 	{
-		UE_LOG(LogTemp, Error, TEXT("❌ Weapon has no StaticMeshComponent!"));
+		UE_LOG(LogTemp, Error, TEXT("Weapon has no StaticMeshComponent!"));
 		return;
 	}
 
@@ -197,11 +209,9 @@ void UAN_ItemCollisionTrace::PerformTraces(USkeletalMeshComponent* MeshComp, flo
 		{
 			continue;
 		}
-
-		// ✅ FIXED: Get socket location in WORLD SPACE
+		
 		FVector CurrentLocation = WeaponMeshComp->GetSocketLocation(TracePoint.SocketName);
-
-		// Debug logging to verify world space
+		
 		if (bDebugDraw)
 		{
 			const float Distance = PreviousSocketLocations.Contains(TracePoint.SocketName) ?
@@ -212,8 +222,7 @@ void UAN_ItemCollisionTrace::PerformTraces(USkeletalMeshComponent* MeshComp, flo
 				*CurrentLocation.ToString(),
 				Distance);
 		}
-
-		// Perform swept or single trace
+		
 		if (CollisionData->bUseSweptTraces && PreviousSocketLocations.Contains(TracePoint.SocketName))
 		{
 			FVector PreviousLocation = PreviousSocketLocations[TracePoint.SocketName];
@@ -223,8 +232,7 @@ void UAN_ItemCollisionTrace::PerformTraces(USkeletalMeshComponent* MeshComp, flo
 		{
 			PerformSingleTrace(MeshComp, TracePoint, CurrentLocation);
 		}
-
-		// Update previous location (in world space)
+		
 		PreviousSocketLocations.Add(TracePoint.SocketName, CurrentLocation);
 	}
 }
@@ -244,8 +252,7 @@ void UAN_ItemCollisionTrace::PerformSingleTrace(
 	{
 		return;
 	}
-
-	// Setup trace parameters
+	
 	ECollisionChannel Channel = bOverrideTraceChannel ? TraceChannel : 
 		(TracePoint.bUseCustomChannel ? TracePoint.CustomTraceChannel : CollisionData->DefaultTraceChannel);
 
@@ -255,8 +262,7 @@ void UAN_ItemCollisionTrace::PerformSingleTrace(
 	{
 		IgnoreActors.Add(CachedWeapon);
 	}
-
-	// Perform sphere trace at current location
+	
 	TArray<FHitResult> HitResults;
 	bool bHit = UKismetSystemLibrary::SphereTraceMulti(
 		MeshComp->GetWorld(),
@@ -296,8 +302,7 @@ void UAN_ItemCollisionTrace::PerformSweptTrace(
 	{
 		return;
 	}
-
-	// Setup trace parameters
+	
 	ECollisionChannel Channel = bOverrideTraceChannel ? TraceChannel :
 		(TracePoint.bUseCustomChannel ? TracePoint.CustomTraceChannel : CollisionData->DefaultTraceChannel);
 
@@ -307,8 +312,7 @@ void UAN_ItemCollisionTrace::PerformSweptTrace(
 	{
 		IgnoreActors.Add(CachedWeapon);
 	}
-
-	// Perform swept sphere trace
+	
 	TArray<FHitResult> HitResults;
 	bool bHit = UKismetSystemLibrary::SphereTraceMulti(
 		MeshComp->GetWorld(),
@@ -343,15 +347,13 @@ void UAN_ItemCollisionTrace::ProcessHits(USkeletalMeshComponent* MeshComp, const
 		{
 			continue;
 		}
-
-		// Skip if already hit this actor
+		
 		TWeakObjectPtr<AActor> WeakActor(HitActor);
 		if (HitActors.Contains(WeakActor))
 		{
 			continue;
 		}
-
-		// Add to hit set
+		
 		HitActors.Add(WeakActor);
 		NewHits.Add(Hit);
 
@@ -359,8 +361,7 @@ void UAN_ItemCollisionTrace::ProcessHits(USkeletalMeshComponent* MeshComp, const
 			*GetNameSafe(HitActor),
 			*Hit.Location.ToString());
 	}
-
-	// Send new hits to ability
+	
 	if (NewHits.Num() > 0)
 	{
 		SendHitEvent(MeshComp, NewHits);
@@ -374,16 +375,14 @@ void UAN_ItemCollisionTrace::SendHitEvent(USkeletalMeshComponent* MeshComp, cons
 	{
 		return;
 	}
-
-	// Get ability system component
+	
 	UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Owner);
 	if (!ASC)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AN_WeaponTargetTrace: Owner has no AbilitySystemComponent"));
 		return;
 	}
-
-	// Create target data from hits
+	
 	FGameplayAbilityTargetDataHandle TargetData;
 	
 	for (const FHitResult& Hit : Hits)
@@ -391,15 +390,13 @@ void UAN_ItemCollisionTrace::SendHitEvent(USkeletalMeshComponent* MeshComp, cons
 		FGameplayAbilityTargetData_SingleTargetHit* NewData = new FGameplayAbilityTargetData_SingleTargetHit(Hit);
 		TargetData.Add(NewData);
 	}
-
-	// Create event data
+	
 	FGameplayEventData EventData;
 	EventData.EventTag = GameplayEventTag;
 	EventData.Instigator = Owner;
 	EventData.Target = nullptr; // Multiple targets
 	EventData.TargetData = TargetData;
-
-	// Send event
+	
 	ASC->HandleGameplayEvent(GameplayEventTag, &EventData);
 
 	UE_LOG(LogTemp, Log, TEXT("AN_WeaponTargetTrace: Sent event '%s' with %d hits"),
@@ -413,14 +410,11 @@ AActor* UAN_ItemCollisionTrace::GetOwningActor(USkeletalMeshComponent* MeshComp)
 	{
 		return nullptr;
 	}
-
-	// Try to get owner from mesh component
+	
 	AActor* Owner = MeshComp->GetOwner();
 	
-	// If mesh is on a weapon, get the weapon's owner (the character)
 	if (!Owner)
 	{
-		// Try outer chain
 		Owner = Cast<AActor>(MeshComp->GetOuter());
 	}
 
@@ -433,8 +427,7 @@ AHWeapon* UAN_ItemCollisionTrace::GetActiveItem(AActor* Owner) const
 	{
 		return nullptr;
 	}
-
-	// Try to get from PlayerCharacter
+	
 	if (APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(Owner))
 	{
 		if (UHInventoryComponent* Inventory = PlayerChar->GetInventoryComponent())
@@ -442,8 +435,7 @@ AHWeapon* UAN_ItemCollisionTrace::GetActiveItem(AActor* Owner) const
 			return Inventory->GetActiveWeapon();
 		}
 	}
-
-	// Try to get weapon directly (if notify is on weapon mesh)
+	
 	if (AHWeapon* Item = Cast<AHWeapon>(Owner))
 	{
 		return Item;

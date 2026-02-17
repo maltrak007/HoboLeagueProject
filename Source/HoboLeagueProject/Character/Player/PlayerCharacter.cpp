@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 #include "AbilitySystemComponent.h"
 #include "BasePlayerCharacterState.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "HoboLeagueProject/Character/BaseCharacterController.h"
 #include "HoboLeagueProject/Component/HInteractionComponent.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
@@ -56,7 +57,7 @@ void APlayerCharacter::PossessedBy(AController* NewController)
 	
 	HAbilitySystemComponent->ApplyInitialEffects();
 	HAbilitySystemComponent->GiveInitialAbilities();
-
+	
 	InitActorHUD();
 }
 

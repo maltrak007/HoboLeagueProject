@@ -83,7 +83,7 @@ protected:
 	bool bDebugDrawHits = false;
 
 	// ============ Combo Behavior Configuration ============
-
+	
 	// Allow holding attack button to auto-continue combo (Marvel Rivals style)
 	UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo Behavior")
 	bool bAllowAutoCombo = true;
@@ -115,6 +115,8 @@ protected:
 	// Is there an active combo window?
 	bool bInComboWindow = false;
 
+	bool bShouldChainAttack = false; // Whether we should chain to the next attack after current one finishes (set during combo window)
+	
 	// Timer for combo window expiration
 	FTimerHandle ComboWindowTimer;
 

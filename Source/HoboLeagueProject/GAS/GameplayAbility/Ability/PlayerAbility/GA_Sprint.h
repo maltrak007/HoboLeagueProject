@@ -31,38 +31,15 @@ public:
 	                           const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 protected:
-	// Sprint speed multiplier or absolute value
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sprint", meta=(ClampMin="300.0", ClampMax="1000.0"))
-	float SprintSpeed = 600.0f;
-
-	// Default walk speed (fallback if we can't read it)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sprint", meta=(ClampMin="100.0", ClampMax="600.0"))
-	float DefaultSpeed = 450.0f;
-
-	// Gameplay Effect for sprint cost (stamina drain)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sprint|Effects")
-	TSubclassOf<UGameplayEffect> SprintCostEffect;
+	TSubclassOf<UGameplayEffect> SprintGameplayEffect;
 
-	// Whether to use speed multiplier instead of absolute value
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sprint")
-	bool bUseSpeedMultiplier = false;
-
-	// Speed multiplier (if bUseSpeedMultiplier is true)
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sprint",
-		meta=(EditCondition="bUseSpeedMultiplier", ClampMin="1.0", ClampMax="3.0"))
-	float SpeedMultiplier = 1.5f;
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Sprint|Effects")
+	float SprintSpeedTarget = 600.f;
 private:
-	// Cached references
 	UPROPERTY()
 	TObjectPtr<APlayerCharacter> CachedCharacter;
-
-	UPROPERTY()
-	TObjectPtr<UCharacterMovementComponent> CachedMoveComp;
-
+	
 	// Active effect handle for stamina cost
 	FActiveGameplayEffectHandle SprintEffectHandle;
-
-	// Store original speed to restore it
-	float OriginalMaxWalkSpeed = 0.0f;
 };

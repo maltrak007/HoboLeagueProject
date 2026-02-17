@@ -7,6 +7,7 @@
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
 #include "AN_ItemCollisionTrace.generated.h"
 
+class UAbilitySystemComponent;
 class AHWeapon;
 class AHPlayerItem;
 class UHPlayerItemCollisionDataAsset;
@@ -84,7 +85,7 @@ protected:
 
 	// Initialize notify state
 	bool Initialize(USkeletalMeshComponent* MeshComp);
-
+	
 	// Perform traces for current frame
 	void PerformTraces(USkeletalMeshComponent* MeshComp, float DeltaTime);
 
@@ -106,7 +107,7 @@ protected:
 
 	// Send hit results to ability via gameplay event
 	void SendHitEvent(USkeletalMeshComponent* MeshComp, const TArray<FHitResult>& Hits);
-
+	
 	// Get owning character
 	AActor* GetOwningActor(USkeletalMeshComponent* MeshComp) const;
 
