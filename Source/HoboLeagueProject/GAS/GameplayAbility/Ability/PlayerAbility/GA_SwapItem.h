@@ -15,10 +15,8 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API UGA_SwapItem : public UHBaseGameplayAbility
 {
 	GENERATED_BODY()
-	
+	//TODO:: SETUP WAIT FOR MONTAGE TO FINISH, THEN SWAP ITEM AND THEN END ABILITY 
 public:
-	UGA_SwapItem();
-	
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Swap")

@@ -7,6 +7,7 @@
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItem.h"
 #include "HWeapon.generated.h"
 
+struct FWeaponStatsRow;
 DECLARE_MULTICAST_DELEGATE(FOnWeaponHit);
 
 class USphereComponent;
@@ -23,18 +24,20 @@ public:
 
 	FOnWeaponHit OnWeaponHit;
 	
-	UFUNCTION()
-	void ReduceWeaponDurability();
+	const FWeaponStatsRow* GetWeaponStats() const;
+	
+	// virtual const void* GetStatsForRarity() const override
+	// {
+	// 	return GetWeaponStats();
+	// }
+	//
+	// UFUNCTION(BlueprintCallable, Category = "Weapon|Stats")
+	// bool GetWeaponStatsValue(FWeaponStatsRow& OutStats) const;
 	
 protected:
 	virtual void BeginPlay() override;
-	
-	UFUNCTION()
-	void RestoreWeaponProperties();
-	
+
 private:
 	UPROPERTY()
 	TObjectPtr<UHWeaponDataAsset> WeaponData;
-	
-	float RemainingDurability;
 };

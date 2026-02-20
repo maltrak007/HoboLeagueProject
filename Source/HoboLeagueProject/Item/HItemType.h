@@ -8,7 +8,6 @@ enum class EItemType : uint8
 {
 	Weapon       UMETA(DisplayName = "Weapon"),
 	Consumable	 UMETA(DisplayName = "Consumable"),
-	Melee		 UMETA(DisplayName = "Melee"),
 	Other        UMETA(DisplayName = "Other")
 };
 
@@ -21,6 +20,7 @@ enum class ERarityType : uint8
 	Legendary   UMETA(DisplayName = "Legendary")
 };
 
+//** USED TO ATTACH IT TO THE SKELETAL MESH IN THEIR CORRESPONDENT SOCKET **//
 UENUM(BlueprintType)
 enum class EItemSize : uint8
 {
@@ -28,4 +28,13 @@ enum class EItemSize : uint8
 	Small			UMETA(DisplayName = "Small"),
 	Big             UMETA(DisplayName = "Big"),
 	ExtraBig        UMETA(DisplayName = "ExtraBig")
+};
+
+UENUM(BlueprintType)
+enum class EItemSkillScore : uint8
+{
+	Perfect      UMETA(DisplayName = "Perfect"),
+	Good		 UMETA(DisplayName = "Good"),
+	Bad          UMETA(DisplayName = "Bad"),
+	Kiddo        UMETA(DisplayName = "Kiddo")
 };

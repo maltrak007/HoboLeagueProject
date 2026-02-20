@@ -82,20 +82,20 @@ void AHoboLeagueGamemode::Logout(AController* Exiting)
 	}
 }
 
+// Override RestartPlayer to ensure players receive their initial inventory items upon respawn
 void AHoboLeagueGamemode::RestartPlayer(AController* NewPlayer)
 {
-	// Always call Super first so the Pawn actually gets spawned
 	Super::RestartPlayer(NewPlayer);
 
 	if (!NewPlayer) return;
-
+	
 	APawn* PlayerPawn = NewPlayer->GetPawn();
 	if (PlayerPawn)
 	{
+		// Spawn initial inventory items for the player
 		UHInventoryComponent* Inv = PlayerPawn->FindComponentByClass<UHInventoryComponent>();
 		if (Inv)
 		{
-			// Use our optimized const reference getter
 			const TArray<TSubclassOf<AHPlayerItem>>& ItemsToSpawn = Inv->GetInitialInventoryItems();
 
 			for (const TSubclassOf<AHPlayerItem>& ItemClass : ItemsToSpawn)

@@ -34,6 +34,7 @@ protected:
 	                                                           bool bIgnoreSelf = true) const;
 
 	virtual void OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+	
 	void RegisterTask(UAbilityTask* Task);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hobo | Ability Info")

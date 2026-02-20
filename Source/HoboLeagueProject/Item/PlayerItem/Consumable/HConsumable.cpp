@@ -2,14 +2,23 @@
 
 
 #include "HConsumable.h"
-
 #include "HConsumableDataAsset.h"
-#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
-#include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HConsumableStatTable.h"
 
 AHConsumable::AHConsumable()
 {
 	PrimaryActorTick.bCanEverTick = false;
+}
+
+bool AHConsumable::GetConsumableStatsValue(FConsumableStatsRow& OutStats) const
+{
+	const FConsumableStatsRow* Stats = GetConsumableStats();
+	if (Stats)
+	{
+		OutStats = *Stats;
+		return true;
+	}
+	return false;
 }
 
 void AHConsumable::BeginPlay()
@@ -18,10 +27,6 @@ void AHConsumable::BeginPlay()
 	
 	ConsumableData = Cast<UHConsumableDataAsset>(ItemData);
 	
-	if (ConsumableData)
-	{
-		RemainingCharges = ConsumableData->GetCharges();
-	}
 }
 
 void AHConsumable::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -29,29 +34,34 @@ void AHConsumable::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-
-void AHConsumable::ReduceConsumableCharges(float _amountToReduce)
+const FConsumableStatsRow* AHConsumable::GetConsumableStats() const
 {
-	if (!ConsumableData) return;
-	
-	RemainingCharges = FMath::Clamp(
-		RemainingCharges - _amountToReduce,
-		0,
-		ConsumableData->GetCharges()
-	);
-	
-	if (RemainingCharges <= 0)
+	if (!ItemData || !ItemData->StatsTable)
 	{
-		if (UHInventoryComponent* InvComp = OwningPlayer->GetInventoryComponent())
-		{
-			RestoreConsumableProperties();
-			InvComp->RemoveItem(this);
-		}
+		return nullptr;
 	}
-}
 
-void AHConsumable::RestoreConsumableProperties()
-{
-	RemainingCharges = ConsumableData->GetCharges();
+	// Construct row name: "{ItemID}_{Rarity}"
+	// e.g. "Syringe_Rare"
+	FString RarityStr = UEnum::GetValueAsString(ItemRarity);
+	RarityStr.RemoveFromStart("ERarityType::");
+    
+	const FName RowName = FName(*FString::Printf(TEXT("%s_%s"),
+		*ItemData->ItemID.ToString(),
+		*RarityStr));
+
+	// Lookup in consumable stats table
+	const FConsumableStatsRow* Row = ItemData->StatsTable->FindRow<FConsumableStatsRow>(
+		RowName,
+		TEXT("GetConsumableStats")
+	);
+
+	if (!Row)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No consumable stats for '%s' at rarity '%s'"),
+			*ItemData->ItemID.ToString(), *RarityStr);
+	}
+
+	return Row;
 }
 

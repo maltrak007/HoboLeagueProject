@@ -8,6 +8,6 @@
 UHWeaponDataAsset::UHWeaponDataAsset()
 {
 	ItemType = EItemType::Weapon;
-	Damage = 25.f;
-	TotalDurability = 100.f;
+	//Damage = 25.f;
+	//TotalDurability = 100.f;
 }

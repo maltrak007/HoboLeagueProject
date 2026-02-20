@@ -8,5 +8,4 @@
 UHConsumableDataAsset::UHConsumableDataAsset()
 {
 	ItemType = EItemType::Consumable;
-	Charges = 1;
 }

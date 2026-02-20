@@ -4,10 +4,4 @@
 #include "HWeaponStatsTable.h"
 
 
-HWeaponStatsTable::HWeaponStatsTable()
-{
-}
 
-HWeaponStatsTable::~HWeaponStatsTable()
-{
-}

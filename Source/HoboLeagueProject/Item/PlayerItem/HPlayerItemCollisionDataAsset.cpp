@@ -18,7 +18,7 @@ void UHPlayerItemCollisionDataAsset::PostEditChangeProperty(FPropertyChangedEven
 	}
 }
 
-EDataValidationResult UHPlayerItemCollisionDataAsset::IsDataValid(TArray<FText>& ValidationErrors)
+[[deprecated]] EDataValidationResult UHPlayerItemCollisionDataAsset::IsDataValid(TArray<FText>& ValidationErrors)
 {
 	EDataValidationResult Result = Super::IsDataValid(ValidationErrors);
 

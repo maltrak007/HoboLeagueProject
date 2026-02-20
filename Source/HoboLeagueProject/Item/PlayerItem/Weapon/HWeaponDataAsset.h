@@ -15,25 +15,11 @@ class HOBOLEAGUEPROJECT_API UHWeaponDataAsset : public UHPlayerItemDataAsset
 public:
 	UHWeaponDataAsset();
 	
-	// ======================
-	//   Weapon Stats
-	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
-	float Damage;
+	// UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
+	// float GetDamage() const { return Damage; }
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
-	float TotalDurability;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
-	float LostDurability;
+protected:
 	
-	// ======== GETTERS ========
-	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
-	float GetDamage() const { return Damage; }
-	
-	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
-	float GetTotalDurability() const { return TotalDurability; }
-
-	UFUNCTION(BlueprintPure, Category = "Weapon|Stats")
-	float GetLostDurability() const { return LostDurability; }
+	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon Stats")
+	// float Damage;
 };

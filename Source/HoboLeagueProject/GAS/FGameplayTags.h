@@ -32,6 +32,7 @@ public:
 	//							ANIMATIONS
 	//     ****************************************************
 	//**************************************************************
+	FGameplayTag Event_Combo_Change;
 	FGameplayTag Event_Combo_Change_PrimaryCombo02;
 	FGameplayTag Event_Combo_Change_PrimaryCombo03;
 	FGameplayTag Event_Combo_Change_PrimaryCombo04;
@@ -124,6 +125,8 @@ public:
 	//     ****************************************************
 	//**************************************************************
 	FGameplayTag Data_Sprint_Speed;
+	FGameplayTag Data_Damage;
+	FGameplayTag Data_StaminaCost;
 	//**************************************************************
 	//     ****************************************************
 	//						 ACTIVATION FAIL

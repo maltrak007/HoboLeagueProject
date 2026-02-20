@@ -1,206 +1,194 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Abilities/GameplayAbility.h"
 #include "HoboLeagueProject/GAS/GameplayAbility/HBaseGameplayAbility.h"
 #include "GA_Attack.generated.h"
 
 class UAbilityTask_PlayMontageAndWait;
 class UAbilityTask_WaitGameplayEvent;
 class UAbilityTask_WaitInputPress;
+class AHWeapon;
+struct FWeaponStatsRow;
 
-/**
- * Hybrid Combo Melee Attack System
- * Supports BOTH hold-to-combo (Marvel Rivals) AND press-to-combo (traditional)
- * 
- * Features:
- * - Hold attack button for automatic combo continuation
- * - OR press attack for each combo section (manual)
- * - Switch between styles mid-combo
- * - Per-section damage and stamina costs
- * - Server-authoritative damage
- * - Full multiplayer support with client prediction
- */
 UCLASS()
 class HOBOLEAGUEPROJECT_API UGA_Attack : public UHBaseGameplayAbility
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	UGA_Attack();
+    UGA_Attack();
 
-	virtual void ActivateAbility(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
-		const FGameplayEventData* TriggerEventData) override;
-	
-	virtual void InputReleased(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo) override;
+    virtual void ActivateAbility(
+        const FGameplayAbilitySpecHandle Handle,
+        const FGameplayAbilityActorInfo* ActorInfo,
+        const FGameplayAbilityActivationInfo ActivationInfo,
+        const FGameplayEventData* TriggerEventData) override;
 
-	virtual void EndAbility(
-		const FGameplayAbilitySpecHandle Handle,
-		const FGameplayAbilityActorInfo* ActorInfo,
-		const FGameplayAbilityActivationInfo ActivationInfo,
-		bool bReplicateEndAbility,
-		bool bWasCancelled) override;
+    virtual void InputReleased(
+        const FGameplayAbilitySpecHandle Handle,
+        const FGameplayAbilityActorInfo* ActorInfo,
+        const FGameplayAbilityActivationInfo ActivationInfo) override;
+
+    virtual void EndAbility(
+        const FGameplayAbilitySpecHandle Handle,
+        const FGameplayAbilityActorInfo* ActorInfo,
+        const FGameplayAbilityActivationInfo ActivationInfo,
+        bool bReplicateEndAbility,
+        bool bWasCancelled) override;
 
 protected:
-	// ============ Configuration ============
+    // ── Configuration ─────────────────────────────────────────────
 
-	// Attack animation montage with combo sections
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Animation")
-	TObjectPtr<UAnimMontage> AttackMontage;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo")
-	FName FirstComboSection = "Attack1";
-	
-	// Default damage effect (fallback if no section-specific effect)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Damage")
-	TSubclassOf<UGameplayEffect> DefaultDamageEffect;
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Animation")
+    TObjectPtr<UAnimMontage> AttackMontage;
 
-	// Damage effect per combo section (e.g., "Attack1" -> GE_MeleeDamage_Light)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Damage")
-	TMap<FName, TSubclassOf<UGameplayEffect>> DamageEffectMap;
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Animation")
+    FName FirstComboSection = FName("Attack1");
 
-	// Default stamina cost (fallback)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Cost")
-	TSubclassOf<UGameplayEffect> DefaultStaminaCost;
+    // ── Combo System ──────────────────────────────────────────────
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Animation")
+    TMap<FName, bool> ChargedAttackSections;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo")
+    bool bAllowAutoCombo = true;
 
-	// Stamina cost per combo section
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Cost")
-	TMap<FName, TSubclassOf<UGameplayEffect>> StaminaCostMap;
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo")
+    bool bAllowManualCombo = true;
 
-	// Sweep radius for hit detection
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Targeting", meta=(ClampMin="10.0", ClampMax="500.0"))
-	float SphereRadiusSweep = 100.0f;
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo")
+    bool bManualPressTakesPriority = false;
 
-	// Debug visualization for hit detection
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Debug")
-	bool bDebugDrawHits = false;
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo")
+    float ComboWindowDuration = 0.5f;
 
-	// ============ Combo Behavior Configuration ============
-	
-	// Allow holding attack button to auto-continue combo (Marvel Rivals style)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo Behavior")
-	bool bAllowAutoCombo = true;
+    // ── Effects (now using SetByCaller from weapon stats) ────────
 
-	// Allow pressing attack button for each combo section (Traditional style)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo Behavior")
-	bool bAllowManualCombo = true;
+    // Damage effect with SetByCaller for dynamic damage values
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Effects")
+    TSubclassOf<UGameplayEffect> DamageEffect;
 
-	// Combo window duration (how long player has to press/continue combo)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo Behavior", meta=(ClampMin="0.1", ClampMax="2.0"))
-	float ComboWindowDuration = 0.5f;
+    // Stamina cost effect with SetByCaller for dynamic costs
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Effects")
+    TSubclassOf<UGameplayEffect> StaminaCostEffect;
 
-	// If true, manual press takes priority over auto-combo
-	// (useful for players who want precise control)
-	UPROPERTY(EditDefaultsOnly, Category = "Attack|Combo Behavior")
-	bool bManualPressTakesPriority = false;
+    // ── Hit Detection ─────────────────────────────────────────────
 
-	// ============ Runtime State ============
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Hit Detection")
+    float SphereRadiusSweep = 50.0f;
 
-	// Next combo section to play (set by animation notifies)
-	FName NextComboName = NAME_None;
+    UPROPERTY(EditDefaultsOnly, Category = "Attack|Hit Detection")
+    bool bDebugDrawHits = false;
 
-	// Is the attack input currently being held?
-	bool bIsInputHeld = false;
+    UPROPERTY()
+    // Track which actors we've hit in THIS damage event
+    TArray<TWeakObjectPtr<AActor>> CurrentEventIgnoredActors;
 
-	// Has the player manually pressed during the current combo window?
-	bool bManualPressReceived = false;
+    UPROPERTY()
+    TArray<AActor*> CachedIgnoreActors;
 
-	// Is there an active combo window?
-	bool bInComboWindow = false;
+    // ── Runtime State ─────────────────────────────────────────────
+    FName NextComboName = NAME_None;
+    bool bIsInputHeld = false;
+    bool bManualPressReceived = false;
+    bool bInComboWindow = false;
+    bool bShouldChainAttack = false;
 
-	bool bShouldChainAttack = false; // Whether we should chain to the next attack after current one finishes (set during combo window)
-	
-	// Timer for combo window expiration
-	FTimerHandle ComboWindowTimer;
+    FTimerHandle ComboWindowTimer;
+    
+    const FWeaponStatsRow* CachedWeaponStats = nullptr;
+    
+    UPROPERTY()
+    TObjectPtr<AHWeapon> CachedWeapon = nullptr;
+    
+    UPROPERTY()
+    TObjectPtr<UAnimInstance> CachedAnimInstance = nullptr;
+    
+    FGameplayTag Tag_ComboChange;
+    FGameplayTag Tag_ComboEnd;
+    FGameplayTag Tag_Damage;
+    FGameplayTag Tag_Stamina;
+    FGameplayTag Tag_StaminaCost;
+    
+    UPROPERTY()
+    TObjectPtr<UAbilityTask_PlayMontageAndWait> MontageTask;
 
-	// ============ Task References ============
+    UPROPERTY()
+    TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboChangeTask;
 
-	UPROPERTY()
-	TObjectPtr<UAbilityTask_PlayMontageAndWait> MontageTask;
+    UPROPERTY()
+    TObjectPtr<UAbilityTask_WaitGameplayEvent> DamageTask;
 
-	UPROPERTY()
-	TObjectPtr<UAbilityTask_WaitInputPress> InputTask;
+    UPROPERTY()
+    TObjectPtr<UAbilityTask_WaitGameplayEvent> StaminaTask;
 
-	UPROPERTY()
-	TObjectPtr<UAbilityTask_WaitGameplayEvent> ComboChangeTask;
+    UPROPERTY()
+    TObjectPtr<UAbilityTask_WaitInputPress> InputTask;
 
-	UPROPERTY()
-	TObjectPtr<UAbilityTask_WaitGameplayEvent> DamageTask;
+    // ── Setup ─────────────────────────────────────────────────────
 
-	UPROPERTY()
-	TObjectPtr<UAbilityTask_WaitGameplayEvent> StaminaTask;
+    void SetupMontageTask();
+    void SetupEventTasks();
+    void SetupInputTask();
 
-	// ============ Setup Functions ============
+    // ── Montage Callbacks ─────────────────────────────────────────
 
-	void SetupMontageTask();
-	void SetupEventTasks();
-	void SetupInputTask();
+    UFUNCTION()
+    void OnMontageCompleted();
 
-	// ============ Montage Callbacks ============
+    UFUNCTION()
+    void OnMontageCancelled();
 
-	UFUNCTION()
-	void OnMontageCompleted();
+    UFUNCTION()
+    void OnMontageInterrupted();
 
-	UFUNCTION()
-	void OnMontageCancelled();
+    UFUNCTION()
+    void OnMontageBlendOut();
 
-	UFUNCTION()
-	void OnMontageInterrupted();
+    // ── Input Callbacks ───────────────────────────────────────────
 
-	UFUNCTION()
-	void OnMontageBlendOut();
+    UFUNCTION()
+    void OnManualComboInput(float TimeWaited);
 
-	// ============ Input Callbacks ============
+    // ── Event Callbacks ───────────────────────────────────────────
 
-	UFUNCTION()
-	void OnManualComboInput(float TimeWaited);
+    UFUNCTION()
+    void OnComboChangeEvent(FGameplayEventData Data);
 
-	// ============ Event Callbacks ============
+    UFUNCTION()
+    void OnDamageEvent(FGameplayEventData Data);
 
-	UFUNCTION()
-	void OnComboChangeEvent(FGameplayEventData Data);
+    UFUNCTION()
+    void OnStaminaEvent(FGameplayEventData Data);
 
-	UFUNCTION()
-	void OnDamageEvent(FGameplayEventData Data);
+    // ── Combo Logic ───────────────────────────────────────────────
 
-	UFUNCTION()
-	void OnStaminaEvent(FGameplayEventData Data);
+    void TryCommitCombo();
+    void OnComboWindowExpired();
 
-	// ============ Combo Logic ============
+    // ── Weapon & Stats Access ─────────────────────────────────────
 
-	// Try to commit the queued combo
-	void TryCommitCombo();
+    AHWeapon* GetActiveWeapon() const;
+    const FWeaponStatsRow* GetWeaponStats() const;
 
-	// Called when combo window expires
-	void OnComboWindowExpired();
+    // ── Stamina ───────────────────────────────────────────────────
 
-	// Check if we can afford stamina for a section
-	bool CanPayStaminaForSection(FName SectionName) const;
+    bool CanPayStaminaForAttack() const;
+    void ConsumeStamina();
+    float GetStaminaCostForCurrentSection() const;
 
-	// Get damage effect for current combo section
-	TSubclassOf<UGameplayEffect> GetDamageEffectForCurrentCombo() const;
+    // ── Damage ────────────────────────────────────────────────────
 
-	// Get stamina cost for current combo section
-	TSubclassOf<UGameplayEffect> GetStaminaCostForCurrentCombo() const;
+    void DealDamage(const FGameplayAbilityTargetDataHandle& TargetData);
 
-	// Apply stamina cost
-	void ConsumeStamina();
+    // ── Helpers ───────────────────────────────────────────────────
+    void CacheAbilityData();
+    void ClearCachedData();
+    FGameplayTag GetComboChangeEventTag() const;
+    FGameplayTag GetComboEndEventTag() const;
+    FGameplayTag GetDamageEventTag() const;
+    FGameplayTag GetStaminaEventTag() const;
+    FGameplayTag GetStaminaCostEventTag() const;
 
-	// Deal damage to hit targets
-	void DealDamage(const FGameplayAbilityTargetDataHandle& TargetData);
-
-	// ============ Gameplay Tag Helpers ============
-
-	FGameplayTag GetComboChangeEventTag() const;
-	FGameplayTag GetComboEndEventTag() const;
-	FGameplayTag GetDamageEventTag() const;
-	FGameplayTag GetStaminaEventTag() const;
-	bool ShouldChainAttack() const;
+    bool ShouldChainAttack() const;
 };

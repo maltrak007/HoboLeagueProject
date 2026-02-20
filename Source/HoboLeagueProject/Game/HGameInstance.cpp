@@ -3,10 +3,3 @@
 
 #include "HGameInstance.h"
 
-#include "HoboLeagueProject/GAS/FGameplayTags.h"
-
-// void UHGameInstance::Init()
-// {
-// 	Super::Init();
-// 	//FHGameplayTags::InitializeNativeGameplayTags();
-// }

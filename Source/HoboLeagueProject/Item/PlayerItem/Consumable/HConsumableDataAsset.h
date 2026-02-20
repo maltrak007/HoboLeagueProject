@@ -8,8 +8,6 @@
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
 #include "HConsumableDataAsset.generated.h"
 
-
-enum class EGameplayEffectDurationType : uint8;
 /**
  * 
  */
@@ -20,34 +18,17 @@ class HOBOLEAGUEPROJECT_API UHConsumableDataAsset : public UHPlayerItemDataAsset
 
 public:
 	UHConsumableDataAsset();
-
-	// ======================
-	//   Consumable Stats
-	// ======================
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
-	float Charges;
-	
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
-	// bool bHasManyGameplayEffects;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
-	TSubclassOf<UGameplayEffect> GameplayEffect;
-
-	// UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats",
-	// 	meta=(EditCondition="bHasManyGameplayEffects", EditConditionHides))
-	// TArray<TSubclassOf<UGameplayEffect>> GameplayEffects;
-
-
-	// ======== GETTERS ========
-	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	float GetCharges() const { return Charges; }
-
-	// UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	// bool GetHasManyGameplayEffects() const { return bHasManyGameplayEffects; }
 	
 	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	TSubclassOf<UGameplayEffect> GetGameplayEffect() const { return GameplayEffect; }
+	TSubclassOf<UGameplayEffect> GetInstantGameplayEffect() const { return InstantGameplayEffect; }
 
-	// UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
-	// TArray<TSubclassOf<UGameplayEffect>> GetGameplayEffects() const { return GameplayEffects; }
+	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
+	TSubclassOf<UGameplayEffect> GetDurationGameplayEffect() const { return DurationGameplayEffect; }
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
+	TSubclassOf<UGameplayEffect> InstantGameplayEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
+	TSubclassOf<UGameplayEffect> DurationGameplayEffect;
 };

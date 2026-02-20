@@ -15,21 +15,40 @@ UCLASS()
 class HOBOLEAGUEPROJECT_API UHPlayerItemDataAsset : public UHBaseItemDataAsset
 {
 	GENERATED_BODY()
+	
 public:
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const EItemSize& GetItemSize() const { return ItemSize; }
+	
+	UFUNCTION(BlueprintPure, Category = "Item|Data")
+	const UHPlayerItemCollisionDataAsset* GetItemCollisionData() const { return ItemCollisionData; }
+	
+	UFUNCTION(BlueprintPure, Category = "Item|Visual")
+	UTexture2D* GetItemIcon() const { return ItemIcon; }
+	
+	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
+	TArray<TSubclassOf<UGameplayAbility>> GetItemAbilities() const { return ItemAbilities; }
+
+	// ── Stats lookup config ────────────────────────────────────────
+	// The DataTable that holds stats for all rarities of this item
+	UPROPERTY(EditDefaultsOnly, Category = "Stats")
+	TObjectPtr<UDataTable> StatsTable;
+    
+	// How row names are constructed: "{ItemID}_{Rarity}"
+	// e.g. "Syringe_Common", "Syringe_Rare"
+	UPROPERTY(EditDefaultsOnly, Category = "Stats")
+	FName ItemID = NAME_None;
+	
+protected:
 	// ======================
 	//   Item Data
 	// ======================
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	// ERarityType ItemRarity;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	EItemSize ItemSize;
 
-	// UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	// FGameplayTag ItemTag;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	TObjectPtr<UHPlayerItemCollisionDataAsset> ItemCollisionData;
+	
 	// ======================
 	//   Visuals
 	// ======================
@@ -41,23 +60,4 @@ public:
 	// ======================
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> ItemAbilities;
-	
-	// ======== GETTERS ========
-	// UFUNCTION(BlueprintPure, Category = "Item|Data")
-	// const ERarityType& GetItemRarity() const { return ItemRarity; }
-
-	// UFUNCTION(BlueprintPure, Category = "Item|Data")
-	// const FGameplayTag& GetItemTag() const { return ItemTag; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const EItemSize& GetItemSize() const { return ItemSize; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const UHPlayerItemCollisionDataAsset* GetItemCollisionData() const { return ItemCollisionData; }
-	
-	UFUNCTION(BlueprintPure, Category = "Item|Visual")
-	UTexture2D* GetItemIcon() const { return ItemIcon; }
-	
-	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
-	TArray<TSubclassOf<UGameplayAbility>> GetItemAbilities() const { return ItemAbilities; }
 };

@@ -8,7 +8,7 @@
 #include "HConsumable.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnConsumableUsed);
-
+struct FConsumableStatsRow;
 class UHConsumableDataAsset;
 
 UCLASS()
@@ -21,21 +21,26 @@ public:
 
 	FOnConsumableUsed OnConsumableUsed;
 	
-	UFUNCTION()
-	void ReduceConsumableCharges(float _amountToReduce);
-
 	UHConsumableDataAsset* GetItemConsumableDataAsset(){return ConsumableData;}
+	
+	const FConsumableStatsRow* GetConsumableStats() const;
+
+	// Polymorphic override
+	virtual const void* GetStatsForRarity() const override
+	{
+		return GetConsumableStats();
+	}
+	
+	UFUNCTION(BlueprintCallable, Category = "Consumable|Stats")
+	bool GetConsumableStatsValue(FConsumableStatsRow& OutStats) const;
 	
 protected:
 	virtual void BeginPlay() override;
 	
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	virtual void RestoreConsumableProperties();
-	
 private:
 	UPROPERTY()
 	TObjectPtr<UHConsumableDataAsset> ConsumableData;
 	
-	float RemainingCharges;
 };

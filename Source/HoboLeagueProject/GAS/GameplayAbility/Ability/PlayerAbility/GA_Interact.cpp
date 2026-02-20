@@ -59,7 +59,6 @@ AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHI
 	
 	if (bUseSphereTrace)
 	{
-		// ✅ Spherical detection
 		FHitResult Hit;
 		FCollisionQueryParams Params;
 		Params.AddIgnoredActor(Player);

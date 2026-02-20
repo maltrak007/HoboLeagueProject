@@ -1,53 +1,55 @@
 #include "HWeapon.h"
-
 #include "HWeaponDataAsset.h"
-#include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
-#include "HoboLeagueProject/Component/HInventoryComponent.h"
+#include "HWeaponStatsTable.h"
 
 AHWeapon::AHWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
 
+const FWeaponStatsRow* AHWeapon::GetWeaponStats() const
+{
+	if (!ItemData || !ItemData->StatsTable)
+	{
+		return nullptr;
+	}
+
+	// Construct row name: "{ItemID}_{Rarity}"
+	// e.g. "Sword_Rare"
+	FString RarityStr = UEnum::GetValueAsString(ItemRarity);
+	RarityStr.RemoveFromStart("ERarityType::");
+    
+	const FName RowName = FName(*FString::Printf(TEXT("%s_%s"),
+		*ItemData->ItemID.ToString(),
+		*RarityStr));
+
+	// Lookup in weapon stats table
+	const FWeaponStatsRow* Row = ItemData->StatsTable->FindRow<FWeaponStatsRow>(
+		RowName,
+		TEXT("GetWeaponStats")
+	);
+
+	if (!Row)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No weapon stats for '%s' at rarity '%s'"),
+			*ItemData->ItemID.ToString(), *RarityStr);
+	}
+
+	return Row;
+}
+
+// bool AHWeapon::GetWeaponStatsValue(FWeaponStatsRow& OutStats) const
+// {
+// 	const FWeaponStatsRow* Stats = GetWeaponStats();
+// 	if (Stats)
+// 	{
+// 		OutStats = *Stats;
+// 		return true;
+// 	}
+// 	return false;
+// }
+
 void AHWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-	WeaponData = Cast<UHWeaponDataAsset>(ItemData);
-
-	if (WeaponData)
-	{
-		RemainingDurability = WeaponData->GetTotalDurability();
-	}
 }
-
-void AHWeapon::ReduceWeaponDurability()
-{
-	if (!HasAuthority()) return;
-	
-	if (!WeaponData) return;
-	
-	RemainingDurability = FMath::Clamp(
-		RemainingDurability - WeaponData->GetLostDurability(),
-		0.0f,
-		WeaponData->GetTotalDurability()
-	);
-
-	OnWeaponHit.Broadcast();
-	
-	if (RemainingDurability <= 0)
-	{
-		if (UHInventoryComponent* InvComp = OwningPlayer->GetInventoryComponent())
-		{
-			RestoreWeaponProperties();
-			InvComp->RemoveItem(this);
-		}
-	}
-}
-
-void AHWeapon::RestoreWeaponProperties()
-{
-	RemainingDurability = WeaponData->GetTotalDurability();
-}
-// PRAGMA_DISABLE_OPTIMIZATION
-// PRAGMA_ENABLE_OPTIMIZATION

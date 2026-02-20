@@ -13,9 +13,6 @@
 #include "HoboLeagueProject/Item/PlayerItem/Consumable/HConsumableDataAsset.h"
 #include "HoboLeagueProject/Item/PlayerItem/Consumable/HConsumable.h"
 
-UGA_UseConsumable::UGA_UseConsumable()
-{
-}
 
 void UGA_UseConsumable::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
                                         const FGameplayAbilityActorInfo* ActorInfo,
@@ -27,7 +24,7 @@ void UGA_UseConsumable::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 		K2_EndAbility();
 		return;
 	}
-	
+
 	if (HasAuthorityOrPredictionKey(ActorInfo, &ActivationInfo))
 	{
 		UAbilityTask_PlayMontageAndWait* PlayMontageTask =
@@ -49,6 +46,15 @@ void UGA_UseConsumable::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
 	}
 }
 
+void UGA_UseConsumable::InputReleased(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	// if (ActorInfo && ActorInfo->AbilitySystemComponent.IsValid())
+	// {
+	// 	CancelAbility(Handle, ActorInfo, ActivationInfo, true);
+	// }
+}
+
 void UGA_UseConsumable::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                    const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
                                    bool bWasCancelled)
@@ -67,9 +73,9 @@ void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 		return;
 
 	const FGameplayAbilityActorInfo* ActorInfo = GetCurrentActorInfo();
-	
+
 	APlayerCharacter* PC = Cast<APlayerCharacter>(ActorInfo->AvatarActor.Get());
-	
+
 	AHConsumable* ConsumableItem = Cast<AHConsumable>(PC->GetInventoryComponent()->GetActiveConsumable());
 
 	if (!ConsumableItem)
@@ -80,32 +86,25 @@ void UGA_UseConsumable::ApplyConsumableEffect(FGameplayEventData Data)
 	if (!ItemConsumableDataAsset)
 		return;
 
-	// if (ItemConsumableDataAsset->GetHasManyGameplayEffects())
-	// {
-	// 	for (auto Element : ItemConsumableDataAsset->GetGameplayEffects())
-	// 	{
-	// 		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-	// 		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(Element, AbilityLevel);
-	//
-	// 		if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
-	// 		{
-	// 			PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-	// 		}
-	// 	}
-	// 	ConsumableItem->ReduceConsumableCharges(1);
-	// 	ConsumableItem->OnConsumableUsed.Broadcast();
-	// }
-	// else
-	// {
-		const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
-		FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
-			ItemConsumableDataAsset->GetGameplayEffect(), AbilityLevel);
+	const int32 AbilityLevel = GetAbilityLevel(GetCurrentAbilitySpecHandle(), GetCurrentActorInfo());
 
-		if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
-		{
-			PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-		}
-		ConsumableItem->ReduceConsumableCharges(1);
-		ConsumableItem->OnConsumableUsed.Broadcast();
-	//}
+	FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
+		ItemConsumableDataAsset->GetInstantGameplayEffect(), AbilityLevel);
+
+	if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
+	{
+		PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+
+	SpecHandle = MakeOutgoingGameplayEffectSpec(
+		ItemConsumableDataAsset->GetDurationGameplayEffect(), AbilityLevel);
+
+	if (SpecHandle.IsValid() && SpecHandle.Data.IsValid())
+	{
+		PC->GetAbilitySystemComponent()->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	}
+	
+	ConsumableItem->ReduceDurability(1);
+	
+	ConsumableItem->OnConsumableUsed.Broadcast();
 }

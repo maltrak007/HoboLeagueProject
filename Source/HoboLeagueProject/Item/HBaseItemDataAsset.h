@@ -31,15 +31,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
 	EItemType ItemType;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	FText ItemName;
-	
-	// ======================
-	//   Item Effects
-	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Effects")
-	FGameplayTagContainer StatusEffect;
-
 	// ======================
 	//   Visuals
 	// ======================
@@ -52,12 +43,6 @@ public:
 	// ======== GETTERS ========
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const EItemType& GetItemType() const { return ItemType; }
-
-	UFUNCTION(BlueprintPure, Category = "Item|Data")
-	const FText& GetItemName() const { return ItemName; }
-	
-	UFUNCTION(BlueprintPure, Category = "Item|Effects")
-	const FGameplayTagContainer& GetStatusEffect() const { return StatusEffect; }
 	
 	UFUNCTION(BlueprintPure, Category = "Item|Visual")
 	UStaticMesh* GetItemMesh() const { return ItemMesh; }

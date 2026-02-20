@@ -93,7 +93,6 @@ void UHBaseGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorIn
 
 	if (IsPassiveAbility)
 	{
-		//TODO Maybe this should be called by event
 		ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, false);
 	}
 }

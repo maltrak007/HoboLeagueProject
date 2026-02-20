@@ -27,7 +27,10 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	/*************************************************************************************/
 	/*	 								ANIMATIONS										 */
 	/*************************************************************************************/
-
+	GameplayTags.Event_Combo_Change = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.Combo.Change"),
+		FString("Notify to change combo"));
+	
 	GameplayTags.Event_Combo_Change_PrimaryCombo02 = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Event.Combo.Change.PrimaryCombo02"),
 		FString("Notify to launch second primary part of combo"));
@@ -223,6 +226,14 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Data_Sprint_Speed = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Data.Sprint.Speed"),
 		FString("Sprint Data Tag"));
+
+	GameplayTags.Data_Damage = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Data.Damage"),
+		FString("Damage Data Tag"));
+
+	GameplayTags.Data_StaminaCost = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Data.StaminaCost"),
+		FString("StaminaCost Data Tag"));
 	
 	/*************************************************************************************/
 	/*	 							ACTIVATION FAIL 									 */
