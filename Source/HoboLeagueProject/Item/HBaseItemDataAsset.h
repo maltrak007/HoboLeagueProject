@@ -25,21 +25,6 @@ class HOBOLEAGUEPROJECT_API UHBaseItemDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
-	// ======================
-	//   Item Data
-	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
-	EItemType ItemType;
-	
-	// ======================
-	//   Visuals
-	// ======================
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
-	UStaticMesh* ItemMesh;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
-	USkeletalMesh* ItemSkeletalMesh;
-	
 	// ======== GETTERS ========
 	UFUNCTION(BlueprintPure, Category = "Item|Data")
 	const EItemType& GetItemType() const { return ItemType; }
@@ -49,4 +34,19 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Item|Visual")
 	USkeletalMesh* GetItemSkeletalMesh() const { return ItemSkeletalMesh; }
+	
+protected:
+	// ======================
+	//   Item Data
+	// ======================
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Data")
+	EItemType ItemType;
+	// ======================
+	//   Visuals
+	// ======================
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
+	UStaticMesh* ItemMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visual")
+	USkeletalMesh* ItemSkeletalMesh;
 };

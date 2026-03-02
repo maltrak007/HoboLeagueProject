@@ -82,6 +82,10 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 	GameplayTags.Event_Consume = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Event.Consume"),
 		FString("Notify to consume item"));
+
+	GameplayTags.Event_PlayMinigame = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Event.PlayMinigame"),
+		FString("Notify to Play Minigame"));
 	
 	/*************************************************************************************/
 	/*	 								ABILITIES										 */
@@ -231,6 +235,14 @@ void FHGameplayTags::InitializeNativeGameplayTags()
 		FName("Data.Damage"),
 		FString("Damage Data Tag"));
 
+	GameplayTags.Data_Overdose = UGameplayTagsManager::Get().AddNativeGameplayTag(
+		FName("Data.Overdose"),
+		FString("Overdose Data Tag"));
+
+	GameplayTags.Data_Stamina = UGameplayTagsManager::Get().AddNativeGameplayTag(
+	FName("Data.Stamina"),
+	FString("Stamina Data Tag"));
+	
 	GameplayTags.Data_StaminaCost = UGameplayTagsManager::Get().AddNativeGameplayTag(
 		FName("Data.StaminaCost"),
 		FString("StaminaCost Data Tag"));

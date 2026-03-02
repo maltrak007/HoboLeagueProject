@@ -8,6 +8,8 @@
 #include "HoboLeagueProject/Item/PlayerItem/HPlayerItemDataAsset.h"
 #include "HConsumableDataAsset.generated.h"
 
+
+
 /**
  * 
  */
@@ -25,10 +27,18 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
 	TSubclassOf<UGameplayEffect> GetDurationGameplayEffect() const { return DurationGameplayEffect; }
 
+	UFUNCTION(BlueprintPure, Category = "Consumable|Stats")
+	UAnimMontage* GetConsumableAnimation() const { return ConsumableAnimation; }
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffect;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
 	TSubclassOf<UGameplayEffect> DurationGameplayEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Consumable Stats")
+	TObjectPtr<UAnimMontage> ConsumableAnimation;
+
+	
 };

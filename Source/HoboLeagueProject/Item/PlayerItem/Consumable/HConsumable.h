@@ -26,13 +26,13 @@ public:
 	const FConsumableStatsRow* GetConsumableStats() const;
 
 	// Polymorphic override
-	virtual const void* GetStatsForRarity() const override
-	{
-		return GetConsumableStats();
-	}
+	// virtual const void* GetStatsForRarity() const override
+	// {
+	// 	return GetConsumableStats();
+	// }
 	
-	UFUNCTION(BlueprintCallable, Category = "Consumable|Stats")
-	bool GetConsumableStatsValue(FConsumableStatsRow& OutStats) const;
+	// UFUNCTION(BlueprintCallable, Category = "Consumable|Stats")
+	// bool GetConsumableStatsValue(FConsumableStatsRow& OutStats) const;
 	
 protected:
 	virtual void BeginPlay() override;

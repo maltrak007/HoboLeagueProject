@@ -7,17 +7,26 @@
 #include "HoboLeagueProject/Item/HBaseItem.h"
 #include "HoboLeagueProject/Item/HItemInteractableInterface.h"
 
+static TAutoConsoleVariable<int32> CVarInteractDebugDraw(
+	TEXT("ga.Interact.DebugDraw"),
+	0,
+	TEXT("Enable debug drawing for GA_Interact (0=off, 1=on)"),
+	ECVF_Default
+);
+
 UGA_Interact::UGA_Interact()
 {
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalPredicted;
 }
 
 void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
                                    const FGameplayAbilityActivationInfo ActivationInfo,
                                    const FGameplayEventData* TriggerEventData)
 {
-	if (!K2_CommitAbility())
+	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
 	{
-		K2_EndAbility();
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 		return;
 	}
 
@@ -28,7 +37,7 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		return;
 	}
 
-	UHInteractionComponent* InteractionComp = PC->FindComponentByClass<UHInteractionComponent>();
+	UHInteractionComponent* InteractionComp = PC->GetComponentByClass<UHInteractionComponent>();
 	if (!InteractionComp)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
@@ -38,7 +47,22 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	AHBaseItem* Target = RetrieveInteractableItem(PC, InteractionComp);
 	if (Target)
 	{
-		IHItemInteractableInterface::Execute_Interact(Target, PC);
+		// ✅ ONLY SERVER executes the actual interaction
+		if (HasAuthority(&ActivationInfo))
+		{
+			// Server: Authoritative execution
+			IHItemInteractableInterface::Execute_Interact(Target, PC);
+		}
+		else
+		{
+			// ✅ Client: Predictive cosmetics (optional)
+			// Play sounds, particles, etc. for immediate feedback
+			// The actual interaction happens on server
+            
+			// Example predictive feedback:
+			// PlayInteractSound();
+			// SpawnInteractParticles();
+		}
 	}
 
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
@@ -46,76 +70,56 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 
 AHBaseItem* UGA_Interact::RetrieveInteractableItem(APlayerCharacter* Player, UHInteractionComponent* InteractionComp)
 {
-	if (!Player || !InteractionComp) return nullptr;
-
-	UWorld* World = Player->GetWorld();
-	if (!World) return nullptr;
-
-	FVector Start = Player->GetActorLocation();
-	FVector Forward = Player->GetActorForwardVector();
-	
-	AHBaseItem* BestTarget = nullptr;
-	float BestDistSq = TNumericLimits<float>::Max();
-	
-	if (bUseSphereTrace)
+	const TArray<AHBaseItem*>& NearbyObjects = InteractionComp->NearbyInteractableObjects;
+    
+	if (NearbyObjects.Num() == 0)
 	{
-		FHitResult Hit;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(Player);
+		return nullptr;
+	}
 
-		FVector End = Start + Forward * MaxDistance;
+	const FVector PlayerLocation = Player->GetActorLocation();
+	const FVector PlayerForward = Player->GetActorForwardVector();
+	const float MaxDistSq = MaxDistance * MaxDistance;
 
-		// Sphere sweep to detect any nearby interactables
-		if (World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereRadius), Params))
+	AHBaseItem* BestTarget = nullptr;
+	float BestScore = -1.0f;
+
+	for (AHBaseItem* Item : NearbyObjects)
+	{
+		if (!IsValid(Item))
 		{
-			if (AHBaseItem* HitActor = Cast<AHBaseItem>(Hit.GetActor()))
-			{
-				if (HitActor->GetClass()->ImplementsInterface(UHItemInteractableInterface::StaticClass()) &&
-					InteractionComp->NearbyInteractableObjects.Contains(HitActor))
-				{
-					BestTarget = HitActor;
-				}
-			}
+			continue;
 		}
 		
-		DrawDebugLine(World, Start, End, FColor::Cyan, false, 1.0f, 0, 1.5f);
-		DrawDebugSphere(World, End, SphereRadius, 16, FColor::Cyan, false, 1.0f);
-	}
-	else
-	{
-		for (int32 i = -NumRays / 2; i <= NumRays / 2; ++i)
+		if (!Item->GetClass()->ImplementsInterface(UHItemInteractableInterface::StaticClass()))
 		{
-			FRotator SpreadRot = Forward.Rotation();
-			SpreadRot.Yaw += i * AngleStep;
+			continue;
+		}
 
-			FVector End = Start + SpreadRot.Vector() * MaxDistance;
+		const FVector ItemLocation = Item->GetActorLocation();
+		const float DistSq = FVector::DistSquared(PlayerLocation, ItemLocation);
 
-			FHitResult Hit;
-			FCollisionQueryParams Params;
-			Params.AddIgnoredActor(Player);
+		if (DistSq > MaxDistSq)
+		{
+			continue;
+		}
 
-			if (World->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, Params))
-			{
-				if (AHBaseItem* HitActor = Cast<AHBaseItem>(Hit.GetActor()))
-				{
-					// Must implement interface and be in the interaction array
-					if (HitActor->GetClass()->ImplementsInterface(UHItemInteractableInterface::StaticClass()) &&
-						InteractionComp->NearbyInteractableObjects.Contains(HitActor))
-					{
-						// Find the closest valid target
-						float DistSq = FVector::DistSquared(Start, HitActor->GetActorLocation());
-						if (DistSq < BestDistSq)
-						{
-							BestDistSq = DistSq;
-							BestTarget = HitActor;
-						}
-					}
-				}
-			}
+		const FVector ToItem = (ItemLocation - PlayerLocation).GetSafeNormal();
+		const float DotProduct = FVector::DotProduct(PlayerForward, ToItem);
 
-			DrawDebugLine(World, Start, End, FColor::Green, false, 1.0f, 0, 1.5f);
+		if (DotProduct <= 0.0f)
+		{
+			continue;
+		}
+
+		const float Score = DotProduct / FMath::Max(DistSq, 1.0f);
+
+		if (Score > BestScore)
+		{
+			BestScore = Score;
+			BestTarget = Item;
 		}
 	}
-	
+
 	return BestTarget;
 }

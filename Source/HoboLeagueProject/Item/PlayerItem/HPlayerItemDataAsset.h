@@ -29,13 +29,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Item|Abilities")
 	TArray<TSubclassOf<UGameplayAbility>> GetItemAbilities() const { return ItemAbilities; }
 
-	// ── Stats lookup config ────────────────────────────────────────
-	// The DataTable that holds stats for all rarities of this item
 	UPROPERTY(EditDefaultsOnly, Category = "Stats")
 	TObjectPtr<UDataTable> StatsTable;
-    
+	
 	// How row names are constructed: "{ItemID}_{Rarity}"
-	// e.g. "Syringe_Common", "Syringe_Rare"
 	UPROPERTY(EditDefaultsOnly, Category = "Stats")
 	FName ItemID = NAME_None;
 	

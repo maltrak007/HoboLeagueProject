@@ -10,16 +10,16 @@ AHConsumable::AHConsumable()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-bool AHConsumable::GetConsumableStatsValue(FConsumableStatsRow& OutStats) const
-{
-	const FConsumableStatsRow* Stats = GetConsumableStats();
-	if (Stats)
-	{
-		OutStats = *Stats;
-		return true;
-	}
-	return false;
-}
+// bool AHConsumable::GetConsumableStatsValue(FConsumableStatsRow& OutStats) const
+// {
+// 	const FConsumableStatsRow* Stats = GetConsumableStats();
+// 	if (Stats)
+// 	{
+// 		OutStats = *Stats;
+// 		return true;
+// 	}
+// 	return false;
+// }
 
 void AHConsumable::BeginPlay()
 {

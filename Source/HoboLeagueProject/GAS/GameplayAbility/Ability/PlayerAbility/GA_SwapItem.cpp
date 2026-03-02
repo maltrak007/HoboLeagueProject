@@ -56,5 +56,7 @@ void UGA_SwapItem::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		}
 	}
 
+	//Play the montage for swapping item to the correct slot
+	
 	EndAbility(Handle, ActorInfo, ActivationInfo, true, false);
 }

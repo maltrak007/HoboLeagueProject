@@ -46,6 +46,7 @@ public:
 	FGameplayTag Event_Combo_Damage;
 	FGameplayTag Event_Combo_UseStamina;
 	FGameplayTag Event_Consume;
+	FGameplayTag Event_PlayMinigame;
 
 
 	//**************************************************************
@@ -126,7 +127,10 @@ public:
 	//**************************************************************
 	FGameplayTag Data_Sprint_Speed;
 	FGameplayTag Data_Damage;
+	FGameplayTag Data_Stamina;
+	FGameplayTag Data_Overdose;
 	FGameplayTag Data_StaminaCost;
+	
 	//**************************************************************
 	//     ****************************************************
 	//						 ACTIVATION FAIL

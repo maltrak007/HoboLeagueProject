@@ -96,7 +96,6 @@ void UHAbilitySystemComponent::RemoveGrantedAbility(TArray<FGameplayAbilitySpecH
 void UHAbilitySystemComponent::OnRep_ActivateAbilities()
 {
 	Super::OnRep_ActivateAbilities();
-	
 }
 
 void UHAbilitySystemComponent::HealthUpdated(const FOnAttributeChangeData& OnAttributeChangeData)
@@ -120,7 +119,6 @@ void UHAbilitySystemComponent::StaminaUpdated(const FOnAttributeChangeData& OnAt
 		if (OnAttributeChangeData.NewValue < MaxStamina &&
 			!HasMatchingGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion))
 		{
-			// This is the valid GAS method to add a replicated tag
 			AddLooseGameplayTag(FHGameplayTags::Get().Status_StaminaDepletion);
 		}
 		else if (OnAttributeChangeData.NewValue >= MaxStamina &&
