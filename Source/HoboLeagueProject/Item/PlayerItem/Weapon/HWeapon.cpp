@@ -15,7 +15,6 @@ const FWeaponStatsRow* AHWeapon::GetWeaponStats() const
 	}
 
 	// Construct row name: "{ItemID}_{Rarity}"
-	// e.g. "Sword_Rare"
 	FString RarityStr = UEnum::GetValueAsString(ItemRarity);
 	RarityStr.RemoveFromStart("ERarityType::");
     
@@ -37,17 +36,6 @@ const FWeaponStatsRow* AHWeapon::GetWeaponStats() const
 
 	return Row;
 }
-
-// bool AHWeapon::GetWeaponStatsValue(FWeaponStatsRow& OutStats) const
-// {
-// 	const FWeaponStatsRow* Stats = GetWeaponStats();
-// 	if (Stats)
-// 	{
-// 		OutStats = *Stats;
-// 		return true;
-// 	}
-// 	return false;
-// }
 
 void AHWeapon::BeginPlay()
 {

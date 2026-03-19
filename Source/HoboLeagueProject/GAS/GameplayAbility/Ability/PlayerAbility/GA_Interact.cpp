@@ -47,7 +47,6 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 	AHBaseItem* Target = RetrieveInteractableItem(PC, InteractionComp);
 	if (Target)
 	{
-		// ✅ ONLY SERVER executes the actual interaction
 		if (HasAuthority(&ActivationInfo))
 		{
 			// Server: Authoritative execution
@@ -55,7 +54,6 @@ void UGA_Interact::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		}
 		else
 		{
-			// ✅ Client: Predictive cosmetics (optional)
 			// Play sounds, particles, etc. for immediate feedback
 			// The actual interaction happens on server
             

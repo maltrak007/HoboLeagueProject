@@ -25,15 +25,7 @@ public:
 	FOnWeaponHit OnWeaponHit;
 	
 	const FWeaponStatsRow* GetWeaponStats() const;
-	
-	// virtual const void* GetStatsForRarity() const override
-	// {
-	// 	return GetWeaponStats();
-	// }
-	//
-	// UFUNCTION(BlueprintCallable, Category = "Weapon|Stats")
-	// bool GetWeaponStatsValue(FWeaponStatsRow& OutStats) const;
-	
+
 protected:
 	virtual void BeginPlay() override;
 

@@ -26,4 +26,7 @@ public:
 	// Called when a character interacts with an actor that implements this interface
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interaction")
 	void Interact(APlayerCharacter* PlayerOwner);
+
+	// Implement a method to highlight the objects if a bool is true, and unhighlight if it's false
+	// Implement a method to show UI elements related to the object if a bool is true, and hide them if it's false
 };

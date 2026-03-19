@@ -32,7 +32,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Stats")
 	TObjectPtr<UDataTable> StatsTable;
 	
-	// How row names are constructed: "{ItemID}_{Rarity}"
 	UPROPERTY(EditDefaultsOnly, Category = "Stats")
 	FName ItemID = NAME_None;
 	

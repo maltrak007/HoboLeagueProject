@@ -8,6 +8,7 @@
 #include "HoboLeagueProject/Character/Player/PlayerCharacter.h"
 #include "HoboLeagueProject/Component/HInventoryComponent.h"
 #include "HoboLeagueProject/GAS/FGameplayTags.h"
+#include "HoboLeagueProject/GAS/HAttributeSet.h"
 #include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeapon.h"
 #include "HoboLeagueProject/Item/PlayerItem/Weapon/HWeaponStatsTable.h"
 
@@ -522,52 +523,28 @@ const FWeaponStatsRow* UGA_Attack::GetWeaponStats() const
 
 bool UGA_Attack::CanPayStaminaForAttack() const
 {
-    const FWeaponStatsRow* Stats = GetWeaponStats();
-    if (!Stats)
-    {
-        return false;
-    }
-
-    if (!StaminaCostEffect)
-    {
-        return true; // No cost = can afford
-    }
-
     UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-    if (!ASC)
+
+    FGameplayAttributeData CurrentStamina = ASC->GetNumericAttribute(UHAttributeSet::GetStaminaAttribute());
+    
+    float StaminaCost = GetStaminaCostForCurrentSection() * -1.f;
+    
+    if (!ASC || StaminaCost > CurrentStamina.GetCurrentValue())
     {
         return false;
     }
-
-    // Get current stamina cost
-    float StaminaCost = GetStaminaCostForCurrentSection();
-    if (StaminaCost <= 0.0f)
-    {
-        return true; // No cost
-    }
-
-    // Check if we have enough stamina
-    // This is a simplified check - you might want to use a proper cost GE spec
-    return ASC->CanApplyAttributeModifiers(
-        StaminaCostEffect.GetDefaultObject(),
-        GetCurrentAbilityLevel(),
-        ASC->MakeEffectContext()
-    );
+    
+    return true;
 }
 
 void UGA_Attack::ConsumeStamina()
 {
-    if (!StaminaCostEffect || !CachedWeaponStats)
-    {
-        return;
-    }
-
     UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo();
-    if (!ASC)
+    if (!StaminaCostEffect || !CachedWeaponStats || !ASC)
     {
         return;
     }
-
+    
     // Create stamina cost effect spec
     FGameplayEffectSpecHandle SpecHandle = MakeOutgoingGameplayEffectSpec(
         StaminaCostEffect,
@@ -603,11 +580,10 @@ float UGA_Attack::GetStaminaCostForCurrentSection() const
     if (const bool* bIsCharged = ChargedAttackSections.Find(CurrentSection))
     {
         return *bIsCharged 
-            ? CachedWeaponStats->ChargedAttackStaminaCost 
+            ? CachedWeaponStats->ChargedAttackStaminaCost
             : CachedWeaponStats->LightAttackStaminaCost;
     }
-
-    // Default to light attack if section not in map
+    
     return CachedWeaponStats->LightAttackStaminaCost;
 }
 
@@ -628,7 +604,7 @@ void UGA_Attack::DealDamage(const FGameplayAbilityTargetDataHandle& TargetData)
         TargetData,
         SphereRadiusSweep,
         bDebugDrawHits,
-        true // Ignore self
+        true
     );
 
     if (HitResults.Num() == 0)

@@ -9,7 +9,6 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "GameplayTagContainer.h"
-#include "HoboLeagueProject/Item/HItemType.h"
 #include "HWeaponStatsTable.generated.h"
 
 // ─────────────────────────────────────────────────────────────────
